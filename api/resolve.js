@@ -98,13 +98,13 @@ function validateUnderstandingShape(data) {
 }
 
 function validateRecommendationShape(data) {
-  const required = ['recommendedAction', 'why', 'milestone', 'roadmap'];
+  const required = ['recommendedAction', 'why', 'milestone', 'roadmap', 'secondaryActions', 'winSummary'];
   for (const key of required) {
     if (!(key in data)) {
       throw new ResolveShapeError(`Recommendation response missing required field: ${key}`);
     }
   }
-  for (const key of ['recommendedAction', 'why', 'milestone']) {
+  for (const key of ['recommendedAction', 'why', 'milestone', 'winSummary']) {
     if (!isNonEmptyString(data[key])) {
       throw new ResolveShapeError(`Recommendation field "${key}" is empty or not a string`);
     }
@@ -119,6 +119,19 @@ function validateRecommendationShape(data) {
     for (const key of ['phase', 'action', 'output']) {
       if (!isNonEmptyString(phase[key])) {
         throw new ResolveShapeError(`Roadmap phase ${i} missing or empty field: ${key}`);
+      }
+    }
+  });
+  if (!Array.isArray(data.secondaryActions) || data.secondaryActions.length !== 5) {
+    throw new ResolveShapeError('Recommendation field "secondaryActions" must contain exactly 5 actions');
+  }
+  data.secondaryActions.forEach((action, i) => {
+    if (!action || typeof action !== 'object') {
+      throw new ResolveShapeError(`Secondary action ${i} is not an object`);
+    }
+    for (const key of ['icon', 'label']) {
+      if (!isNonEmptyString(action[key])) {
+        throw new ResolveShapeError(`Secondary action ${i} missing or empty field: ${key}`);
       }
     }
   });
@@ -303,6 +316,7 @@ CORE RULES (do not violate these):
 - Define why and what, clearly enough that someone else could act on it without having to guess your reasoning.
 - Challenge weak assumptions directly if you see them in the confirmed understanding below — but do so within your output, not by refusing to answer.
 - Give exactly ONE recommended next action. Do not hedge with multiple equally-weighted options.
+- Secondary actions must be genuinely useful actions for this exact project, grounded in the confirmed understanding and gap answers. Do not use generic categories or leftover example-project language.
 - Never ask for information that has already been provided earlier in this same session, including in the original project input, confirmed understanding, or gap-question answers below.
 - Be direct, practical, and free of generic startup hype ("game-changing," "unlock your potential," etc).
 
@@ -325,12 +339,20 @@ Produce ONE clear recommendation and a short roadmap. Return ONLY valid JSON mat
     {"phase": "Now", "action": "short phrase", "output": "what this phase produces"},
     {"phase": "Define", "action": "short phrase", "output": "what this phase produces"},
     {"phase": "Launch", "action": "short phrase", "output": "what this phase produces"}
-  ]
+  ],
+  "secondaryActions": [
+    {"icon": "single relevant emoji", "label": "short, specific, actionable suggestion relevant to THIS project"},
+    {"icon": "single relevant emoji", "label": "short, specific, actionable suggestion relevant to THIS project"},
+    {"icon": "single relevant emoji", "label": "short, specific, actionable suggestion relevant to THIS project"},
+    {"icon": "single relevant emoji", "label": "short, specific, actionable suggestion relevant to THIS project"},
+    {"icon": "single relevant emoji", "label": "short, specific, actionable suggestion relevant to THIS project"}
+  ],
+  "winSummary": "one sentence in this style: A messy [specific project situation] — turned into a focused path forward. That's the hard part done."
 }
 
-REQUIRED: "recommendedAction", "why", and "milestone" must each be a non-empty string. "roadmap" MUST contain exactly 3 phase objects, each with non-empty "phase", "action", and "output" string fields. Do not omit any field or leave any value empty.
+REQUIRED: "recommendedAction", "why", "milestone", and "winSummary" must each be a non-empty string. "roadmap" MUST contain exactly 3 phase objects, each with non-empty "phase", "action", and "output" string fields. "secondaryActions" MUST contain exactly 5 objects, each with one non-empty "icon" string and one non-empty "label" string. Do not omit any field or leave any value empty.
 
-If an answer was not provided for a gap question, do not invent it. If an answer was provided, treat it as user-confirmed context and do not ask for it again.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had empty/missing fields, especially in the roadmap array. Every roadmap phase must have all three fields filled in. Follow the shape precisely this time.' : ''}`;
+If an answer was not provided for a gap question, do not invent it. If an answer was provided, treat it as user-confirmed context and do not ask for it again.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had empty/missing fields, especially in the roadmap or secondaryActions arrays. Every roadmap phase must have all three fields filled in, secondaryActions must have exactly 5 objects, and winSummary must be present. Follow the shape precisely this time.' : ''}`;
 
   return callWithValidation(buildPrompt, apiKey, validateRecommendationShape);
 }
@@ -379,10 +401,18 @@ Return ONLY valid JSON in this EXACT shape — all fields REQUIRED and non-empty
     {"phase": "non-empty string", "action": "non-empty string", "output": "non-empty string"},
     {"phase": "non-empty string", "action": "non-empty string", "output": "non-empty string"},
     {"phase": "non-empty string", "action": "non-empty string", "output": "non-empty string"}
-  ]
+  ],
+  "secondaryActions": [
+    {"icon": "non-empty string", "label": "non-empty string"},
+    {"icon": "non-empty string", "label": "non-empty string"},
+    {"icon": "non-empty string", "label": "non-empty string"},
+    {"icon": "non-empty string", "label": "non-empty string"},
+    {"icon": "non-empty string", "label": "non-empty string"}
+  ],
+  "winSummary": "non-empty string"
 }
 
-The roadmap array must always contain exactly 3 phase objects, even if you are passing the draft through unchanged — copy them across completely, do not drop or truncate any field.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had empty/missing fields. Copy every field from the draft across completely unless you are specifically correcting it. Follow the shape precisely this time.' : ''}`;
+The roadmap array must always contain exactly 3 phase objects and secondaryActions must always contain exactly 5 action objects, even if you are passing the draft through unchanged — copy them across completely, do not drop or truncate any field. If a secondary action or winSummary uses facts not supported by the source material, correct it to something grounded in the confirmed understanding and gap answers.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had empty/missing fields. Copy every field from the draft across completely unless you are specifically correcting it. Include exactly 5 secondaryActions and a non-empty winSummary. Follow the shape precisely this time.' : ''}`;
 
   return callWithValidation(buildPrompt, apiKey, validateRecommendationShape);
 }

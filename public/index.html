@@ -330,6 +330,12 @@ input[type="text"] { height: 48px; font-size: 14px; }
   min-height: 60vh;
 }
 .screen0-pure h1 { font-size: 34px; }
+#greeting-h1 { font-size: 48px; }
+#greeting-sub {
+  font-size: 22px;
+  line-height: 1.45;
+  max-width: 520px;
+}
 .inline-affirm-btn {
   margin-top: 18px;
   background: var(--ink);
@@ -356,6 +362,10 @@ input[type="text"] { height: 48px; font-size: 14px; }
 #greeting-h1,
 #greeting-sub {
   transition: opacity 0.4s ease;
+}
+@media (max-width: 520px) {
+  #greeting-h1 { font-size: 40px; }
+  #greeting-sub { font-size: 19px; }
 }
 
 /* mic + textarea */
@@ -447,6 +457,7 @@ input[type="text"] { height: 48px; font-size: 14px; }
   opacity: 0.82;
 }
 .mini-spinner {
+  display: inline-block;
   width: 16px;
   height: 16px;
   border: 2px solid rgba(139,74,42,0.25);
@@ -566,7 +577,7 @@ input[type="text"] { height: 48px; font-size: 14px; }
 
       <div id="greeting-step" class="screen0-step screen0-pure screen0-step-hidden">
         <h1 id="greeting-h1" class="beat-hidden">Hi.</h1>
-        <p class="subtitle beat-hidden" id="greeting-sub" style="margin-bottom:28px;">Resolve turns a messy project into one clear next move.</p>
+        <p class="subtitle beat-hidden" id="greeting-sub" style="margin-bottom:28px;">Resolve takes a messy project and gives you one clear next move.</p>
         <button class="inline-affirm-btn is-hidden" id="get-started-btn" onclick="revealJourneyStep()">Get started →</button>
       </div>
 
@@ -724,7 +735,7 @@ input[type="text"] { height: 48px; font-size: 14px; }
       <div class="win-banner">
         <div class="win-icon">🏆</div>
         <div class="win-title" id="s4-win-title">You just cleared the fog.</div>
-        <div class="win-desc" id="s4-win-desc">A messy rebrand with no clear starting point — turned into a focused path forward in under 10 minutes. That's the hard part done.</div>
+        <div class="win-desc" id="s4-win-desc">A messy project with no clear direction — turned into a focused path forward. That's the hard part done.</div>
       </div>
       <div class="eyebrow" style="margin-top:20px;">Next steps</div>
       <div class="action-card-primary">
@@ -736,12 +747,7 @@ input[type="text"] { height: 48px; font-size: 14px; }
           <div class="apt-title">Shortlist to one name and test it this week</div>
         </div>
       </div>
-      <div class="action-grid">
-        <div class="action-card"><span class="action-icon">📣</span><span class="action-text">Plan how to tell existing customers about the rebrand</span></div>
-        <div class="action-card"><span class="action-icon">🎨</span><span class="action-text">Build a brief for the visual identity</span></div>
-        <div class="action-card"><span class="action-icon">🗓️</span><span class="action-text">Map the 8-week relaunch timeline</span></div>
-        <div class="action-card"><span class="action-icon">📦</span><span class="action-text">Prioritise what gets updated first — site, packaging, or social</span></div>
-        <div class="action-card"><span class="action-icon">📱</span><span class="action-text">Plan the Instagram transition for 8k followers</span></div>
+      <div class="action-grid" id="action-grid">
         <div class="action-card plan-card" id="plan-card" onclick="handleProjectPlanClick()"><span class="action-icon" id="plan-icon">⬇</span><span class="action-text" id="plan-text">Output my project plan</span></div>
       </div>
       <div class="field">
@@ -771,6 +777,7 @@ const nextLabels = ['Get started \u2192','Build my path \u2192','','Show my next
 const progressPct = [0, 20, 20, 50, 75, 100];
 const stepLabels = ['Step 1 of 4','Step 2 of 4','Step 2 of 4','Step 3 of 4','Step 4 of 4','Complete'];
 const SCREEN_FADE_MS = 240;
+const RING_CIRCUMFERENCE = 163;
 
 const EXAMPLE_PROJECT = `I run a small e-commerce business called Nook & Thread, handmade homewares, been trading for about 4 years. Sales have plateaued and I think the brand feels too homespun for the price point I want to move to. I'm trying to rebrand to something more premium.
 
@@ -847,15 +854,16 @@ function resetProcessingRing() {
   const circle = document.getElementById('progress-circle');
   const check = document.getElementById('check-mark');
   circle.style.transition = 'none';
-  circle.style.strokeDashoffset = '163';
+  circle.style.strokeDashoffset = String(RING_CIRCUMFERENCE);
   check.style.opacity = '0';
   // force reflow so the next transition actually animates
   void circle.offsetWidth;
   circle.style.transition = 'stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1)';
 }
 
-function animateRingTo(value) {
-  document.getElementById('progress-circle').style.strokeDashoffset = String(value);
+function setRingProgress(progress) {
+  const clamped = Math.max(0, Math.min(1, progress));
+  document.getElementById('progress-circle').style.strokeDashoffset = String(RING_CIRCUMFERENCE * (1 - clamped));
 }
 
 function showCheck() {
@@ -906,7 +914,7 @@ async function runUnderstandingCall() {
   pendingCall = 'understand';
   resetProcessingRing();
   setProcessingText('Reading your project\u2026', 'Resolve is making sense of what you shared');
-  animateRingTo(163);
+  setRingProgress(0);
 
   const projectInput = document.getElementById('project-input').value.trim();
 
@@ -915,7 +923,7 @@ async function runUnderstandingCall() {
     return;
   }
 
-  setTimeout(() => animateRingTo(80), 200);
+  setTimeout(() => setRingProgress(0.5), 200);
 
   try {
     const res = await fetch('/api/resolve', {
@@ -931,7 +939,7 @@ async function runUnderstandingCall() {
 
     understandingData = await res.json();
 
-    animateRingTo(0);
+    setRingProgress(1);
     showCheck();
     setProcessingText('Path found.', "Here's what Resolve understood");
 
@@ -1011,7 +1019,7 @@ async function runRecommendationCall() {
   pendingCall = 'recommend';
   resetProcessingRing();
   setProcessingText('Working out your next move\u2026', 'Weighing this against everything you confirmed');
-  animateRingTo(163);
+  setRingProgress(0);
 
   if (isEditingUnderstanding) {
     toggleUnderstandingEdit();
@@ -1019,7 +1027,7 @@ async function runRecommendationCall() {
 
   const gapAnswers = collectGapAnswers();
 
-  setTimeout(() => animateRingTo(80), 200);
+  setTimeout(() => setRingProgress(0.5), 200);
 
   try {
     const res = await fetch('/api/resolve', {
@@ -1039,7 +1047,7 @@ async function runRecommendationCall() {
 
     recommendationData = await res.json();
 
-    animateRingTo(0);
+    setRingProgress(1);
     showCheck();
     setProcessingText('Path found.', 'Here\'s what to do next');
 
@@ -1071,6 +1079,31 @@ function populateScreen3(d) {
 function populateScreen4(d) {
   const titleEl = document.querySelector('#screen-4 .apt-title');
   if (titleEl) titleEl.textContent = d.recommendedAction || 'Your recommended next move';
+  document.getElementById('s4-win-desc').textContent = d.winSummary || "A messy project with no clear direction \u2014 turned into a focused path forward. That's the hard part done.";
+  renderSecondaryActions(d.secondaryActions);
+}
+
+function renderSecondaryActions(actions) {
+  const grid = document.getElementById('action-grid');
+  const planCard = document.getElementById('plan-card');
+  grid.querySelectorAll('.action-card:not(.plan-card)').forEach(card => card.remove());
+
+  const safeActions = Array.isArray(actions) ? actions.slice(0, 5) : [];
+  safeActions.forEach(action => {
+    const card = document.createElement('div');
+    card.className = 'action-card';
+
+    const icon = document.createElement('span');
+    icon.className = 'action-icon';
+    icon.textContent = action.icon || '\u2022';
+
+    const text = document.createElement('span');
+    text.className = 'action-text';
+    text.textContent = action.label || 'Review this project step';
+
+    card.append(icon, text);
+    grid.insertBefore(card, planCard);
+  });
 }
 
 async function handleProjectPlanClick() {
@@ -1282,6 +1315,7 @@ function resetFlow() {
   document.getElementById('greeting-sub').classList.add('beat-hidden');
   document.getElementById('journey-greeting').textContent = 'So,';
   document.getElementById('s4-win-title').textContent = 'You just cleared the fog.';
+  document.getElementById('s4-win-desc').textContent = "A messy project with no clear direction \u2014 turned into a focused path forward. That's the hard part done.";
   document.getElementById('s2-gap1-q').textContent = 'What would make this session a success for you?';
   document.getElementById('s2-gap2-q').textContent = 'What else should Resolve know before recommending a next move?';
   document.getElementById('optional-section').classList.add('collapsed');
@@ -1291,6 +1325,7 @@ function resetFlow() {
 
   const planCard = document.getElementById('plan-card');
   planCard.classList.remove('is-working', 'is-ready');
+  renderSecondaryActions([]);
   document.getElementById('plan-icon').textContent = '⬇';
   document.getElementById('plan-text').textContent = 'Output my project plan';
 
@@ -1354,11 +1389,11 @@ function revealGreetingStep() {
 
     setTimeout(() => {
       document.getElementById('greeting-sub').classList.remove('beat-hidden');
-    }, 520);
+    }, 1620);
 
     setTimeout(() => {
       document.getElementById('get-started-btn').classList.remove('is-hidden');
-    }, 920);
+    }, 3120);
   }, 400);
 
   screen0Stage = 'greeting';
