@@ -1,16 +1,17 @@
 // /api/resolve.js
 // Vercel serverless function. Holds the OpenAI API key server-side.
-// Implements a 3-call pipeline grounded in the actual ResolveOS role/governance files:
+// Implements a 4-call pipeline grounded in the actual ResolveOS role/governance files:
 //   Call 1: Business Analyst   -> understanding extraction (S1 -> S2)
 //   Call 2: Strategic Product Director -> recommendation + roadmap (S2 -> S3)
 //   Call 3: QA self-check      -> validates Call 2 against Call 1, regenerates if it invents facts
+//   Call 4: Project plan       -> end-user handoff report (S4)
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { stage, projectInput, confirmedUnderstanding, gapAnswers } = req.body;
+  const { stage, projectInput, confirmedUnderstanding, gapAnswers, recommendationData } = req.body;
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -27,6 +28,11 @@ export default async function handler(req, res) {
       const draft = await runRecommendationCall(confirmedUnderstanding, gapAnswers, apiKey);
       const checked = await runQACheckCall(confirmedUnderstanding, gapAnswers, draft, apiKey);
       return res.status(200).json(checked);
+    }
+
+    if (stage === 'plan') {
+      const result = await runProjectPlanCall(confirmedUnderstanding, recommendationData, gapAnswers, apiKey);
+      return res.status(200).json(result);
     }
 
     return res.status(400).json({ error: 'Unknown stage' });
@@ -119,6 +125,57 @@ function validateRecommendationShape(data) {
   return data;
 }
 
+function validateProjectPlanShape(data) {
+  const required = ['projectSummary', 'currentPhase', 'highestLeverageActivity', 'topActions', 'readiness', 'doNotYet'];
+  const allowedStatuses = ['Ready', 'Partially ready', 'Blocked', 'Not ready'];
+
+  for (const key of required) {
+    if (!(key in data)) {
+      throw new ResolveShapeError(`Project plan response missing required field: ${key}`);
+    }
+  }
+  for (const key of ['projectSummary', 'currentPhase', 'highestLeverageActivity']) {
+    if (!isNonEmptyString(data[key])) {
+      throw new ResolveShapeError(`Project plan field "${key}" is empty or not a string`);
+    }
+  }
+  if (!Array.isArray(data.topActions) || data.topActions.length < 3 || !data.topActions.every(isNonEmptyString)) {
+    throw new ResolveShapeError('Project plan field "topActions" must contain at least 3 non-empty strings');
+  }
+  if (!Array.isArray(data.readiness) || data.readiness.length < 4) {
+    throw new ResolveShapeError('Project plan field "readiness" must contain at least 4 rows');
+  }
+  data.readiness.forEach((row, i) => {
+    if (!row || typeof row !== 'object') {
+      throw new ResolveShapeError(`Readiness row ${i} is not an object`);
+    }
+    for (const key of ['area', 'status', 'note']) {
+      if (!isNonEmptyString(row[key])) {
+        throw new ResolveShapeError(`Readiness row ${i} missing or empty field: ${key}`);
+      }
+    }
+    if (!allowedStatuses.includes(row.status)) {
+      throw new ResolveShapeError(`Readiness row ${i} has invalid status: ${row.status}`);
+    }
+  });
+  if (!Array.isArray(data.doNotYet) || data.doNotYet.length < 1 || !data.doNotYet.every(isNonEmptyString)) {
+    throw new ResolveShapeError('Project plan field "doNotYet" must contain at least 1 non-empty string');
+  }
+  return data;
+}
+
+function formatGapAnswers(gapAnswers) {
+  const answers = Array.isArray(gapAnswers) ? gapAnswers : [];
+  if (!answers.length) {
+    return 'No gap answers were provided.';
+  }
+  return answers.map((item, index) => {
+    const question = isNonEmptyString(item?.question) ? item.question : `Question ${index + 1}`;
+    const answer = isNonEmptyString(item?.answer) ? item.answer : 'not answered';
+    return `Q: ${question}\nA: ${answer}`;
+  }).join('\n\n');
+}
+
 // Calls OpenAI, parses JSON, validates shape. Retries once with a stricter
 // instruction if the first attempt fails parsing or validation.
 async function callWithValidation(buildPrompt, apiKey, validateFn, attempt = 1) {
@@ -168,6 +225,7 @@ CORE RULES (do not violate these):
 - Do not infer intent, priority, urgency, or business rules the input does not support.
 - Document assumptions explicitly rather than letting them become invisible. Every assumption you make must be labelled as an assumption, not stated as fact.
 - If something genuinely needed to understand the project is missing, surface it as a question rather than filling it in yourself.
+- Never ask for information that the user has already provided in the project input. If it is already stated, use it.
 - Separate what is stated, what is implied, and what is assumed. Do not blur these together.
 - Keep output concise and practical. No filler, no generic encouragement, no hype.
 
@@ -211,6 +269,7 @@ REQUIRED: "project", "goal", "state", and "uncertainty" must each be a non-empty
 //    inventing strategic intent."
 // ---------------------------------------------------------------------------
 async function runRecommendationCall(confirmedUnderstanding, gapAnswers, apiKey) {
+  const gapAnswerText = formatGapAnswers(gapAnswers);
   const buildPrompt = (isRetry) => `You are operating as the ResolveOS Strategic Product Director role.
 
 Your job is strategic judgement: deciding what matters most right now, challenging weak thinking, and giving ONE clear, opinionated recommendation with reasoning — not a menu of options.
@@ -221,6 +280,7 @@ CORE RULES (do not violate these):
 - Define why and what, clearly enough that someone else could act on it without having to guess your reasoning.
 - Challenge weak assumptions directly if you see them in the confirmed understanding below — but do so within your output, not by refusing to answer.
 - Give exactly ONE recommended next action. Do not hedge with multiple equally-weighted options.
+- Never ask for information that has already been provided earlier in this same session, including in the original project input, confirmed understanding, or gap-question answers below.
 - Be direct, practical, and free of generic startup hype ("game-changing," "unlock your potential," etc).
 
 CONFIRMED PROJECT UNDERSTANDING (already reviewed and corrected by the user):
@@ -229,8 +289,7 @@ ${JSON.stringify(confirmedUnderstanding, null, 2)}
 """
 
 ADDITIONAL CONTEXT FROM THE USER:
-What would make this session a success: "${gapAnswers?.successDefinition || 'not provided'}"
-Deadline or pressure: "${gapAnswers?.deadline || 'not provided'}"
+${gapAnswerText}
 
 TASK:
 Produce ONE clear recommendation and a short roadmap. Return ONLY valid JSON matching this EXACT shape — all fields are REQUIRED, none may be omitted or empty, with no markdown fences, no commentary outside the JSON:
@@ -249,7 +308,7 @@ Produce ONE clear recommendation and a short roadmap. Return ONLY valid JSON mat
 
 REQUIRED: "recommendedAction", "why", "milestone", and "openDecision" must each be a non-empty string. "roadmap" MUST contain exactly 3 phase objects, each with non-empty "phase", "action", and "output" string fields. Do not omit any field or leave any value empty.
 
-If the deadline or success definition were not provided, do not invent urgency or goals that weren't stated — work from what's actually known.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had empty/missing fields, especially in the roadmap array. Every roadmap phase must have all three fields filled in. Follow the shape precisely this time.' : ''}`;
+If an answer was not provided for a gap question, do not invent it. If an answer was provided, treat it as user-confirmed context and do not ask for it again.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had empty/missing fields, especially in the roadmap array. Every roadmap phase must have all three fields filled in. Follow the shape precisely this time.' : ''}`;
 
   return callWithValidation(buildPrompt, apiKey, validateRecommendationShape);
 }
@@ -265,11 +324,12 @@ If the deadline or success definition were not provided, do not invent urgency o
 //    beyond what the confirmed understanding actually supports.
 // ---------------------------------------------------------------------------
 async function runQACheckCall(confirmedUnderstanding, gapAnswers, draftRecommendation, apiKey) {
+  const gapAnswerText = formatGapAnswers(gapAnswers);
   const buildPrompt = (isRetry) => `You are operating as a ResolveOS QA self-check pass.
 
 Your job is to check a draft recommendation against the original confirmed understanding it was supposed to be based on, and catch any case where the recommendation states something as fact that was not actually established.
 
-CORE RULE: Do not approve fake certainty. If the draft recommendation asserts something the confirmed understanding does not support, flag and correct it. If the draft is well-grounded, pass it through unchanged.
+CORE RULE: Do not approve fake certainty. If the draft recommendation asserts something the confirmed understanding or paired gap answers do not support, flag and correct it. If the draft is well-grounded, pass it through unchanged. Never ask for information that has already been provided earlier in this same session.
 
 CONFIRMED UNDERSTANDING (the source of truth):
 """
@@ -277,8 +337,7 @@ ${JSON.stringify(confirmedUnderstanding, null, 2)}
 """
 
 USER-PROVIDED CONTEXT:
-Success definition: "${gapAnswers?.successDefinition || 'not provided'}"
-Deadline: "${gapAnswers?.deadline || 'not provided'}"
+${gapAnswerText}
 
 DRAFT RECOMMENDATION TO CHECK:
 """
@@ -305,6 +364,58 @@ Return ONLY valid JSON in this EXACT shape — all fields REQUIRED and non-empty
 The roadmap array must always contain exactly 3 phase objects, even if you are passing the draft through unchanged — copy them across completely, do not drop or truncate any field.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had empty/missing fields. Copy every field from the draft across completely unless you are specifically correcting it. Follow the shape precisely this time.' : ''}`;
 
   return callWithValidation(buildPrompt, apiKey, validateRecommendationShape);
+}
+
+// ---------------------------------------------------------------------------
+// CALL 4 — Project plan handoff report
+// Grounded in: Strategic Product Director judgement plus the project-readiness
+// governance model. Written for a non-technical end user, not an internal team.
+// ---------------------------------------------------------------------------
+async function runProjectPlanCall(confirmedUnderstanding, recommendationData, gapAnswers, apiKey) {
+  const gapAnswerText = formatGapAnswers(gapAnswers);
+  const buildPrompt = (isRetry) => `You are operating as Resolve's project-plan handoff writer.
+
+Use Strategic Product Director judgement to identify the highest-leverage next move, and use the ResolveOS project-readiness model to separate what is ready, partially ready, blocked, or not ready. Write for a non-technical end user. Avoid internal jargon, engineering language, and admin/process framing.
+
+CORE RULES:
+- Prefer evidence over invention. Do not invent facts, timelines, users, market claims, or constraints that are not in the confirmed understanding, recommendation, or paired gap answers.
+- Never ask for information that has already been provided earlier in this same session. This report is a handoff document, not another conversation.
+- End the report after "doNotYet"; do not include a closing question or next prompt.
+- Keep language plain, practical, and specific.
+
+CONFIRMED PROJECT UNDERSTANDING:
+"""
+${JSON.stringify(confirmedUnderstanding, null, 2)}
+"""
+
+RECOMMENDATION DATA:
+"""
+${JSON.stringify(recommendationData, null, 2)}
+"""
+
+PAIRED GAP ANSWERS:
+${gapAnswerText}
+
+TASK:
+Return ONLY valid JSON matching this EXACT shape, with all fields present and non-empty:
+
+{
+  "projectSummary": "1-2 sentence plain-language description of what this project is and where it stands",
+  "currentPhase": "short phrase describing what stage this project is actually at right now",
+  "highestLeverageActivity": "one sentence naming the single most valuable thing to focus on",
+  "topActions": ["action 1", "action 2", "action 3"],
+  "readiness": [
+    {"area": "Direction is clear", "status": "Ready | Partially ready | Blocked | Not ready", "note": "one sentence explaining the status"},
+    {"area": "Planning is usable", "status": "Ready | Partially ready | Blocked | Not ready", "note": "one sentence explaining the status"},
+    {"area": "Ready to act", "status": "Ready | Partially ready | Blocked | Not ready", "note": "one sentence explaining the status"},
+    {"area": "Evidence is strong enough", "status": "Ready | Partially ready | Blocked | Not ready", "note": "one sentence explaining the status"}
+  ],
+  "doNotYet": ["thing not to do yet, with a one-line reason"]
+}
+
+REQUIRED: readiness must include at least 4 rows covering direction/clarity, planning, readiness to act, and validation/evidence. Each readiness status must be exactly one of: Ready, Partially ready, Blocked, Not ready.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape. Return only valid JSON with all required fields, at least 3 topActions, at least 4 readiness rows, valid readiness statuses, and at least 1 doNotYet item.' : ''}`;
+
+  return callWithValidation(buildPrompt, apiKey, validateProjectPlanShape);
 }
 
 // ---------------------------------------------------------------------------

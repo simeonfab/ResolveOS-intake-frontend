@@ -142,11 +142,26 @@ html, body {
   .phase-strip { grid-template-columns: repeat(3, 1fr); }
   .action-grid { grid-template-columns: repeat(3, 1fr); }
 }
-.nav { background: var(--nav-bg); padding: 16px 20px; flex-shrink: 0; }
+.nav { background: var(--nav-bg); padding: 16px 20px; flex-shrink: 0; position: relative; }
 .nav-top { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
 .nav-logo { width: 24px; height: 24px; background: var(--amber); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
 .nav-logo svg { width: 13px; height: 13px; }
 .nav-name { font-family: 'DM Serif Display', serif; font-size: 15px; color: #FFF; }
+.reset-btn {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.64);
+  border-radius: var(--radius-sm);
+  padding: 6px 9px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.reset-btn:hover { color: #FFF; border-color: rgba(255,255,255,0.28); }
 .progress-wrap { display: flex; align-items: center; gap: 10px; }
 .progress-bar-outer { flex: 1; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
 .progress-bar-inner { height: 100%; background: var(--amber); border-radius: 2px; transition: width 0.4s ease; }
@@ -163,6 +178,11 @@ h2 { font-family: 'DM Serif Display', serif; font-size: 22px; line-height: 1.25;
 .card-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 6px; }
 .card-value { font-size: 14px; color: var(--ink); line-height: 1.5; }
 .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.edit-field {
+  min-height: 96px;
+  font-size: 13px;
+  line-height: 1.5;
+}
 textarea, input[type="text"] {
   width: 100%; background: var(--card-bg); border: 1.5px solid var(--border);
   border-radius: var(--radius); padding: 14px; font-family: 'Inter', sans-serif;
@@ -307,10 +327,14 @@ input[type="text"] { height: 48px; font-size: 14px; }
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, opacity 0.3s;
+  opacity: 1;
+  transition: background 0.2s, opacity 0.4s ease;
 }
 .inline-affirm-btn:hover { background: #2E2E2A; }
-.inline-affirm-btn.screen0-step-hidden { display: none; }
+.inline-affirm-btn.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
 
 /* mic + textarea */
 .textarea-wrap { position: relative; }
@@ -360,6 +384,52 @@ input[type="text"] { height: 48px; font-size: 14px; }
   transition: border-color 0.2s, color 0.2s;
 }
 .utility-icon-btn:hover { border-color: var(--amber); color: var(--ink); }
+.utility-icon-btn.disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  background: #EEE8DD;
+}
+.utility-icon-btn.disabled:hover { border-color: var(--border); color: var(--ink-soft); }
+.handoff-link {
+  background: none;
+  border: none;
+  color: var(--terracotta);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin: -6px 0 16px;
+}
+.handoff-panel {
+  background: #FAF7F2;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 16px;
+}
+.handoff-panel p {
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.plan-card {
+  border-color: rgba(200,160,64,0.9);
+  background: var(--amber-light);
+}
+.plan-card .action-icon,
+.plan-card .action-text { color: var(--terracotta); }
+.plan-card.is-working {
+  cursor: wait;
+  opacity: 0.82;
+}
+.plan-card.is-ready {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.plan-card.is-ready .action-icon,
+.plan-card.is-ready .action-text { color: #FFF; }
 
 /* PROCESSING SCREEN */
 .processing-ring {
@@ -401,6 +471,7 @@ input[type="text"] { height: 48px; font-size: 14px; }
       </div>
       <span class="nav-name">Resolve</span>
     </div>
+    <button class="reset-btn" type="button" onclick="resetFlow()" title="Restart">↻ Reset</button>
     <div class="progress-wrap">
       <div class="progress-bar-outer"><div class="progress-bar-inner" id="progress-bar" style="width:0%"></div></div>
       <span class="progress-label" id="progress-label">Step 1 of 4</span>
@@ -463,7 +534,7 @@ input[type="text"] { height: 48px; font-size: 14px; }
       <div id="greeting-step" class="screen0-step screen0-pure screen0-step-hidden">
         <h1 id="greeting-h1">Hi.</h1>
         <p class="subtitle" id="greeting-sub" style="margin-bottom:28px;">Resolve takes a messy project and turns it into one clear next move — no jargon, no busywork.</p>
-        <button class="inline-affirm-btn screen0-step-hidden" id="get-started-btn" onclick="revealJourneyStep()">Get started →</button>
+        <button class="inline-affirm-btn is-hidden" id="get-started-btn" onclick="revealJourneyStep()">Get started →</button>
       </div>
 
       <div id="journey-step" class="screen0-step screen0-step-hidden">
@@ -509,8 +580,14 @@ input[type="text"] { height: 48px; font-size: 14px; }
         <span class="input-hint" id="mic-status"></span>
       </div>
 
+      <button class="handoff-link" type="button" id="handoff-toggle" onclick="toggleHandoffPrompt()">Already started this somewhere else? Get a prompt to pull it in →</button>
+      <div class="handoff-panel collapsed" id="handoff-panel" tabindex="-1" onfocusout="collapseHandoffOnBlur(event)">
+        <p id="handoff-prompt">I am moving this project into Resolve. Summarise everything important from this conversation: project goal, current state, key decisions, open questions, and anything that should not be lost.</p>
+        <button class="utility-icon-btn" type="button" onclick="copyHandoffPrompt()">Copy prompt</button>
+      </div>
+
       <div class="s1-utility-row">
-        <button class="utility-icon-btn" onclick="toggleOptional()" title="Add supporting material">📎 Add material</button>
+        <button class="utility-icon-btn disabled" type="button" disabled title="Supporting material is coming soon">📎 Add material <span class="journey-soon">Coming soon</span></button>
         <button class="utility-icon-btn" onclick="loadExample()" title="Load an example project">✨ Try an example</button>
       </div>
       <div id="optional-section" class="collapsed">
@@ -559,7 +636,7 @@ input[type="text"] { height: 48px; font-size: 14px; }
         </div>
       </div>
       <div class="confirm-row">
-        <button class="btn-outline" style="flex:none; padding:10px 20px;">✏️ Edit</button>
+        <button class="btn-outline" id="edit-understanding-btn" type="button" onclick="toggleUnderstandingEdit()" style="flex:none; padding:10px 20px;">✏️ Edit</button>
       </div>
       <div class="divider"></div>
       <div class="section-title" id="s2-gap-title">Two things Resolve still needs</div>
@@ -568,8 +645,8 @@ input[type="text"] { height: 48px; font-size: 14px; }
         <input class="gap-input" type="text" id="gap1" placeholder="e.g. know my next step, feel unblocked, have something to show someone" />
       </div>
       <div class="gap-item">
-        <div class="gap-question" id="s2-gap2-q">Any deadline or pressure driving this right now?</div>
-        <input class="gap-input" type="text" id="gap2" placeholder="e.g. want to launch before summer, no real deadline" />
+        <div class="gap-question" id="s2-gap2-q">What else should Resolve know before recommending a next move?</div>
+        <input class="gap-input" type="text" id="gap2" placeholder="Add anything that would change the recommendation" />
       </div>
       <div class="divider"></div>
       <div class="section-title">What Resolve is assuming</div>
@@ -640,7 +717,7 @@ input[type="text"] { height: 48px; font-size: 14px; }
         <div class="action-card"><span class="action-icon">🗓️</span><span class="action-text">Map the 8-week relaunch timeline</span></div>
         <div class="action-card"><span class="action-icon">📦</span><span class="action-text">Prioritise what gets updated first — site, packaging, or social</span></div>
         <div class="action-card"><span class="action-icon">📱</span><span class="action-text">Plan the Instagram transition for 8k followers</span></div>
-        <div class="action-card"><span class="action-icon">🔖</span><span class="action-text">Save this path and come back</span></div>
+        <div class="action-card plan-card" id="plan-card" onclick="handleProjectPlanClick()"><span class="action-icon" id="plan-icon">⬇</span><span class="action-text" id="plan-text">Output my project plan</span></div>
       </div>
       <div class="field">
         <textarea placeholder="Or ask Resolve something specific about this project…" style="height:72px;"></textarea>
@@ -659,7 +736,9 @@ input[type="text"] { height: 48px; font-size: 14px; }
 let current = 0, userName = '';
 let understandingData = null; // result from Call 1
 let recommendationData = null; // result from Call 2 (post QA-check)
+let projectPlanData = null; // result from Call 4
 let pendingCall = 'understand'; // tracks which call the processing screen should retry
+let isEditingUnderstanding = false;
 
 const total = 6;
 const screenIds = ['screen-0','screen-1','screen-processing','screen-2','screen-3','screen-4'];
@@ -675,6 +754,30 @@ I want to relaunch within about 8 weeks, before peak gifting season starts.`;
 
 function loadExample() {
   document.getElementById('project-input').value = EXAMPLE_PROJECT;
+}
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value || '\u2014';
+}
+
+function collectGapAnswers() {
+  return [
+    {
+      question: document.getElementById('s2-gap1-q').textContent.trim(),
+      answer: document.getElementById('gap1').value.trim()
+    },
+    {
+      question: document.getElementById('s2-gap2-q').textContent.trim(),
+      answer: document.getElementById('gap2').value.trim()
+    }
+  ];
+}
+
+function answeredGapSummary(gapAnswers) {
+  const answered = (gapAnswers || []).filter(item => item.answer);
+  if (!answered.length) return 'Based on what you confirmed.';
+  return `Using your answer to "${answered[0].question}" as added context.`;
 }
 
 function updateNav() {
@@ -705,7 +808,8 @@ function updateNav() {
   for (let i = 0; i < 4; i++) {
     const el = document.getElementById('ss-' + i);
     if (!el) continue;
-    el.className = 'sidebar-step' + (i < activeSidebar ? ' done' : i === activeSidebar ? ' active' : '');
+    const built = el.classList.contains('built') ? ' built' : '';
+    el.className = 'sidebar-step' + (i < activeSidebar ? ' done' : i === activeSidebar ? ' active' : '') + built;
   }
 }
 
@@ -796,10 +900,9 @@ async function runUnderstandingCall() {
 }
 
 function populateScreen2(d) {
-  document.getElementById('s2-project').textContent = d.project || '\u2014';
-  document.getElementById('s2-goal').textContent = d.goal || '\u2014';
-  document.getElementById('s2-state').textContent = d.state || '\u2014';
-  document.getElementById('s2-uncertainty').textContent = d.uncertainty || '\u2014';
+  isEditingUnderstanding = false;
+  document.getElementById('edit-understanding-btn').textContent = '✏️ Edit';
+  renderUnderstandingCards(d);
 
   if (Array.isArray(d.gapQuestions) && d.gapQuestions.length >= 2) {
     document.getElementById('s2-gap1-q').textContent = d.gapQuestions[0];
@@ -818,6 +921,43 @@ function populateScreen2(d) {
   });
 }
 
+function renderUnderstandingCards(d) {
+  setText('s2-project', d.project);
+  setText('s2-goal', d.goal);
+  setText('s2-state', d.state);
+  setText('s2-uncertainty', d.uncertainty);
+}
+
+function toggleUnderstandingEdit() {
+  if (!understandingData) return;
+
+  const fields = [
+    ['s2-project', 'project'],
+    ['s2-goal', 'goal'],
+    ['s2-state', 'state'],
+    ['s2-uncertainty', 'uncertainty']
+  ];
+
+  if (!isEditingUnderstanding) {
+    fields.forEach(([id, key]) => {
+      const el = document.getElementById(id);
+      el.innerHTML = `<textarea class="edit-field" id="${id}-edit"></textarea>`;
+      document.getElementById(`${id}-edit`).value = understandingData[key] || '';
+    });
+    document.getElementById('edit-understanding-btn').textContent = 'Save';
+    isEditingUnderstanding = true;
+    return;
+  }
+
+  fields.forEach(([id, key]) => {
+    const input = document.getElementById(`${id}-edit`);
+    understandingData[key] = input.value.trim() || understandingData[key] || '';
+  });
+  renderUnderstandingCards(understandingData);
+  document.getElementById('edit-understanding-btn').textContent = '✏️ Edit';
+  isEditingUnderstanding = false;
+}
+
 // ---------------------------------------------------------------------------
 // CALL 2 + 3: Strategic Product Director recommendation + QA self-check
 // (S2 -> processing -> S3)
@@ -828,10 +968,11 @@ async function runRecommendationCall() {
   setProcessingText('Working out your next move\u2026', 'Weighing this against everything you confirmed');
   animateRingTo(163);
 
-  const gapAnswers = {
-    successDefinition: document.getElementById('gap1').value.trim(),
-    deadline: document.getElementById('gap2').value.trim()
-  };
+  if (isEditingUnderstanding) {
+    toggleUnderstandingEdit();
+  }
+
+  const gapAnswers = collectGapAnswers();
 
   setTimeout(() => animateRingTo(80), 200);
 
@@ -873,9 +1014,7 @@ function populateScreen3(d, gapAnswers) {
   document.getElementById('s3-milestone').textContent = d.milestone || '\u2014';
   document.getElementById('s3-decision').textContent = d.openDecision || '\u2014';
 
-  if (gapAnswers.successDefinition) {
-    document.getElementById('s3-sub').textContent = `You said you want: "${gapAnswers.successDefinition}". Here's the clearest path to that.`;
-  }
+  document.getElementById('s3-sub').textContent = answeredGapSummary(gapAnswers);
 
   if (Array.isArray(d.roadmap) && d.roadmap.length >= 3) {
     const ids = ['p1', 'p2', 'p3'];
@@ -890,6 +1029,114 @@ function populateScreen3(d, gapAnswers) {
 function populateScreen4(d) {
   const titleEl = document.querySelector('#screen-4 .apt-title');
   if (titleEl) titleEl.textContent = d.recommendedAction || 'Your recommended next move';
+}
+
+async function handleProjectPlanClick() {
+  const card = document.getElementById('plan-card');
+  if (card.classList.contains('is-working')) return;
+
+  if (projectPlanData) {
+    downloadProjectPlan();
+    return;
+  }
+
+  card.classList.add('is-working');
+  document.getElementById('plan-icon').textContent = '…';
+  document.getElementById('plan-text').textContent = 'Building your project plan';
+
+  try {
+    const res = await fetch('/api/resolve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        stage: 'plan',
+        confirmedUnderstanding: understandingData,
+        recommendationData,
+        gapAnswers: collectGapAnswers()
+      })
+    });
+
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      throw new Error(errBody.error || 'Request failed');
+    }
+
+    projectPlanData = await res.json();
+    card.classList.remove('is-working');
+    card.classList.add('is-ready');
+    document.getElementById('plan-icon').textContent = '↓';
+    document.getElementById('plan-text').textContent = 'Download report';
+  } catch (err) {
+    console.error(err);
+    card.classList.remove('is-working');
+    document.getElementById('plan-icon').textContent = '!';
+    document.getElementById('plan-text').textContent = 'Could not build report. Try again';
+  }
+}
+
+function escapeHtml(value) {
+  return String(value || '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[char]);
+}
+
+function downloadProjectPlan() {
+  if (!projectPlanData) return;
+
+  const readinessRows = projectPlanData.readiness.map(item => `
+    <tr>
+      <td>${escapeHtml(item.area)}</td>
+      <td>${escapeHtml(item.status)}</td>
+      <td>${escapeHtml(item.note)}</td>
+    </tr>`).join('');
+  const actions = projectPlanData.topActions.map(item => `<li>${escapeHtml(item)}</li>`).join('');
+  const doNotYet = projectPlanData.doNotYet.map(item => `<li>${escapeHtml(item)}</li>`).join('');
+  const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Resolve Project Plan</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.5; max-width: 760px; margin: 40px auto; color: #1A1A18; }
+    h1, h2 { margin-bottom: 8px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #DDD8CE; padding: 10px; text-align: left; vertical-align: top; }
+    th { background: #F2EDE4; }
+  </style>
+</head>
+<body>
+  <h1>Resolve Project Plan</h1>
+  <h2>Project Summary</h2>
+  <p>${escapeHtml(projectPlanData.projectSummary)}</p>
+  <h2>Current Phase</h2>
+  <p>${escapeHtml(projectPlanData.currentPhase)}</p>
+  <h2>Highest Leverage Activity</h2>
+  <p>${escapeHtml(projectPlanData.highestLeverageActivity)}</p>
+  <h2>Top Actions</h2>
+  <ol>${actions}</ol>
+  <h2>Readiness</h2>
+  <table>
+    <thead><tr><th>Area</th><th>Status</th><th>Note</th></tr></thead>
+    <tbody>${readinessRows}</tbody>
+  </table>
+  <h2>Do Not Yet</h2>
+  <ul>${doNotYet}</ul>
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'resolve-project-plan.html';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 // ---------------------------------------------------------------------------
@@ -953,6 +1200,81 @@ function goBack() {
   }
 }
 
+function resetFlow() {
+  if (isRecording && recognition) {
+    recognition.stop();
+  }
+
+  current = 0;
+  userName = '';
+  understandingData = null;
+  recommendationData = null;
+  projectPlanData = null;
+  pendingCall = 'understand';
+  isEditingUnderstanding = false;
+  screen0Stage = 'name';
+
+  ['name-input', 'project-input', 'supporting-material', 'gap1', 'gap2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+
+  document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+  document.getElementById('screen-0').classList.add('active');
+  document.getElementById('name-step').className = 'screen0-step screen0-pure';
+  document.getElementById('name-step').style.opacity = '1';
+  document.getElementById('greeting-step').className = 'screen0-step screen0-pure screen0-step-hidden';
+  document.getElementById('greeting-step').style.opacity = '1';
+  document.getElementById('journey-step').className = 'screen0-step screen0-step-hidden';
+  document.getElementById('journey-step').style.opacity = '1';
+  document.getElementById('get-started-btn').classList.add('is-hidden');
+  document.getElementById('greeting-h1').textContent = 'Hi.';
+  document.getElementById('journey-greeting').textContent = 'What do you need help with?';
+  document.getElementById('s4-win-title').textContent = 'You just cleared the fog.';
+  document.getElementById('s2-gap1-q').textContent = 'What would make this session a success for you?';
+  document.getElementById('s2-gap2-q').textContent = 'What else should Resolve know before recommending a next move?';
+  document.getElementById('s3-sub').textContent = 'Based on what you shared.';
+  document.getElementById('optional-section').classList.add('collapsed');
+  document.getElementById('handoff-panel').classList.add('collapsed');
+  document.getElementById('mic-status').textContent = '';
+  renderUnderstandingCards({ project: '\u2014', goal: '\u2014', state: '\u2014', uncertainty: '\u2014' });
+
+  const planCard = document.getElementById('plan-card');
+  planCard.classList.remove('is-working', 'is-ready');
+  document.getElementById('plan-icon').textContent = '⬇';
+  document.getElementById('plan-text').textContent = 'Output my project plan';
+
+  const sidebar = document.getElementById('desktop-sidebar');
+  sidebar.classList.remove('constructing');
+  document.querySelectorAll('.sidebar-step').forEach(step => step.classList.remove('built', 'done', 'active'));
+  document.getElementById('ss-0').classList.add('active');
+  const badge = sidebar.querySelector('.sidebar-badge');
+  if (badge) badge.classList.remove('built');
+
+  updateNav();
+  document.querySelector('.content').scrollTop = 0;
+}
+
+function toggleHandoffPrompt() {
+  document.getElementById('handoff-panel').classList.toggle('collapsed');
+}
+
+function collapseHandoffOnBlur(event) {
+  if (!event.currentTarget.contains(event.relatedTarget)) {
+    event.currentTarget.classList.add('collapsed');
+  }
+}
+
+async function copyHandoffPrompt() {
+  const promptText = document.getElementById('handoff-prompt').textContent.trim();
+  try {
+    await navigator.clipboard.writeText(promptText);
+    document.getElementById('handoff-panel').classList.add('collapsed');
+  } catch {
+    // Leave the prompt visible so it can be selected manually.
+  }
+}
+
 let screen0Stage = 'name'; // 'name' | 'greeting' | 'journey'
 
 // Beat 1 -> Beat 2: name entered, fade to greeting + explanation
@@ -979,7 +1301,7 @@ function revealGreetingStep() {
     greetingStep.style.opacity = '1';
 
     setTimeout(() => {
-      document.getElementById('get-started-btn').classList.remove('screen0-step-hidden');
+      document.getElementById('get-started-btn').classList.remove('is-hidden');
     }, 450);
   }, 400);
 
@@ -1018,7 +1340,8 @@ function revealJourneyStep() {
     setTimeout(() => {
       const badge = sidebar.querySelector('.sidebar-badge');
       if (badge) badge.classList.add('built');
-    }, 500 + 4 * 140 + 100);
+      sidebar.classList.remove('constructing');
+    }, 500 + 4 * 140 + 250);
   }
 }
 
