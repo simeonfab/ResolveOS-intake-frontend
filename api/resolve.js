@@ -98,13 +98,13 @@ function validateUnderstandingShape(data) {
 }
 
 function validateRecommendationShape(data) {
-  const required = ['recommendedAction', 'why', 'milestone', 'roadmap', 'openDecision'];
+  const required = ['recommendedAction', 'why', 'milestone', 'roadmap'];
   for (const key of required) {
     if (!(key in data)) {
       throw new ResolveShapeError(`Recommendation response missing required field: ${key}`);
     }
   }
-  for (const key of ['recommendedAction', 'why', 'milestone', 'openDecision']) {
+  for (const key of ['recommendedAction', 'why', 'milestone']) {
     if (!isNonEmptyString(data[key])) {
       throw new ResolveShapeError(`Recommendation field "${key}" is empty or not a string`);
     }
@@ -126,7 +126,7 @@ function validateRecommendationShape(data) {
 }
 
 function validateProjectPlanShape(data) {
-  const required = ['projectSummary', 'currentPhase', 'highestLeverageActivity', 'topActions', 'readiness', 'doNotYet'];
+  const required = ['projectNarrative', 'currentState', 'readiness', 'whatsWorking', 'whatsMissing', 'recommendedActions', 'doNotYet', 'closingSummary'];
   const allowedStatuses = ['Ready', 'Partially ready', 'Blocked', 'Not ready'];
 
   for (const key of required) {
@@ -134,13 +134,10 @@ function validateProjectPlanShape(data) {
       throw new ResolveShapeError(`Project plan response missing required field: ${key}`);
     }
   }
-  for (const key of ['projectSummary', 'currentPhase', 'highestLeverageActivity']) {
+  for (const key of ['projectNarrative', 'currentState', 'whatsWorking', 'whatsMissing', 'closingSummary']) {
     if (!isNonEmptyString(data[key])) {
       throw new ResolveShapeError(`Project plan field "${key}" is empty or not a string`);
     }
-  }
-  if (!Array.isArray(data.topActions) || data.topActions.length < 3 || !data.topActions.every(isNonEmptyString)) {
-    throw new ResolveShapeError('Project plan field "topActions" must contain at least 3 non-empty strings');
   }
   if (!Array.isArray(data.readiness) || data.readiness.length < 4) {
     throw new ResolveShapeError('Project plan field "readiness" must contain at least 4 rows');
@@ -158,8 +155,34 @@ function validateProjectPlanShape(data) {
       throw new ResolveShapeError(`Readiness row ${i} has invalid status: ${row.status}`);
     }
   });
-  if (!Array.isArray(data.doNotYet) || data.doNotYet.length < 1 || !data.doNotYet.every(isNonEmptyString)) {
-    throw new ResolveShapeError('Project plan field "doNotYet" must contain at least 1 non-empty string');
+  if (!Array.isArray(data.recommendedActions) || data.recommendedActions.length !== 3) {
+    throw new ResolveShapeError('Project plan field "recommendedActions" must contain exactly 3 rows');
+  }
+  data.recommendedActions.forEach((row, i) => {
+    if (!row || typeof row !== 'object') {
+      throw new ResolveShapeError(`Recommended action ${i} is not an object`);
+    }
+    for (const key of ['action', 'reasoning']) {
+      if (!isNonEmptyString(row[key])) {
+        throw new ResolveShapeError(`Recommended action ${i} missing or empty field: ${key}`);
+      }
+    }
+  });
+  if (!Array.isArray(data.doNotYet) || data.doNotYet.length < 2 || data.doNotYet.length > 3) {
+    throw new ResolveShapeError('Project plan field "doNotYet" must contain 2-3 rows');
+  }
+  data.doNotYet.forEach((row, i) => {
+    if (!row || typeof row !== 'object') {
+      throw new ResolveShapeError(`Do-not-yet item ${i} is not an object`);
+    }
+    for (const key of ['item', 'reason']) {
+      if (!isNonEmptyString(row[key])) {
+        throw new ResolveShapeError(`Do-not-yet item ${i} missing or empty field: ${key}`);
+      }
+    }
+  });
+  if (!isNonEmptyString(data.closingSummary)) {
+    throw new ResolveShapeError('Project plan field "closingSummary" is empty or not a string');
   }
   return data;
 }
@@ -302,11 +325,10 @@ Produce ONE clear recommendation and a short roadmap. Return ONLY valid JSON mat
     {"phase": "Now", "action": "short phrase", "output": "what this phase produces"},
     {"phase": "Define", "action": "short phrase", "output": "what this phase produces"},
     {"phase": "Launch", "action": "short phrase", "output": "what this phase produces"}
-  ],
-  "openDecision": "one specific decision the user still needs to make, framed as a direct question, grounded in the confirmed understanding"
+  ]
 }
 
-REQUIRED: "recommendedAction", "why", "milestone", and "openDecision" must each be a non-empty string. "roadmap" MUST contain exactly 3 phase objects, each with non-empty "phase", "action", and "output" string fields. Do not omit any field or leave any value empty.
+REQUIRED: "recommendedAction", "why", and "milestone" must each be a non-empty string. "roadmap" MUST contain exactly 3 phase objects, each with non-empty "phase", "action", and "output" string fields. Do not omit any field or leave any value empty.
 
 If an answer was not provided for a gap question, do not invent it. If an answer was provided, treat it as user-confirmed context and do not ask for it again.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had empty/missing fields, especially in the roadmap array. Every roadmap phase must have all three fields filled in. Follow the shape precisely this time.' : ''}`;
 
@@ -357,8 +379,7 @@ Return ONLY valid JSON in this EXACT shape — all fields REQUIRED and non-empty
     {"phase": "non-empty string", "action": "non-empty string", "output": "non-empty string"},
     {"phase": "non-empty string", "action": "non-empty string", "output": "non-empty string"},
     {"phase": "non-empty string", "action": "non-empty string", "output": "non-empty string"}
-  ],
-  "openDecision": "non-empty string"
+  ]
 }
 
 The roadmap array must always contain exactly 3 phase objects, even if you are passing the draft through unchanged — copy them across completely, do not drop or truncate any field.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had empty/missing fields. Copy every field from the draft across completely unless you are specifically correcting it. Follow the shape precisely this time.' : ''}`;
@@ -380,7 +401,7 @@ Use Strategic Product Director judgement to identify the highest-leverage next m
 CORE RULES:
 - Prefer evidence over invention. Do not invent facts, timelines, users, market claims, or constraints that are not in the confirmed understanding, recommendation, or paired gap answers.
 - Never ask for information that has already been provided earlier in this same session. This report is a handoff document, not another conversation.
-- End the report after "doNotYet"; do not include a closing question or next prompt.
+- End the report with "closingSummary"; do not include a closing question or next prompt.
 - Keep language plain, practical, and specific.
 
 CONFIRMED PROJECT UNDERSTANDING:
@@ -400,20 +421,29 @@ TASK:
 Return ONLY valid JSON matching this EXACT shape, with all fields present and non-empty:
 
 {
-  "projectSummary": "1-2 sentence plain-language description of what this project is and where it stands",
-  "currentPhase": "short phrase describing what stage this project is actually at right now",
-  "highestLeverageActivity": "one sentence naming the single most valuable thing to focus on",
-  "topActions": ["action 1", "action 2", "action 3"],
+  "projectNarrative": "one clear paragraph explaining what this project is, what has happened so far, and why it matters now",
+  "currentState": "one paragraph describing where the project actually stands today, including unresolved pieces without overstating certainty",
   "readiness": [
     {"area": "Direction is clear", "status": "Ready | Partially ready | Blocked | Not ready", "note": "one sentence explaining the status"},
     {"area": "Planning is usable", "status": "Ready | Partially ready | Blocked | Not ready", "note": "one sentence explaining the status"},
     {"area": "Ready to act", "status": "Ready | Partially ready | Blocked | Not ready", "note": "one sentence explaining the status"},
     {"area": "Evidence is strong enough", "status": "Ready | Partially ready | Blocked | Not ready", "note": "one sentence explaining the status"}
   ],
-  "doNotYet": ["thing not to do yet, with a one-line reason"]
+  "whatsWorking": "one paragraph naming the strongest assets, decisions, or constraints already in place",
+  "whatsMissing": "one paragraph naming the information, decisions, or proof still missing before the project can move confidently",
+  "recommendedActions": [
+    {"action": "first concrete action", "reasoning": "why this action matters now"},
+    {"action": "second concrete action", "reasoning": "why this action matters now"},
+    {"action": "third concrete action", "reasoning": "why this action matters now"}
+  ],
+  "doNotYet": [
+    {"item": "thing not to do yet", "reason": "one-line reason"},
+    {"item": "second thing not to do yet", "reason": "one-line reason"}
+  ],
+  "closingSummary": "one short paragraph summarising the practical path forward without asking a follow-up question"
 }
 
-REQUIRED: readiness must include at least 4 rows covering direction/clarity, planning, readiness to act, and validation/evidence. Each readiness status must be exactly one of: Ready, Partially ready, Blocked, Not ready.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape. Return only valid JSON with all required fields, at least 3 topActions, at least 4 readiness rows, valid readiness statuses, and at least 1 doNotYet item.' : ''}`;
+REQUIRED: readiness must include at least 4 rows covering direction/clarity, planning, readiness to act, and validation/evidence. Each readiness status must be exactly one of: Ready, Partially ready, Blocked, Not ready. recommendedActions must contain exactly 3 objects. doNotYet must contain 2-3 objects.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape. Return only valid JSON with all required fields, at least 4 readiness rows, valid readiness statuses, exactly 3 recommendedActions objects, and 2-3 doNotYet objects.' : ''}`;
 
   return callWithValidation(buildPrompt, apiKey, validateProjectPlanShape);
 }

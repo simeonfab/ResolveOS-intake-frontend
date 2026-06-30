@@ -67,6 +67,13 @@ html, body {
     padding: 32px 24px;
     min-height: calc(100vh - 56px);
     border-right: 1px solid rgba(255,255,255,0.06);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+  }
+  .desktop-sidebar.sidebar-visible {
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .sidebar-steps { margin-bottom: 32px; }
@@ -77,23 +84,6 @@ html, body {
   }
   .sidebar-step.done { opacity: 0.5; }
   .sidebar-step.active { opacity: 1; }
-
-  /* "Constructing" entrance, triggered once on first arrival at the journey stage */
-  .desktop-sidebar.constructing .sidebar-step {
-    opacity: 0;
-    transform: translateX(-10px);
-    transition: opacity 0.45s ease, transform 0.45s ease;
-  }
-  .desktop-sidebar.constructing .sidebar-step.built {
-    opacity: 0.3;
-    transform: translateX(0);
-  }
-  .desktop-sidebar.constructing .sidebar-step.built.active { opacity: 1; }
-  .desktop-sidebar.constructing .sidebar-badge {
-    opacity: 0;
-    transition: opacity 0.5s ease;
-  }
-  .desktop-sidebar.constructing .sidebar-badge.built { opacity: 1; }
 
   .step-num {
     width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.2);
@@ -168,8 +158,9 @@ html, body {
 .progress-label { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.4); white-space: nowrap; flex-shrink: 0; }
 .content { flex: 1; overflow-y: auto; padding: 24px 20px 100px; }
 .content::-webkit-scrollbar { display: none; }
-.screen { display: none; }
-.screen.active { display: block; }
+.screen { display: none; opacity: 0; transition: opacity 0.24s ease; }
+.screen.active { display: block; opacity: 1; }
+.screen.fading-out { display: block; opacity: 0; }
 .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 8px; }
 h1 { font-family: 'DM Serif Display', serif; font-size: 28px; line-height: 1.2; color: var(--ink); margin-bottom: 8px; }
 h2 { font-family: 'DM Serif Display', serif; font-size: 22px; line-height: 1.25; color: var(--ink); margin-bottom: 8px; }
@@ -335,6 +326,14 @@ input[type="text"] { height: 48px; font-size: 14px; }
   opacity: 0;
   pointer-events: none;
 }
+.beat-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+#greeting-h1,
+#greeting-sub {
+  transition: opacity 0.4s ease;
+}
 
 /* mic + textarea */
 .textarea-wrap { position: relative; }
@@ -423,6 +422,17 @@ input[type="text"] { height: 48px; font-size: 14px; }
 .plan-card.is-working {
   cursor: wait;
   opacity: 0.82;
+}
+.mini-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(139,74,42,0.25);
+  border-top-color: var(--terracotta);
+  border-radius: 50%;
+  animation: mini-spin 0.8s linear infinite;
+}
+@keyframes mini-spin {
+  to { transform: rotate(360deg); }
 }
 .plan-card.is-ready {
   background: var(--ink);
@@ -532,13 +542,13 @@ input[type="text"] { height: 48px; font-size: 14px; }
       </div>
 
       <div id="greeting-step" class="screen0-step screen0-pure screen0-step-hidden">
-        <h1 id="greeting-h1">Hi.</h1>
-        <p class="subtitle" id="greeting-sub" style="margin-bottom:28px;">Resolve takes a messy project and turns it into one clear next move — no jargon, no busywork.</p>
+        <h1 id="greeting-h1" class="beat-hidden">Hi.</h1>
+        <p class="subtitle beat-hidden" id="greeting-sub" style="margin-bottom:28px;">Resolve turns a messy project into one clear next move.</p>
         <button class="inline-affirm-btn is-hidden" id="get-started-btn" onclick="revealJourneyStep()">Get started →</button>
       </div>
 
       <div id="journey-step" class="screen0-step screen0-step-hidden">
-        <div class="eyebrow" id="journey-greeting">What do you need help with?</div>
+        <div class="eyebrow" id="journey-greeting">So,</div>
         <h1 id="journey-h1">What do you need help with?</h1>
         <div class="journey-option active" onclick="selectJourneyAndGo(this)">
           <div class="journey-icon">🗂️</div>
@@ -568,9 +578,7 @@ input[type="text"] { height: 48px; font-size: 14px; }
 
     <!-- S1 -->
     <div class="screen" id="screen-1">
-      <div class="eyebrow">Bring it in</div>
       <h1>Tell Resolve what's going on.</h1>
-      <p class="subtitle">Rough is fine. Messy is expected. Just get it out.</p>
 
       <div class="field">
         <div class="textarea-wrap">
@@ -614,7 +622,6 @@ input[type="text"] { height: 48px; font-size: 14px; }
 
     <!-- S2 -->
     <div class="screen" id="screen-2">
-      <div class="eyebrow">What Resolve understood</div>
       <h2 id="s2-h">Here's what Resolve got from that.</h2>
       <p class="subtitle">Correct anything wrong — it shapes everything that follows.</p>
       <div class="card-grid">
@@ -659,7 +666,6 @@ input[type="text"] { height: 48px; font-size: 14px; }
     <div class="screen" id="screen-3">
       <div class="eyebrow">Your next move</div>
       <h2 id="s3-h">Here's what to do next.</h2>
-      <p class="subtitle" id="s3-sub">Based on what you shared.</p>
       <div class="focus-card" style="margin-top:20px;">
         <div class="focus-label">🎯 Do this first</div>
         <div class="focus-action" id="s3-action">—</div>
@@ -687,10 +693,6 @@ input[type="text"] { height: 48px; font-size: 14px; }
           <div class="phase-action" id="p3-action">—</div>
           <div class="phase-output" id="p3-output">—</div>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-label">⚠️ One decision before you move</div>
-        <div class="card-value" style="font-size:13px; color:var(--ink-soft);" id="s3-decision">—</div>
       </div>
     </div>
 
@@ -745,6 +747,7 @@ const screenIds = ['screen-0','screen-1','screen-processing','screen-2','screen-
 const nextLabels = ['Get started \u2192','Build my path \u2192','','Show my next move \u2192','See what to do next \u2192','Done'];
 const progressPct = [0, 20, 20, 50, 75, 100];
 const stepLabels = ['Step 1 of 4','Step 2 of 4','Step 2 of 4','Step 3 of 4','Step 4 of 4','Complete'];
+const SCREEN_FADE_MS = 240;
 
 const EXAMPLE_PROJECT = `I run a small e-commerce business called Nook & Thread, handmade homewares, been trading for about 4 years. Sales have plateaued and I think the brand feels too homespun for the price point I want to move to. I'm trying to rebrand to something more premium.
 
@@ -808,8 +811,7 @@ function updateNav() {
   for (let i = 0; i < 4; i++) {
     const el = document.getElementById('ss-' + i);
     if (!el) continue;
-    const built = el.classList.contains('built') ? ' built' : '';
-    el.className = 'sidebar-step' + (i < activeSidebar ? ' done' : i === activeSidebar ? ' active' : '') + built;
+    el.className = 'sidebar-step' + (i < activeSidebar ? ' done' : i === activeSidebar ? ' active' : '');
   }
 }
 
@@ -847,9 +849,25 @@ function showProcessingError(message) {
 }
 
 function goToScreen(idx) {
-  document.getElementById(screenIds[current]).classList.remove('active');
+  if (idx === current) {
+    updateNav();
+    return;
+  }
+
+  const previous = document.getElementById(screenIds[current]);
+  const next = document.getElementById(screenIds[idx]);
+
+  previous.classList.add('fading-out');
   current = idx;
-  document.getElementById(screenIds[current]).classList.add('active');
+  next.style.opacity = '0';
+  next.classList.add('active');
+  void next.offsetWidth;
+  next.style.opacity = '';
+
+  setTimeout(() => {
+    previous.classList.remove('active', 'fading-out');
+  }, SCREEN_FADE_MS);
+
   document.querySelector('.content').scrollTop = 0;
   updateNav();
 }
@@ -1008,13 +1026,10 @@ async function runRecommendationCall() {
   }
 }
 
-function populateScreen3(d, gapAnswers) {
+function populateScreen3(d) {
   document.getElementById('s3-action').textContent = d.recommendedAction || '\u2014';
   document.getElementById('s3-why').textContent = d.why || '\u2014';
   document.getElementById('s3-milestone').textContent = d.milestone || '\u2014';
-  document.getElementById('s3-decision').textContent = d.openDecision || '\u2014';
-
-  document.getElementById('s3-sub').textContent = answeredGapSummary(gapAnswers);
 
   if (Array.isArray(d.roadmap) && d.roadmap.length >= 3) {
     const ids = ['p1', 'p2', 'p3'];
@@ -1041,7 +1056,7 @@ async function handleProjectPlanClick() {
   }
 
   card.classList.add('is-working');
-  document.getElementById('plan-icon').textContent = '…';
+  document.getElementById('plan-icon').innerHTML = '<span class="mini-spinner" aria-hidden="true"></span>';
   document.getElementById('plan-text').textContent = 'Building your project plan';
 
   try {
@@ -1093,8 +1108,16 @@ function downloadProjectPlan() {
       <td>${escapeHtml(item.status)}</td>
       <td>${escapeHtml(item.note)}</td>
     </tr>`).join('');
-  const actions = projectPlanData.topActions.map(item => `<li>${escapeHtml(item)}</li>`).join('');
-  const doNotYet = projectPlanData.doNotYet.map(item => `<li>${escapeHtml(item)}</li>`).join('');
+  const actions = projectPlanData.recommendedActions.map(item => `
+    <li>
+      <strong>${escapeHtml(item.action)}</strong><br>
+      ${escapeHtml(item.reasoning)}
+    </li>`).join('');
+  const doNotYet = projectPlanData.doNotYet.map(item => `
+    <li>
+      <strong>${escapeHtml(item.item)}</strong><br>
+      ${escapeHtml(item.reason)}
+    </li>`).join('');
   const html = `<!doctype html>
 <html>
 <head>
@@ -1110,13 +1133,15 @@ function downloadProjectPlan() {
 </head>
 <body>
   <h1>Resolve Project Plan</h1>
-  <h2>Project Summary</h2>
-  <p>${escapeHtml(projectPlanData.projectSummary)}</p>
-  <h2>Current Phase</h2>
-  <p>${escapeHtml(projectPlanData.currentPhase)}</p>
-  <h2>Highest Leverage Activity</h2>
-  <p>${escapeHtml(projectPlanData.highestLeverageActivity)}</p>
-  <h2>Top Actions</h2>
+  <h2>Project Narrative</h2>
+  <p>${escapeHtml(projectPlanData.projectNarrative)}</p>
+  <h2>Current State</h2>
+  <p>${escapeHtml(projectPlanData.currentState)}</p>
+  <h2>What's Working</h2>
+  <p>${escapeHtml(projectPlanData.whatsWorking)}</p>
+  <h2>What's Missing</h2>
+  <p>${escapeHtml(projectPlanData.whatsMissing)}</p>
+  <h2>Recommended Actions</h2>
   <ol>${actions}</ol>
   <h2>Readiness</h2>
   <table>
@@ -1125,6 +1150,8 @@ function downloadProjectPlan() {
   </table>
   <h2>Do Not Yet</h2>
   <ul>${doNotYet}</ul>
+  <h2>Summary</h2>
+  <p>${escapeHtml(projectPlanData.closingSummary)}</p>
 </body>
 </html>`;
 
@@ -1158,11 +1185,7 @@ function goNext() {
   }
 
   if (current === 1) {
-    document.getElementById(screenIds[current]).classList.remove('active');
-    current = 2;
-    document.getElementById(screenIds[current]).classList.add('active');
-    document.querySelector('.content').scrollTop = 0;
-    updateNav();
+    goToScreen(2);
     runUnderstandingCall();
     return;
   }
@@ -1179,11 +1202,7 @@ function goNext() {
 
   if (current === 3) {
     // Leaving Screen 2 -> trigger call 2+3, route through processing again
-    document.getElementById(screenIds[current]).classList.remove('active');
-    current = 2;
-    document.getElementById(screenIds[current]).classList.add('active');
-    document.querySelector('.content').scrollTop = 0;
-    updateNav();
+    goToScreen(2);
     runRecommendationCall();
     return;
   }
@@ -1219,7 +1238,10 @@ function resetFlow() {
     if (el) el.value = '';
   });
 
-  document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(screen => {
+    screen.classList.remove('active', 'fading-out');
+    screen.style.opacity = '';
+  });
   document.getElementById('screen-0').classList.add('active');
   document.getElementById('name-step').className = 'screen0-step screen0-pure';
   document.getElementById('name-step').style.opacity = '1';
@@ -1229,11 +1251,12 @@ function resetFlow() {
   document.getElementById('journey-step').style.opacity = '1';
   document.getElementById('get-started-btn').classList.add('is-hidden');
   document.getElementById('greeting-h1').textContent = 'Hi.';
-  document.getElementById('journey-greeting').textContent = 'What do you need help with?';
+  document.getElementById('greeting-h1').classList.add('beat-hidden');
+  document.getElementById('greeting-sub').classList.add('beat-hidden');
+  document.getElementById('journey-greeting').textContent = 'So,';
   document.getElementById('s4-win-title').textContent = 'You just cleared the fog.';
   document.getElementById('s2-gap1-q').textContent = 'What would make this session a success for you?';
   document.getElementById('s2-gap2-q').textContent = 'What else should Resolve know before recommending a next move?';
-  document.getElementById('s3-sub').textContent = 'Based on what you shared.';
   document.getElementById('optional-section').classList.add('collapsed');
   document.getElementById('handoff-panel').classList.add('collapsed');
   document.getElementById('mic-status').textContent = '';
@@ -1245,11 +1268,9 @@ function resetFlow() {
   document.getElementById('plan-text').textContent = 'Output my project plan';
 
   const sidebar = document.getElementById('desktop-sidebar');
-  sidebar.classList.remove('constructing');
-  document.querySelectorAll('.sidebar-step').forEach(step => step.classList.remove('built', 'done', 'active'));
+  sidebar.classList.remove('sidebar-visible');
+  document.querySelectorAll('.sidebar-step').forEach(step => step.classList.remove('done', 'active'));
   document.getElementById('ss-0').classList.add('active');
-  const badge = sidebar.querySelector('.sidebar-badge');
-  if (badge) badge.classList.remove('built');
 
   updateNav();
   document.querySelector('.content').scrollTop = 0;
@@ -1301,8 +1322,16 @@ function revealGreetingStep() {
     greetingStep.style.opacity = '1';
 
     setTimeout(() => {
+      document.getElementById('greeting-h1').classList.remove('beat-hidden');
+    }, 120);
+
+    setTimeout(() => {
+      document.getElementById('greeting-sub').classList.remove('beat-hidden');
+    }, 520);
+
+    setTimeout(() => {
       document.getElementById('get-started-btn').classList.remove('is-hidden');
-    }, 450);
+    }, 920);
   }, 400);
 
   screen0Stage = 'greeting';
@@ -1321,27 +1350,15 @@ function revealJourneyStep() {
     journeyStep.classList.remove('screen0-step-hidden');
     journeyStep.style.opacity = '0';
     void journeyStep.offsetWidth;
-    document.getElementById('journey-greeting').textContent = `Hi ${userName}, what do you need help with?`;
+    document.getElementById('journey-greeting').textContent = 'So,';
     journeyStep.style.opacity = '1';
   }, 400);
 
   screen0Stage = 'journey';
 
-  // Desktop sidebar "constructing" stagger - steps build in one by one
   const sidebar = document.getElementById('desktop-sidebar');
   if (sidebar) {
-    sidebar.classList.add('constructing');
-    for (let i = 0; i < 4; i++) {
-      setTimeout(() => {
-        const el = document.getElementById('ss-' + i);
-        if (el) el.classList.add('built');
-      }, 500 + i * 140);
-    }
-    setTimeout(() => {
-      const badge = sidebar.querySelector('.sidebar-badge');
-      if (badge) badge.classList.add('built');
-      sidebar.classList.remove('constructing');
-    }, 500 + 4 * 140 + 250);
+    sidebar.classList.add('sidebar-visible');
   }
 }
 
