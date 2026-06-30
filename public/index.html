@@ -1169,22 +1169,34 @@ function escapeHtml(value) {
 function downloadProjectPlan() {
   if (!projectPlanData) return;
 
-  const readinessRows = projectPlanData.readiness.map(item => `
+  const readinessRows = (projectPlanData.readiness || []).map(item => `
     <tr>
       <td>${escapeHtml(item.area)}</td>
       <td>${escapeHtml(item.status)}</td>
       <td>${escapeHtml(item.note)}</td>
     </tr>`).join('');
-  const actions = projectPlanData.recommendedActions.map(item => `
-    <li>
-      <strong>${escapeHtml(item.action)}</strong><br>
-      ${escapeHtml(item.reasoning)}
-    </li>`).join('');
-  const doNotYet = projectPlanData.doNotYet.map(item => `
+  const topPriorities = (recommendationData?.topPriorities || []).map(item => `
+    <li>${escapeHtml(item)}</li>`).join('');
+  const doNotYet = (recommendationData?.doNotYet || []).map(item => `
     <li>
       <strong>${escapeHtml(item.item)}</strong><br>
       ${escapeHtml(item.reason)}
     </li>`).join('');
+  const longTermRoadmap = (projectPlanData.longTermRoadmap || []).map(item => `
+    <li>
+      <strong>${escapeHtml(item.phase)}</strong><br>
+      ${escapeHtml(item.direction)}<br>
+      <em>${escapeHtml(item.note)}</em>
+    </li>`).join('');
+  const risks = Array.isArray(projectPlanData.risks) ? projectPlanData.risks : [];
+  const riskSection = risks.length ? `
+  <h2>7. Risks</h2>
+  <ul>${risks.map(item => `
+    <li>
+      <strong>${escapeHtml(item.risk)}</strong><br>
+      ${escapeHtml(item.whyItMatters)}<br>
+      <em>Source signal: ${escapeHtml(item.sourceSignal)}</em>
+    </li>`).join('')}</ul>` : '';
   const html = `<!doctype html>
 <html>
 <head>
@@ -1200,25 +1212,29 @@ function downloadProjectPlan() {
 </head>
 <body>
   <h1>Resolve Project Plan</h1>
-  <h2>Project Narrative</h2>
-  <p>${escapeHtml(projectPlanData.projectNarrative)}</p>
-  <h2>Current State</h2>
-  <p>${escapeHtml(projectPlanData.currentState)}</p>
-  <h2>What's Working</h2>
-  <p>${escapeHtml(projectPlanData.whatsWorking)}</p>
-  <h2>What's Missing</h2>
-  <p>${escapeHtml(projectPlanData.whatsMissing)}</p>
-  <h2>Recommended Actions</h2>
-  <ol>${actions}</ol>
-  <h2>Readiness</h2>
+  <h2>1. Project Identity, Objective, and Phase</h2>
+  <p><strong>Project:</strong> ${escapeHtml(understandingData?.project)}</p>
+  <p><strong>Objective:</strong> ${escapeHtml(understandingData?.goal)}</p>
+  <p><strong>Current phase:</strong> ${escapeHtml(understandingData?.state)}</p>
+  <h2>2. Highest-Leverage Next Action</h2>
+  <p><strong>${escapeHtml(recommendationData?.recommendedAction)}</strong></p>
+  <p>${escapeHtml(recommendationData?.why)}</p>
+  <h2>3. Top Priorities</h2>
+  <ol>${topPriorities}</ol>
+  <h2>4. What Not To Do Yet</h2>
+  <ul>${doNotYet}</ul>
+  <h2>5. Speculative Long-Term Roadmap</h2>
+  <ol>${longTermRoadmap}</ol>
+  <h2>6. Readiness</h2>
   <table>
     <thead><tr><th>Area</th><th>Status</th><th>Note</th></tr></thead>
     <tbody>${readinessRows}</tbody>
   </table>
-  <h2>Do Not Yet</h2>
-  <ul>${doNotYet}</ul>
-  <h2>Summary</h2>
-  <p>${escapeHtml(projectPlanData.closingSummary)}</p>
+  ${riskSection}
+  <h2>8. Sharing Paragraph</h2>
+  <p>${escapeHtml(projectPlanData.sharingParagraph)}</p>
+  <h2>9. How To Use This</h2>
+  <p>${escapeHtml(projectPlanData.howToUseThis)}</p>
 </body>
 </html>`;
 
