@@ -332,9 +332,10 @@ input[type="text"] { height: 48px; font-size: 14px; }
 .screen0-pure h1 { font-size: 34px; }
 #greeting-h1 { font-size: 48px; }
 #greeting-sub {
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1.45;
   max-width: 520px;
+  white-space: nowrap;
 }
 .inline-affirm-btn {
   margin-top: 18px;
@@ -365,7 +366,10 @@ input[type="text"] { height: 48px; font-size: 14px; }
 }
 @media (max-width: 520px) {
   #greeting-h1 { font-size: 40px; }
-  #greeting-sub { font-size: 19px; }
+  #greeting-sub { font-size: 16px; }
+}
+@media (max-width: 360px) {
+  #greeting-sub { font-size: 14px; }
 }
 
 /* mic + textarea */
@@ -577,7 +581,7 @@ input[type="text"] { height: 48px; font-size: 14px; }
 
       <div id="greeting-step" class="screen0-step screen0-pure screen0-step-hidden">
         <h1 id="greeting-h1" class="beat-hidden">Hi.</h1>
-        <p class="subtitle beat-hidden" id="greeting-sub" style="margin-bottom:28px;">Resolve takes a messy project and gives you one clear next move.</p>
+        <p class="subtitle beat-hidden" id="greeting-sub" style="margin-bottom:28px;">Turn a messy project into one clear move.</p>
         <button class="inline-affirm-btn is-hidden" id="get-started-btn" onclick="revealJourneyStep()">Get started →</button>
       </div>
 
