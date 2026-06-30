@@ -112,7 +112,9 @@ html, body {
 
   /* Content area on desktop */
   .content {
-    padding: 40px 48px 120px;
+    --content-pad-top: 40px;
+    --content-pad-x: 48px;
+    --content-pad-bottom: 120px;
     overflow-y: auto;
   }
 
@@ -156,12 +158,33 @@ html, body {
 .progress-bar-outer { flex: 1; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
 .progress-bar-inner { height: 100%; background: var(--amber); border-radius: 2px; transition: width 0.4s ease; }
 .progress-label { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.4); white-space: nowrap; flex-shrink: 0; }
-.content { flex: 1; overflow-y: auto; padding: 24px 20px 100px; }
+.content {
+  --content-pad-top: 24px;
+  --content-pad-x: 20px;
+  --content-pad-bottom: 100px;
+  flex: 1; overflow-y: auto;
+  padding: var(--content-pad-top) var(--content-pad-x) var(--content-pad-bottom);
+  position: relative;
+}
 .content::-webkit-scrollbar { display: none; }
 .screen { display: none; opacity: 0; transition: opacity 0.24s ease; }
 .screen.active { display: block; opacity: 1; }
-.screen.fading-out { display: block; opacity: 0; }
+.screen.fading-out {
+  display: block;
+  opacity: 0;
+  position: absolute;
+  inset: var(--content-pad-top) var(--content-pad-x) var(--content-pad-bottom);
+  pointer-events: none;
+}
 .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 8px; }
+#journey-greeting { font-size: 18px; letter-spacing: 0; text-transform: none; }
+@media (min-width: 768px) {
+  .content {
+    --content-pad-top: 40px;
+    --content-pad-x: 48px;
+    --content-pad-bottom: 120px;
+  }
+}
 h1 { font-family: 'DM Serif Display', serif; font-size: 28px; line-height: 1.2; color: var(--ink); margin-bottom: 8px; }
 h2 { font-family: 'DM Serif Display', serif; font-size: 22px; line-height: 1.25; color: var(--ink); margin-bottom: 8px; }
 .subtitle { font-size: 14px; color: var(--ink-soft); line-height: 1.5; margin-bottom: 24px; }
@@ -856,20 +879,24 @@ function goToScreen(idx) {
 
   const previous = document.getElementById(screenIds[current]);
   const next = document.getElementById(screenIds[idx]);
+  const content = document.querySelector('.content');
 
   previous.classList.add('fading-out');
   current = idx;
+  window.scrollTo(0, 0);
+  content.scrollTop = 0;
+  updateNav();
+
   next.style.opacity = '0';
   next.classList.add('active');
   void next.offsetWidth;
-  next.style.opacity = '';
+  requestAnimationFrame(() => {
+    next.style.opacity = '';
+  });
 
   setTimeout(() => {
     previous.classList.remove('active', 'fading-out');
   }, SCREEN_FADE_MS);
-
-  document.querySelector('.content').scrollTop = 0;
-  updateNav();
 }
 
 // ---------------------------------------------------------------------------
