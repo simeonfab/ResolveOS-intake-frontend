@@ -235,6 +235,16 @@ input[type="text"] { height: 48px; font-size: 14px; }
 }
 .gap-input:focus { border-color: var(--amber); }
 .gap-input::placeholder { color: var(--ink-ghost); }
+.gap-confirmation {
+  background: var(--amber-light);
+  border: 1px solid #E8D5A0;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  color: var(--terracotta);
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 18px 0 4px;
+}
 .tool-confirm-section {
   margin: 12px 0 4px;
 }
@@ -242,6 +252,8 @@ input[type="text"] { height: 48px; font-size: 14px; }
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
+  overflow: visible;
 }
 .tool-chip {
   border: 1px solid var(--border);
@@ -253,7 +265,9 @@ input[type="text"] { height: 48px; font-size: 14px; }
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s, color 0.2s, min-width 0.25s ease;
+  max-width: 100%;
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, width 0.24s ease, padding 0.24s ease, opacity 0.2s ease;
 }
 .tool-chip.active {
   border-color: var(--amber);
@@ -261,27 +275,31 @@ input[type="text"] { height: 48px; font-size: 14px; }
   color: var(--terracotta);
 }
 .tool-chip.adding {
-  min-width: 170px;
-  padding: 4px 6px;
+  width: 64px;
+  padding: 0;
+  cursor: text;
+  opacity: 0.85;
+}
+.tool-chip.adding.open {
+  width: min(220px, 100%);
+  opacity: 1;
 }
 .tool-chip-input {
-  width: 112px;
-  height: 28px;
-  border: none;
-  background: transparent;
-  padding: 0 4px;
+  width: 100%;
+  height: 36px;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-bg);
+  padding: 0 12px;
   font-size: 12px;
   font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  opacity: 0;
+  transition: border-color 0.2s ease, opacity 0.2s ease;
 }
-.tool-chip-confirm {
-  border: none;
-  background: var(--amber);
-  color: white;
-  border-radius: 999px;
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-}
+.tool-chip.adding.open .tool-chip-input { opacity: 1; }
+.tool-chip-input:focus { border-color: var(--amber); }
 .assumed-item {
   background: var(--amber-light); border: 1px solid #E8D5A0; border-radius: var(--radius);
   padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 10px;
@@ -801,15 +819,18 @@ input[type="text"] { height: 48px; font-size: 14px; }
         <div class="section-title">Tools we noticed you mentioned</div>
         <div class="tool-chip-row" id="tool-chip-row"></div>
       </div>
-      <div class="divider"></div>
-      <div class="section-title" id="s2-gap-title">Two things Resolve still needs</div>
-      <div class="gap-item">
+      <div class="gap-confirmation collapsed" id="s2-gap-confirmation">Resolve has everything it needs to build your path.</div>
+      <div class="divider" id="s2-gap-divider"></div>
+      <div id="s2-gap-section">
+        <div class="section-title" id="s2-gap-title">A couple of things Resolve still needs</div>
+      <div class="gap-item" id="gap-item-1">
         <div class="gap-question" id="s2-gap1-q">What would make this session a success for you?</div>
-        <input class="gap-input" type="text" id="gap1" placeholder="e.g. know my next step, feel unblocked, have something to show someone" />
+        <input class="gap-input" type="text" id="gap1" placeholder="Type your answer here" />
       </div>
-      <div class="gap-item">
+      <div class="gap-item" id="gap-item-2">
         <div class="gap-question" id="s2-gap2-q">What else should Resolve know before recommending a next move?</div>
-        <input class="gap-input" type="text" id="gap2" placeholder="Add anything that would change the recommendation" />
+        <input class="gap-input" type="text" id="gap2" placeholder="Type your answer here" />
+      </div>
       </div>
       <div class="divider"></div>
       <div class="section-title">What Resolve is assuming</div>
@@ -905,7 +926,7 @@ let recommendationStatusIndex = 0;
 
 const total = 6;
 const screenIds = ['screen-0','screen-1','screen-processing','screen-2','screen-3','screen-4'];
-const nextLabels = ['Get started \u2192','Build my path \u2192','','Show my next move \u2192','See what to do next \u2192','Done'];
+const nextLabels = ['Get started \u2192','Build my path \u2192','','Show my next move \u2192','See what to do next \u2192','Start over'];
 const progressPct = [0, 20, 20, 50, 75, 100];
 const stepLabels = ['Step 1 of 4','Step 2 of 4','Step 2 of 4','Step 3 of 4','Step 4 of 4','Complete'];
 const SCREEN_FADE_MS = 240;
@@ -933,16 +954,16 @@ function setText(id, value) {
 }
 
 function collectGapAnswers() {
-  return [
-    {
-      question: document.getElementById('s2-gap1-q').textContent.trim(),
-      answer: document.getElementById('gap1').value.trim()
-    },
-    {
-      question: document.getElementById('s2-gap2-q').textContent.trim(),
-      answer: document.getElementById('gap2').value.trim()
-    }
-  ];
+  return ['1', '2']
+    .map(id => {
+      const item = document.getElementById(`gap-item-${id}`);
+      if (!item || item.classList.contains('collapsed')) return null;
+      return {
+        question: document.getElementById(`s2-gap${id}-q`).textContent.trim(),
+        answer: document.getElementById(`gap${id}`).value.trim()
+      };
+    })
+    .filter(Boolean);
 }
 
 function answeredGapSummary(gapAnswers) {
@@ -1222,10 +1243,7 @@ function populateScreen2(d) {
     .map(name => ({ name, active: true }));
   renderToolConfirmation();
 
-  if (Array.isArray(d.gapQuestions) && d.gapQuestions.length >= 2) {
-    document.getElementById('s2-gap1-q').textContent = d.gapQuestions[0];
-    document.getElementById('s2-gap2-q').textContent = d.gapQuestions[1];
-  }
+  renderGapQuestions(d.gapQuestions);
 
   const assumptionsEl = document.getElementById('s2-assumptions');
   assumptionsEl.innerHTML = '';
@@ -1237,6 +1255,39 @@ function populateScreen2(d) {
     div.querySelector('.assumed-text').textContent = a;
     assumptionsEl.appendChild(div);
   });
+}
+
+function renderGapQuestions(gapQuestions) {
+  const questions = (Array.isArray(gapQuestions) ? gapQuestions : [])
+    .filter(Boolean)
+    .slice(0, 2);
+  const section = document.getElementById('s2-gap-section');
+  const confirmation = document.getElementById('s2-gap-confirmation');
+  const divider = document.getElementById('s2-gap-divider');
+  const title = document.getElementById('s2-gap-title');
+  const gapItems = [document.getElementById('gap-item-1'), document.getElementById('gap-item-2')];
+
+  document.getElementById('gap1').value = '';
+  document.getElementById('gap2').value = '';
+
+  if (!questions.length) {
+    section.classList.add('collapsed');
+    divider.classList.add('collapsed');
+    confirmation.classList.remove('collapsed');
+    gapItems.forEach(item => item.classList.add('collapsed'));
+    return;
+  }
+
+  confirmation.classList.add('collapsed');
+  section.classList.remove('collapsed');
+  divider.classList.remove('collapsed');
+  title.textContent = questions.length === 1 ? 'One thing Resolve still needs' : 'A couple of things Resolve still needs';
+
+  questions.forEach((question, index) => {
+    document.getElementById(`s2-gap${index + 1}-q`).textContent = question;
+    gapItems[index].classList.remove('collapsed');
+  });
+  gapItems.slice(questions.length).forEach(item => item.classList.add('collapsed'));
 }
 
 function renderToolConfirmation({ adding = false } = {}) {
@@ -1274,10 +1325,9 @@ function renderToolConfirmation({ adding = false } = {}) {
 
   const addChip = document.createElement('div');
   addChip.className = 'tool-chip adding active';
-  addChip.innerHTML = '<input class="tool-chip-input" id="tool-chip-input" type="text" placeholder="Tool name"><button class="tool-chip-confirm" type="button" aria-label="Add tool">✓</button>';
+  addChip.innerHTML = '<input class="tool-chip-input" id="tool-chip-input" type="text" placeholder="Tool name">';
   row.appendChild(addChip);
   const input = document.getElementById('tool-chip-input');
-  const confirm = addChip.querySelector('.tool-chip-confirm');
   const addTool = () => {
     const name = input.value.trim();
     if (name && !confirmedTools.some(tool => tool.name.toLowerCase() === name.toLowerCase())) {
@@ -1294,11 +1344,13 @@ function renderToolConfirmation({ adding = false } = {}) {
       renderToolConfirmation();
     }
   });
-  confirm.onclick = event => {
-    event.stopPropagation();
+  input.addEventListener('blur', () => {
     addTool();
-  };
-  setTimeout(() => input.focus(), 0);
+  });
+  requestAnimationFrame(() => {
+    addChip.classList.add('open');
+    input.focus();
+  });
 }
 
 function renderUnderstandingCards(d) {
@@ -1881,7 +1933,10 @@ function goNext() {
 
   if (current < total - 1) {
     goToScreen(current + 1);
+    return;
   }
+
+  resetFlow();
 }
 
 function goBack() {
@@ -1931,8 +1986,15 @@ function resetFlow() {
   document.getElementById('journey-greeting').textContent = 'So,';
   document.getElementById('s4-win-title').textContent = 'You just cleared the fog.';
   document.getElementById('s4-win-desc').textContent = "A messy project with no clear direction \u2014 turned into a focused path forward. That's the hard part done.";
+  renderGapQuestions([]);
+  document.getElementById('s2-gap-confirmation').classList.add('collapsed');
+  document.getElementById('s2-gap-section').classList.remove('collapsed');
+  document.getElementById('s2-gap-divider').classList.remove('collapsed');
+  document.getElementById('s2-gap-title').textContent = 'A couple of things Resolve still needs';
   document.getElementById('s2-gap1-q').textContent = 'What would make this session a success for you?';
   document.getElementById('s2-gap2-q').textContent = 'What else should Resolve know before recommending a next move?';
+  document.getElementById('gap-item-1').classList.remove('collapsed');
+  document.getElementById('gap-item-2').classList.remove('collapsed');
   document.getElementById('tool-confirm-section').classList.add('collapsed');
   document.getElementById('tool-chip-row').innerHTML = '';
   document.getElementById('optional-section').classList.add('collapsed');

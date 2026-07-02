@@ -145,8 +145,8 @@ function validateUnderstandingShape(data) {
       throw new ResolveShapeError(`Understanding field "${key}" is empty or not a string`);
     }
   }
-  if (!Array.isArray(data.gapQuestions) || data.gapQuestions.length < 1) {
-    throw new ResolveShapeError('Understanding field "gapQuestions" must be a non-empty array');
+  if (!Array.isArray(data.gapQuestions)) {
+    throw new ResolveShapeError('Understanding field "gapQuestions" must be an array');
   }
   if (!data.gapQuestions.every(isNonEmptyString)) {
     throw new ResolveShapeError('Understanding field "gapQuestions" contains an empty or non-string entry');
@@ -161,9 +161,7 @@ function validateUnderstandingShape(data) {
     data.mentionedTools = [];
   }
   validateStringArray(data, 'mentionedTools', { min: 0, max: 5 });
-  while (data.gapQuestions.length < 2) {
-    data.gapQuestions.push('Is there anything else about this project Resolve should know?');
-  }
+  data.gapQuestions = data.gapQuestions.slice(0, 2);
   return data;
 }
 
@@ -399,6 +397,8 @@ SESSION RULES:
 - Detect explicitly mentioned tools case-insensitively, but do not infer tools that are not named.
 - Keep output concise and practical. No filler, no generic encouragement, no hype.
 
+CRITICAL RULE FOR GAP QUESTIONS: Gap questions must only ask for information that is DIRECTLY needed to produce a clear, grounded project recommendation and execution path. Do not ask strategic business questions, market questions, pricing questions, or anything that goes beyond what's needed to understand this project's current state and immediate next step. Valid gap questions are things like: "What have you already tried?" or "Is there a deadline driving this?" or "Who else is involved in this project?" Invalid gap questions are things like: "What should your first paid offer be?" or "What assets can be used commercially?" - these are business strategy questions, not intake blockers. If you genuinely have everything needed to produce a good recommendation from the input provided, return an empty gapQuestions array. Do not pad with questions just to fill the two slots.
+
 THE USER'S PROJECT:
 """
 ${projectInput}
@@ -413,8 +413,7 @@ Produce a structured understanding of this project. Return ONLY valid JSON match
   "state": "where the project currently stands, based only on what was stated",
   "uncertainty": "the single biggest open question or unknown that the input does not resolve",
   "gapQuestions": [
-    "one specific, useful question whose answer would materially change the recommendation",
-    "a second specific, useful question whose answer would materially change the recommendation"
+    "zero, one, or two specific intake-blocker questions whose answers are directly needed for a grounded recommendation"
   ],
   "assumptions": [
     "an assumption you are making to proceed, stated plainly as an assumption, not as fact"
@@ -424,7 +423,7 @@ Produce a structured understanding of this project. Return ONLY valid JSON match
   ]
 }
 
-REQUIRED: "project", "goal", "state", and "uncertainty" must each be a non-empty string. If the input is too sparse for confidence, say that plainly rather than leaving fields blank. "gapQuestions" must contain at least 2 non-empty strings. "assumptions" must be an array. "mentionedTools" must be an array; it may be empty. Include only tools explicitly named in the raw input, such as Notion, GitHub, Cursor, Codex, Claude, ChatGPT, Jira, Linear, Figma, Slack, Trello, Asana, Vercel, Supabase, Zapier, n8n, Google Docs, Google Sheets, Airtable, or Coda. Cap mentionedTools at 5.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had empty/missing fields. Follow the shape precisely this time.' : ''}`;
+REQUIRED: "project", "goal", "state", and "uncertainty" must each be a non-empty string. If the input is too sparse for confidence, say that plainly rather than leaving fields blank. "gapQuestions" must be an array containing 0-2 non-empty strings; return [] if no direct intake blockers remain. "assumptions" must be an array. "mentionedTools" must be an array; it may be empty. Include only tools explicitly named in the raw input, such as Notion, GitHub, Cursor, Codex, Claude, ChatGPT, Jira, Linear, Figma, Slack, Trello, Asana, Vercel, Supabase, Zapier, n8n, Google Docs, Google Sheets, Airtable, or Coda. Cap mentionedTools at 5.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had empty/missing fields. Follow the shape precisely this time.' : ''}`;
 
   const result = await callWithValidation(buildPrompt, apiKey, validateUnderstandingShape);
   result.mentionedTools = detectMentionedTools(projectInput);
