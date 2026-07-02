@@ -94,6 +94,36 @@ function isNonEmptyString(v) {
   return typeof v === 'string' && v.trim().length > 0;
 }
 
+const TOOL_NAME_PATTERNS = [
+  ['Notion', /\bnotion\b/i],
+  ['GitHub', /\bgithub\b/i],
+  ['Cursor', /\bcursor\b/i],
+  ['Codex', /\bcodex\b/i],
+  ['Claude', /\bclaude\b/i],
+  ['ChatGPT', /\bchatgpt\b|\bchat gpt\b/i],
+  ['Jira', /\bjira\b/i],
+  ['Linear', /\blinear\b/i],
+  ['Figma', /\bfigma\b/i],
+  ['Slack', /\bslack\b/i],
+  ['Trello', /\btrello\b/i],
+  ['Asana', /\basana\b/i],
+  ['Vercel', /\bvercel\b/i],
+  ['Supabase', /\bsupabase\b/i],
+  ['Zapier', /\bzapier\b/i],
+  ['n8n', /\bn8n\b/i],
+  ['Google Docs', /\bgoogle docs\b|\bgoogle doc\b/i],
+  ['Google Sheets', /\bgoogle sheets\b|\bgoogle sheet\b/i],
+  ['Airtable', /\bairtable\b/i],
+  ['Coda', /\bcoda\b/i],
+];
+
+function detectMentionedTools(input = '') {
+  return TOOL_NAME_PATTERNS
+    .filter(([, pattern]) => pattern.test(input))
+    .map(([name]) => name)
+    .slice(0, 5);
+}
+
 function validateStringArray(data, key, { min = 1, max = Infinity } = {}) {
   if (!Array.isArray(data[key]) || data[key].length < min || data[key].length > max) {
     throw new ResolveShapeError(`Field "${key}" must contain ${min}-${max} entries`);
@@ -104,7 +134,7 @@ function validateStringArray(data, key, { min = 1, max = Infinity } = {}) {
 }
 
 function validateUnderstandingShape(data) {
-  const required = ['project', 'goal', 'state', 'uncertainty', 'gapQuestions', 'assumptions', 'mentionedTools'];
+  const required = ['project', 'goal', 'state', 'uncertainty', 'gapQuestions', 'assumptions'];
   for (const key of required) {
     if (!(key in data)) {
       throw new ResolveShapeError(`Understanding response missing required field: ${key}`);
@@ -126,6 +156,9 @@ function validateUnderstandingShape(data) {
   }
   if (data.assumptions.length > 0 && !data.assumptions.every(isNonEmptyString)) {
     throw new ResolveShapeError('Understanding field "assumptions" contains an empty or non-string entry');
+  }
+  if (!('mentionedTools' in data)) {
+    data.mentionedTools = [];
   }
   validateStringArray(data, 'mentionedTools', { min: 0, max: 5 });
   while (data.gapQuestions.length < 2) {
@@ -393,7 +426,9 @@ Produce a structured understanding of this project. Return ONLY valid JSON match
 
 REQUIRED: "project", "goal", "state", and "uncertainty" must each be a non-empty string. If the input is too sparse for confidence, say that plainly rather than leaving fields blank. "gapQuestions" must contain at least 2 non-empty strings. "assumptions" must be an array. "mentionedTools" must be an array; it may be empty. Include only tools explicitly named in the raw input, such as Notion, GitHub, Cursor, Codex, Claude, ChatGPT, Jira, Linear, Figma, Slack, Trello, Asana, Vercel, Supabase, Zapier, n8n, Google Docs, Google Sheets, Airtable, or Coda. Cap mentionedTools at 5.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had empty/missing fields. Follow the shape precisely this time.' : ''}`;
 
-  return callWithValidation(buildPrompt, apiKey, validateUnderstandingShape);
+  const result = await callWithValidation(buildPrompt, apiKey, validateUnderstandingShape);
+  result.mentionedTools = detectMentionedTools(projectInput);
+  return result;
 }
 
 // ---------------------------------------------------------------------------
