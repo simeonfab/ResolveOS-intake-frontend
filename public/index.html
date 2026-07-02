@@ -299,7 +299,10 @@ input[type="text"] { height: 48px; font-size: 14px; }
 .action-card-primary {
   background: var(--ink); border-radius: var(--radius); padding: 16px 14px;
   margin-bottom: 10px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  flex-wrap: wrap;
 }
+.action-card-primary.is-expanded { border: 1.5px solid rgba(200,160,64,0.55); background: #25251F; }
 .apt-icon { font-size: 20px; flex-shrink: 0; }
 .apt-eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); margin-bottom: 5px; }
 .apt-title { font-size: 16px; font-weight: 600; color: white; line-height: 1.35; }
@@ -308,7 +311,7 @@ input[type="text"] { height: 48px; font-size: 14px; }
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .resolve-mark svg { width: 16px; height: 16px; }
-.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; align-items: start; }
 .action-card {
   background: var(--card-bg); border: 1.5px solid var(--border); border-radius: var(--radius);
   padding: 14px 12px; cursor: pointer; transition: border-color 0.2s, background 0.2s;
@@ -332,18 +335,24 @@ input[type="text"] { height: 48px; font-size: 14px; }
   cursor: wait;
   opacity: 0.82;
 }
+.output-card.is-expanded {
+  background: #FFFCF5;
+  border-color: rgba(200,160,64,0.75);
+}
 .output-preview {
   width: 100%;
-  border-top: 1px solid var(--border);
+  border: 1px solid var(--border);
+  background: #FFFFFF;
+  border-radius: var(--radius-sm);
   margin-top: 10px;
-  padding-top: 10px;
+  padding: 12px;
 }
 .output-preview-text {
-  font-size: 11px;
-  line-height: 1.5;
-  color: var(--ink-soft);
-  max-height: 44px;
-  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink);
+  max-height: 360px;
+  overflow: auto;
   white-space: pre-wrap;
 }
 .output-actions {
@@ -361,6 +370,15 @@ input[type="text"] { height: 48px; font-size: 14px; }
   font-weight: 700;
   cursor: pointer;
 }
+.primary-rec-expanded {
+  width: 100%;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  margin-top: 2px;
+  padding-top: 12px;
+}
+.primary-rec-message { color: #FFF; font-size: 13px; line-height: 1.45; margin-bottom: 6px; }
+.primary-rec-soon { color: rgba(255,255,255,0.58); font-size: 12px; line-height: 1.45; margin-bottom: 10px; }
+.primary-rec-expanded .mini-btn { background: rgba(255,255,255,0.08); color: #FFF; border-color: rgba(255,255,255,0.18); }
 .bottom-bar {
   position: sticky; bottom: 0; left: 0; right: 0; background: var(--surface);
   border-top: 1px solid var(--border); padding: 12px 20px 20px;
@@ -587,6 +605,7 @@ input[type="text"] { height: 48px; font-size: 14px; }
 .processing-label {
   font-family: 'DM Serif Display', serif; font-size: 22px;
   color: var(--ink); margin-bottom: 10px; line-height: 1.3;
+  transition: opacity 0.28s ease;
 }
 .processing-sub {
   font-size: 14px; color: var(--ink-soft); line-height: 1.5; max-width: 260px;
@@ -816,17 +835,17 @@ input[type="text"] { height: 48px; font-size: 14px; }
       <div class="section-title">What happens after this</div>
       <div class="phase-strip" id="s3-phase-strip">
         <div class="phase-card" style="border-top:3px solid var(--amber);">
-          <div class="phase-label" id="p1-label">Now</div>
+          <div class="phase-label" id="p1-label">This Week</div>
           <div class="phase-action" id="p1-action">—</div>
           <div class="phase-output" id="p1-output">—</div>
         </div>
         <div class="phase-card" style="border-top:3px solid var(--terracotta);">
-          <div class="phase-label" id="p2-label">Define</div>
+          <div class="phase-label" id="p2-label">Next</div>
           <div class="phase-action" id="p2-action">—</div>
           <div class="phase-output" id="p2-output">—</div>
         </div>
         <div class="phase-card" style="border-top:3px solid var(--border);">
-          <div class="phase-label" id="p3-label">Launch</div>
+          <div class="phase-label" id="p3-label">Later</div>
           <div class="phase-action" id="p3-action">—</div>
           <div class="phase-output" id="p3-output">—</div>
         </div>
@@ -841,13 +860,18 @@ input[type="text"] { height: 48px; font-size: 14px; }
         <div class="win-desc" id="s4-win-desc">A messy project with no clear direction — turned into a focused path forward. That's the hard part done.</div>
       </div>
       <div class="eyebrow" style="margin-top:20px;">Next steps</div>
-      <div class="action-card-primary">
+      <div class="action-card-primary" id="primary-rec-card" onclick="togglePrimaryRecommendationCard()">
         <div class="resolve-mark" id="primary-rec-icon">
           <svg viewBox="0 0 24 24" fill="none"><path d="M4 13L10 19L20 6" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
         <div>
           <div class="apt-eyebrow" id="primary-rec-label">Do this first</div>
           <div class="apt-title">Shortlist to one name and test it this week</div>
+        </div>
+        <div class="primary-rec-expanded collapsed" id="primary-rec-expanded">
+          <div class="primary-rec-message">This will connect to the next stage of your Resolve journey.</div>
+          <div class="primary-rec-soon">Coming soon &mdash; join the next cohort to be first.</div>
+          <button class="mini-btn" type="button" onclick="closePrimaryRecommendationCard(event)">Close</button>
         </div>
       </div>
       <div class="action-card plan-card" id="plan-card" onclick="handleProjectPlanClick()"><span class="action-icon" id="plan-icon">⬇</span><span class="action-text" id="plan-text">Output my project plan</span></div>
@@ -875,6 +899,9 @@ let pendingCall = 'understand'; // tracks which call the processing screen shoul
 let isEditingUnderstanding = false;
 let confirmedTools = [];
 let outputContentCache = {};
+let outputCardState = {};
+let recommendationStatusTimer = null;
+let recommendationStatusIndex = 0;
 
 const total = 6;
 const screenIds = ['screen-0','screen-1','screen-processing','screen-2','screen-3','screen-4'];
@@ -883,6 +910,12 @@ const progressPct = [0, 20, 20, 50, 75, 100];
 const stepLabels = ['Step 1 of 4','Step 2 of 4','Step 2 of 4','Step 3 of 4','Step 4 of 4','Complete'];
 const SCREEN_FADE_MS = 240;
 const RING_CIRCUMFERENCE = 163;
+const RECOMMENDATION_STATUS_MESSAGES = [
+  'Reading your project...',
+  'Identifying what matters most...',
+  'Shaping your path forward...',
+  'Almost there...'
+];
 
 const EXAMPLE_PROJECT = `I run a small e-commerce business called Nook & Thread, handmade homewares, been trading for about 4 years. Sales have plateaued and I think the brand feels too homespun for the price point I want to move to. I'm trying to rebrand to something more premium.
 
@@ -1049,6 +1082,33 @@ function setProcessingText(label, sub) {
   document.getElementById('processing-sub').textContent = sub;
 }
 
+function fadeProcessingLabel(label) {
+  const el = document.getElementById('processing-label');
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.textContent = label;
+    el.style.opacity = '1';
+  }, 280);
+}
+
+function startRecommendationStatusCycle() {
+  stopRecommendationStatusCycle();
+  recommendationStatusIndex = 0;
+  setProcessingText(RECOMMENDATION_STATUS_MESSAGES[0], 'Weighing this against everything you confirmed');
+  recommendationStatusTimer = setInterval(() => {
+    recommendationStatusIndex = (recommendationStatusIndex + 1) % RECOMMENDATION_STATUS_MESSAGES.length;
+    fadeProcessingLabel(RECOMMENDATION_STATUS_MESSAGES[recommendationStatusIndex]);
+  }, 3500);
+}
+
+function stopRecommendationStatusCycle() {
+  if (recommendationStatusTimer) {
+    clearInterval(recommendationStatusTimer);
+    recommendationStatusTimer = null;
+  }
+  document.getElementById('processing-label').style.opacity = '1';
+}
+
 function resetProcessingRing() {
   const circle = document.getElementById('progress-circle');
   const check = document.getElementById('check-mark');
@@ -1072,6 +1132,7 @@ function showCheck() {
 }
 
 function showProcessingError(message) {
+  stopRecommendationStatusCycle();
   setProcessingText('Something went wrong', message);
   document.getElementById('next-btn').style.display = 'flex';
   document.getElementById('next-btn').textContent = 'Try again';
@@ -1284,7 +1345,7 @@ function toggleUnderstandingEdit() {
 async function runRecommendationCall() {
   pendingCall = 'recommend';
   resetProcessingRing();
-  setProcessingText('Working out your next move\u2026', 'Weighing this against everything you confirmed');
+  startRecommendationStatusCycle();
   setRingProgress(0);
 
   if (isEditingUnderstanding) {
@@ -1314,6 +1375,7 @@ async function runRecommendationCall() {
 
     recommendationData = await res.json();
 
+    stopRecommendationStatusCycle();
     setRingProgress(1);
     showCheck();
     setProcessingText('Path found.', 'Here\'s what to do next');
@@ -1323,6 +1385,7 @@ async function runRecommendationCall() {
 
     setTimeout(() => goToScreen(4), 700);
   } catch (err) {
+    stopRecommendationStatusCycle();
     console.error(err);
     showProcessingError(err.message || 'Resolve could not finish your recommendation. Try again.');
   }
@@ -1336,7 +1399,6 @@ function populateScreen3(d) {
   if (Array.isArray(d.roadmap) && d.roadmap.length >= 3) {
     const ids = ['p1', 'p2', 'p3'];
     d.roadmap.slice(0, 3).forEach((phase, i) => {
-      document.getElementById(ids[i] + '-label').textContent = phase.phase || '\u2014';
       document.getElementById(ids[i] + '-action').textContent = phase.action || '\u2014';
       document.getElementById(ids[i] + '-output').textContent = phase.output ? `Output: ${phase.output}` : '\u2014';
     });
@@ -1344,6 +1406,8 @@ function populateScreen3(d) {
 }
 
 function populateScreen4(d) {
+  closePrimaryRecommendationCard();
+  outputCardState = {};
   const titleEl = document.querySelector('#screen-4 .apt-title');
   if (titleEl) titleEl.textContent = d.recommendedAction || 'Your recommended next move';
   const labelEl = document.getElementById('primary-rec-label');
@@ -1351,13 +1415,30 @@ function populateScreen4(d) {
   if (labelEl) labelEl.textContent = d.topCardType === 'decision' ? 'Decide this first' : 'Do this first';
   if (iconEl) {
     if (d.topCardType === 'decision') {
-      iconEl.textContent = '⚖️';
+      iconEl.textContent = '\u2696\uFE0F';
     } else {
       iconEl.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 13L10 19L20 6" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     }
   }
   document.getElementById('s4-win-desc').textContent = d.winSummary || "A messy project with no clear direction \u2014 turned into a focused path forward. That's the hard part done.";
   renderOutputTemplates(d.outputTemplates);
+}
+
+// Primary recommendation placeholder: replace this block when next-stage routing is ready.
+function togglePrimaryRecommendationCard() {
+  const card = document.getElementById('primary-rec-card');
+  const panel = document.getElementById('primary-rec-expanded');
+  const isOpen = !panel.classList.contains('collapsed');
+  card.classList.toggle('is-expanded', !isOpen);
+  panel.classList.toggle('collapsed', isOpen);
+}
+
+function closePrimaryRecommendationCard(event) {
+  if (event) event.stopPropagation();
+  const card = document.getElementById('primary-rec-card');
+  const panel = document.getElementById('primary-rec-expanded');
+  if (card) card.classList.remove('is-expanded');
+  if (panel) panel.classList.add('collapsed');
 }
 
 function renderOutputTemplates(templates) {
@@ -1369,22 +1450,25 @@ function renderOutputTemplates(templates) {
     const card = document.createElement('div');
     card.className = 'action-card output-card';
     card.dataset.templateId = template.templateId;
+    const state = outputCardState[template.templateId] || {};
+    if (state.working) card.classList.add('is-working');
+    if (state.expanded) card.classList.add('is-expanded');
     card.onclick = () => handleOutputTemplateClick(template.templateId);
 
     const icon = document.createElement('span');
     icon.className = 'action-icon';
-    icon.textContent = template.icon || '\u2022';
+    icon.innerHTML = state.working ? '<span class="mini-spinner" aria-hidden="true"></span>' : escapeHtml(template.icon || '\u2022');
 
     const body = document.createElement('div');
     body.className = 'action-body';
 
     const text = document.createElement('span');
     text.className = 'action-text';
-    text.textContent = template.label || 'Generate project output';
+    text.textContent = state.working ? 'Generating output' : (template.label || 'Generate project output');
 
     const desc = document.createElement('div');
     desc.className = 'action-desc';
-    desc.textContent = template.description || 'Create a useful output from this session.';
+    desc.textContent = state.working ? 'Assembling this from your session' : (template.description || 'Create a useful output from this session.');
 
     const main = document.createElement('div');
     main.className = 'output-card-main';
@@ -1392,31 +1476,34 @@ function renderOutputTemplates(templates) {
     main.append(icon, body);
     card.append(main);
 
+    if (state.expanded) {
+      const content = outputContentCache[template.templateId] || generateOutput(template.templateId);
+      const preview = document.createElement('div');
+      preview.className = 'output-preview';
+      preview.innerHTML = `
+        <div class="output-preview-text">${escapeHtml(content)}</div>
+        <div class="output-actions">
+          <button class="mini-btn" type="button" onclick="copyOutputContent(event, '${template.templateId}')">Copy</button>
+          <button class="mini-btn" type="button" onclick="closeOutputCard(event, '${template.templateId}')">Close</button>
+        </div>`;
+      card.append(preview);
+    }
+
     grid.appendChild(card);
   });
 }
 
 async function handleOutputTemplateClick(templateId) {
-  const card = document.querySelector(`.output-card[data-template-id="${templateId}"]`);
-  if (!card || card.classList.contains('is-working') || card.classList.contains('is-expanded')) return;
+  const state = outputCardState[templateId] || {};
+  if (state.working || state.expanded) return;
 
-  card.classList.add('is-working');
-  const original = card.innerHTML;
-  card.innerHTML = `<div class="output-card-main"><span class="mini-spinner" aria-hidden="true"></span><div class="action-body"><span class="action-text">Generating output</span><div class="action-desc">Assembling this from your session</div></div></div>`;
-
+  outputCardState[templateId] = { working: true, expanded: false };
+  renderOutputTemplates(recommendationData?.outputTemplates || []);
   setTimeout(() => {
     const content = generateOutput(templateId);
     outputContentCache[templateId] = content;
-    card.classList.remove('is-working');
-    card.classList.add('is-expanded');
-    card.innerHTML = `${original}
-      <div class="output-preview">
-        <div class="output-preview-text">${escapeHtml(content)}</div>
-        <div class="output-actions">
-          <button class="mini-btn" type="button" onclick="copyOutputContent(event, '${templateId}')">Copy</button>
-          <button class="mini-btn" type="button" onclick="closeOutputCard(event)">Close</button>
-        </div>
-      </div>`;
+    outputCardState[templateId] = { working: false, expanded: true };
+    renderOutputTemplates(recommendationData?.outputTemplates || []);
   }, 180);
 }
 
@@ -1426,15 +1513,16 @@ async function copyOutputContent(event, templateId) {
   const content = outputContentCache[templateId] || generateOutput(templateId);
   try {
     await navigator.clipboard.writeText(content);
-    button.textContent = 'Copied ✓';
-    setTimeout(() => { button.textContent = 'Copy'; }, 1400);
+    button.textContent = 'Copied \u2713';
+    setTimeout(() => { button.textContent = 'Copy'; }, 1500);
   } catch {
     button.textContent = 'Select text';
   }
 }
 
-function closeOutputCard(event) {
+function closeOutputCard(event, templateId) {
   event.stopPropagation();
+  outputCardState[templateId] = { working: false, expanded: false };
   renderOutputTemplates(recommendationData?.outputTemplates || []);
 }
 
@@ -1643,6 +1731,20 @@ function escapeHtml(value) {
   })[char]);
 }
 
+function normalizePriorityItems() {
+  const priorities = Array.isArray(recommendationData?.topPriorities) ? recommendationData.topPriorities : [];
+  return priorities.length ? priorities : [recommendationData?.recommendedAction].filter(Boolean);
+}
+
+function normalizeDoNotYetItems() {
+  return Array.isArray(recommendationData?.doNotYet) ? recommendationData.doNotYet : [];
+}
+
+function renderHtmlList(items, renderItem, emptyText) {
+  if (!items.length) return `<p>${escapeHtml(emptyText)}</p>`;
+  return `<ul>${items.map(renderItem).join('')}</ul>`;
+}
+
 function downloadProjectPlan() {
   if (!projectPlanData) return;
 
@@ -1652,13 +1754,16 @@ function downloadProjectPlan() {
       <td>${escapeHtml(item.status)}</td>
       <td>${escapeHtml(item.note)}</td>
     </tr>`).join('');
-  const topPriorities = (recommendationData?.topPriorities || []).map(item => `
-    <li>${escapeHtml(item)}</li>`).join('');
-  const doNotYet = (recommendationData?.doNotYet || []).map(item => `
-    <li>
-      <strong>${escapeHtml(item.item)}</strong><br>
-      ${escapeHtml(item.reason)}
-    </li>`).join('');
+  const topPriorities = renderHtmlList(
+    normalizePriorityItems(),
+    item => `<li>${escapeHtml(item)}</li>`,
+    'No separate priorities were generated beyond the highest-leverage action.'
+  );
+  const doNotYet = renderHtmlList(
+    normalizeDoNotYetItems(),
+    item => `<li><strong>${escapeHtml(item.item || item)}</strong>${item.reason ? `<br>${escapeHtml(item.reason)}` : ''}</li>`,
+    'No specific stop-list items were generated from the session data.'
+  );
   const longTermRoadmap = (projectPlanData.longTermRoadmap || []).map(item => `
     <li>
       <strong>${escapeHtml(item.phase)}</strong><br>
@@ -1680,8 +1785,13 @@ function downloadProjectPlan() {
   <meta charset="utf-8">
   <title>Resolve Project Plan</title>
   <style>
-    body { font-family: Arial, sans-serif; line-height: 1.5; max-width: 760px; margin: 40px auto; color: #1A1A18; }
-    h1, h2 { margin-bottom: 8px; }
+    body { font-family: Arial, sans-serif; line-height: 1.55; max-width: 820px; margin: 40px auto; color: #1A1A18; }
+    h1 { font-size: 30px; margin-bottom: 6px; }
+    h2 { margin: 28px 0 8px; }
+    p { margin: 8px 0; }
+    li { margin-bottom: 9px; }
+    .intro { color: #5A5A54; margin-bottom: 28px; }
+    .section-note { color: #5A5A54; }
     table { border-collapse: collapse; width: 100%; margin-top: 10px; }
     th, td { border: 1px solid #DDD8CE; padding: 10px; text-align: left; vertical-align: top; }
     th { background: #F2EDE4; }
@@ -1689,6 +1799,7 @@ function downloadProjectPlan() {
 </head>
 <body>
   <h1>Resolve Project Plan</h1>
+  <p class="intro">A complete handoff assembled from this Resolve intake session. Sections 1-4 reuse what you already confirmed; sections 5-9 add the generated planning layer.</p>
   <h2>1. Project Identity, Objective, and Phase</h2>
   <p><strong>Project:</strong> ${escapeHtml(understandingData?.project)}</p>
   <p><strong>Objective:</strong> ${escapeHtml(understandingData?.goal)}</p>
@@ -1697,11 +1808,12 @@ function downloadProjectPlan() {
   <p><strong>${escapeHtml(recommendationData?.recommendedAction)}</strong></p>
   <p>${escapeHtml(recommendationData?.why)}</p>
   <h2>3. Top Priorities</h2>
-  <ol>${topPriorities}</ol>
+  ${topPriorities}
   <h2>4. What Not To Do Yet</h2>
-  <ul>${doNotYet}</ul>
+  ${doNotYet}
   <h2>5. Speculative Long-Term Roadmap</h2>
-  <ol>${longTermRoadmap}</ol>
+  <p class="section-note">If the immediate priorities go well, here is a plausible longer-term direction. This is extrapolation, not a commitment.</p>
+  <ol>${longTermRoadmap || '<li>No speculative roadmap items were generated.</li>'}</ol>
   <h2>6. Readiness</h2>
   <table>
     <thead><tr><th>Area</th><th>Status</th><th>Note</th></tr></thead>
@@ -1793,6 +1905,7 @@ function resetFlow() {
   isEditingUnderstanding = false;
   confirmedTools = [];
   outputContentCache = {};
+  outputCardState = {};
   screen0Stage = 'name';
 
   ['name-input', 'project-input', 'supporting-material', 'gap1', 'gap2'].forEach(id => {
@@ -1830,6 +1943,7 @@ function resetFlow() {
   const planCard = document.getElementById('plan-card');
   planCard.classList.remove('is-working', 'is-ready');
   renderOutputTemplates([]);
+  closePrimaryRecommendationCard();
   document.getElementById('primary-rec-label').textContent = 'Do this first';
   document.getElementById('primary-rec-icon').innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 13L10 19L20 6" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   document.getElementById('plan-icon').textContent = '⬇';
