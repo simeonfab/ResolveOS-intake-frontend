@@ -1,7 +1,10 @@
 {
   "functions": {
     "api/resolve.js": {
-      "includeFiles": "resolveos-context/**"
+      "includeFiles": [
+        "resolveos-context/**",
+        "resolve-output-templates.md"
+      ]
     }
   }
 }

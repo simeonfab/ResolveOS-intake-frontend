@@ -19,12 +19,31 @@ const CONTEXT_FILES = {
   projectReadiness: 'governance/project-readiness.md',
 };
 
+const OUTPUT_TEMPLATES_FILE = 'resolve-output-templates.md';
+const VALID_OUTPUT_TEMPLATE_IDS = new Set([
+  'key-decision',
+  'one-week-plan',
+  'ai-continuation',
+  'plain-english',
+  'share-message',
+  'project-brief',
+  'stakeholder-update',
+  'risk-summary',
+  'notion-brief',
+  'ai-handoff',
+  'stop-list',
+  'speculative-roadmap',
+  'name-ideas',
+  'elevator-pitch',
+  'github-issue',
+]);
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { stage, projectInput, confirmedUnderstanding, gapAnswers, recommendationData } = req.body;
+  const { stage, projectInput, confirmedUnderstanding, gapAnswers, recommendationData, confirmedTools } = req.body;
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -38,13 +57,13 @@ export default async function handler(req, res) {
     }
 
     if (stage === 'recommend') {
-      const draft = await runRecommendationCall(confirmedUnderstanding, gapAnswers, apiKey);
-      const checked = await runQACheckCall(confirmedUnderstanding, gapAnswers, draft, apiKey);
+      const draft = await runRecommendationCall(confirmedUnderstanding, gapAnswers, confirmedTools, apiKey);
+      const checked = await runQACheckCall(confirmedUnderstanding, gapAnswers, confirmedTools, draft, apiKey);
       return res.status(200).json(checked);
     }
 
     if (stage === 'plan') {
-      const result = await runProjectPlanCall(confirmedUnderstanding, recommendationData, gapAnswers, apiKey);
+      const result = await runProjectPlanCall(confirmedUnderstanding, recommendationData, gapAnswers, confirmedTools, apiKey);
       return res.status(200).json(result);
     }
 
@@ -85,7 +104,7 @@ function validateStringArray(data, key, { min = 1, max = Infinity } = {}) {
 }
 
 function validateUnderstandingShape(data) {
-  const required = ['project', 'goal', 'state', 'uncertainty', 'gapQuestions', 'assumptions'];
+  const required = ['project', 'goal', 'state', 'uncertainty', 'gapQuestions', 'assumptions', 'mentionedTools'];
   for (const key of required) {
     if (!(key in data)) {
       throw new ResolveShapeError(`Understanding response missing required field: ${key}`);
@@ -108,6 +127,7 @@ function validateUnderstandingShape(data) {
   if (data.assumptions.length > 0 && !data.assumptions.every(isNonEmptyString)) {
     throw new ResolveShapeError('Understanding field "assumptions" contains an empty or non-string entry');
   }
+  validateStringArray(data, 'mentionedTools', { min: 0, max: 5 });
   while (data.gapQuestions.length < 2) {
     data.gapQuestions.push('Is there anything else about this project Resolve should know?');
   }
@@ -119,10 +139,12 @@ function validateRecommendationShape(data) {
     'recommendedAction',
     'why',
     'milestone',
+    'openDecision',
     'roadmap',
     'topPriorities',
     'doNotYet',
-    'secondaryActions',
+    'outputTemplates',
+    'topCardType',
     'winSummary',
   ];
   for (const key of required) {
@@ -130,7 +152,7 @@ function validateRecommendationShape(data) {
       throw new ResolveShapeError(`Recommendation response missing required field: ${key}`);
     }
   }
-  for (const key of ['recommendedAction', 'why', 'milestone', 'winSummary']) {
+  for (const key of ['recommendedAction', 'why', 'milestone', 'openDecision', 'winSummary']) {
     if (!isNonEmptyString(data[key])) {
       throw new ResolveShapeError(`Recommendation field "${key}" is empty or not a string`);
     }
@@ -162,17 +184,23 @@ function validateRecommendationShape(data) {
       }
     }
   });
-  if (!Array.isArray(data.secondaryActions) || data.secondaryActions.length !== 5) {
-    throw new ResolveShapeError('Recommendation field "secondaryActions" must contain exactly 5 actions');
+  if (data.topCardType !== 'action' && data.topCardType !== 'decision') {
+    throw new ResolveShapeError('Recommendation field "topCardType" must be "action" or "decision"');
   }
-  data.secondaryActions.forEach((action, i) => {
-    if (!action || typeof action !== 'object') {
-      throw new ResolveShapeError(`Secondary action ${i} is not an object`);
+  if (!Array.isArray(data.outputTemplates) || data.outputTemplates.length !== 6) {
+    throw new ResolveShapeError('Recommendation field "outputTemplates" must contain exactly 6 templates');
+  }
+  data.outputTemplates.forEach((template, i) => {
+    if (!template || typeof template !== 'object') {
+      throw new ResolveShapeError(`Output template ${i} is not an object`);
     }
-    for (const key of ['icon', 'label']) {
-      if (!isNonEmptyString(action[key])) {
-        throw new ResolveShapeError(`Secondary action ${i} missing or empty field: ${key}`);
+    for (const key of ['templateId', 'label', 'description', 'icon']) {
+      if (!isNonEmptyString(template[key])) {
+        throw new ResolveShapeError(`Output template ${i} missing or empty field: ${key}`);
       }
+    }
+    if (!VALID_OUTPUT_TEMPLATE_IDS.has(template.templateId)) {
+      throw new ResolveShapeError(`Output template ${i} has invalid templateId: ${template.templateId}`);
     }
   });
   return data;
@@ -266,12 +294,32 @@ function readResolveOSContext(relativePath) {
   return fs.readFileSync(filePath, 'utf8');
 }
 
+function readBundledRootFile(relativePath) {
+  const candidates = [
+    path.join(process.cwd(), relativePath),
+    path.join(__dirname, '..', relativePath),
+    path.join(__dirname, relativePath),
+  ];
+  const filePath = candidates.find(candidate => fs.existsSync(candidate));
+  if (!filePath) {
+    throw new Error(`Missing bundled file: ${relativePath}`);
+  }
+  return fs.readFileSync(filePath, 'utf8');
+}
+
 function loadContextBundle(keys) {
   return keys.map(key => {
     const filePath = CONTEXT_FILES[key];
     const content = readResolveOSContext(filePath);
     return `--- BEGIN REAL RESOLVEOS SOURCE: ${filePath} ---\n${content}\n--- END REAL RESOLVEOS SOURCE: ${filePath} ---`;
   }).join('\n\n');
+}
+
+function formatConfirmedTools(confirmedTools) {
+  const tools = Array.isArray(confirmedTools)
+    ? confirmedTools.filter(isNonEmptyString).slice(0, 10)
+    : [];
+  return tools.length ? tools.join(', ') : 'No tools confirmed.';
 }
 
 async function callWithValidation(buildPrompt, apiKey, validateFn, attempt = 1) {
@@ -315,6 +363,7 @@ SESSION RULES:
 - Do not invent missing facts. Do not guess details the user did not provide.
 - Never ask for information that the user has already provided in the project input. If it is already stated, use it.
 - If something genuinely needed to understand the project is missing, surface it as a question rather than filling it in yourself.
+- Detect explicitly mentioned tools case-insensitively, but do not infer tools that are not named.
 - Keep output concise and practical. No filler, no generic encouragement, no hype.
 
 THE USER'S PROJECT:
@@ -336,10 +385,13 @@ Produce a structured understanding of this project. Return ONLY valid JSON match
   ],
   "assumptions": [
     "an assumption you are making to proceed, stated plainly as an assumption, not as fact"
+  ],
+  "mentionedTools": [
+    "tool names explicitly mentioned in the raw project input"
   ]
 }
 
-REQUIRED: "project", "goal", "state", and "uncertainty" must each be a non-empty string. If the input is too sparse for confidence, say that plainly rather than leaving fields blank. "gapQuestions" must contain at least 2 non-empty strings. "assumptions" must be an array.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had empty/missing fields. Follow the shape precisely this time.' : ''}`;
+REQUIRED: "project", "goal", "state", and "uncertainty" must each be a non-empty string. If the input is too sparse for confidence, say that plainly rather than leaving fields blank. "gapQuestions" must contain at least 2 non-empty strings. "assumptions" must be an array. "mentionedTools" must be an array; it may be empty. Include only tools explicitly named in the raw input, such as Notion, GitHub, Cursor, Codex, Claude, ChatGPT, Jira, Linear, Figma, Slack, Trello, Asana, Vercel, Supabase, Zapier, n8n, Google Docs, Google Sheets, Airtable, or Coda. Cap mentionedTools at 5.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had empty/missing fields. Follow the shape precisely this time.' : ''}`;
 
   return callWithValidation(buildPrompt, apiKey, validateUnderstandingShape);
 }
@@ -347,14 +399,22 @@ REQUIRED: "project", "goal", "state", and "uncertainty" must each be a non-empty
 // ---------------------------------------------------------------------------
 // CALL 2 - Strategic Product Director: recommendation + roadmap
 // ---------------------------------------------------------------------------
-async function runRecommendationCall(confirmedUnderstanding, gapAnswers, apiKey) {
+async function runRecommendationCall(confirmedUnderstanding, gapAnswers, confirmedTools, apiKey) {
   const strategicContext = loadContextBundle(['strategicProductDirector', 'projectReadiness']);
+  const outputTemplateContext = readBundledRootFile(OUTPUT_TEMPLATES_FILE);
   const gapAnswerText = formatGapAnswers(gapAnswers);
+  const confirmedToolText = formatConfirmedTools(confirmedTools);
   const buildPrompt = (isRetry) => `You are operating as the ResolveOS Strategic Product Director role.
 
 The following are the real ResolveOS Strategic Product Director role definition and project-readiness governance model you are operating under. Follow them exactly, including all stated rules about evidence over invention, strategic challenge, readiness, fake certainty, and not approving padded or unsupported content.
 
 ${strategicContext}
+
+The following is the full Resolve output template selection library. Use it as the source of truth for choosing exactly 6 output templates.
+
+--- BEGIN RESOLVE OUTPUT TEMPLATE LIBRARY: ${OUTPUT_TEMPLATES_FILE} ---
+${outputTemplateContext}
+--- END RESOLVE OUTPUT TEMPLATE LIBRARY: ${OUTPUT_TEMPLATES_FILE} ---
 
 Your task-specific job here: decide what matters most right now and give ONE clear, opinionated recommendation with reasoning. Do not give a menu of equally weighted options.
 
@@ -362,7 +422,10 @@ SESSION RULES:
 - Prefer evidence over invention. Do not invent market facts, business value, urgency, constraints, users, or strategic priority that the input does not support.
 - Never ask for information that has already been provided earlier in this same session, including the original project input, confirmed understanding, or gap-question answers below.
 - Top priorities and do-not-yet items must be genuinely earned by the source material. Use 1-3 items only; do not pad to make a section look fuller.
-- Secondary actions are fixed UI affordances and must contain exactly five useful, grounded actions for this project. Correct weak/generic actions into grounded ones rather than using leftover example-project language.
+- Select exactly 6 outputTemplates from the template library. Every label and description must be specific to this project, not generic.
+- Template IDs that depend on confirmed tools (notion-brief, ai-handoff, github-issue) may only be selected when the relevant tool is listed in CONFIRMED TOOLS below.
+- risk-summary may only be selected if genuine risks are identifiable. name-ideas may only be selected if no project name is detected.
+- If in doubt, choose the template whose output the user can act on most immediately.
 - Be direct, practical, and free of generic startup hype.
 
 CONFIRMED PROJECT UNDERSTANDING:
@@ -373,6 +436,9 @@ ${JSON.stringify(confirmedUnderstanding, null, 2)}
 PAIRED GAP ANSWERS:
 ${gapAnswerText}
 
+CONFIRMED TOOLS:
+${confirmedToolText}
+
 TASK:
 Return ONLY valid JSON matching this EXACT shape:
 
@@ -380,6 +446,7 @@ Return ONLY valid JSON matching this EXACT shape:
   "recommendedAction": "one clear, specific sentence describing the single most important thing to do next",
   "why": "2-3 sentences explaining why this is the right move now, grounded in the confirmed understanding and gap answers",
   "milestone": "what 'done' looks like for this recommended action - specific and observable",
+  "openDecision": "one specific decision that still matters, or the main decision implied by the next move",
   "roadmap": [
     {"phase": "Now", "action": "short phrase", "output": "what this phase produces"},
     {"phase": "Define", "action": "short phrase", "output": "what this phase produces"},
@@ -391,17 +458,19 @@ Return ONLY valid JSON matching this EXACT shape:
   "doNotYet": [
     {"item": "thing not to do yet", "reason": "one-line reason grounded in the source"}
   ],
-  "secondaryActions": [
-    {"icon": "single relevant emoji", "label": "short, specific, actionable suggestion relevant to THIS project"},
-    {"icon": "single relevant emoji", "label": "short, specific, actionable suggestion relevant to THIS project"},
-    {"icon": "single relevant emoji", "label": "short, specific, actionable suggestion relevant to THIS project"},
-    {"icon": "single relevant emoji", "label": "short, specific, actionable suggestion relevant to THIS project"},
-    {"icon": "single relevant emoji", "label": "short, specific, actionable suggestion relevant to THIS project"}
+  "outputTemplates": [
+    {"templateId": "one of the 15 valid template IDs", "label": "specific project-relevant label", "description": "one sentence explaining why this is relevant for this project", "icon": "single relevant emoji"},
+    {"templateId": "one of the 15 valid template IDs", "label": "specific project-relevant label", "description": "one sentence explaining why this is relevant for this project", "icon": "single relevant emoji"},
+    {"templateId": "one of the 15 valid template IDs", "label": "specific project-relevant label", "description": "one sentence explaining why this is relevant for this project", "icon": "single relevant emoji"},
+    {"templateId": "one of the 15 valid template IDs", "label": "specific project-relevant label", "description": "one sentence explaining why this is relevant for this project", "icon": "single relevant emoji"},
+    {"templateId": "one of the 15 valid template IDs", "label": "specific project-relevant label", "description": "one sentence explaining why this is relevant for this project", "icon": "single relevant emoji"},
+    {"templateId": "one of the 15 valid template IDs", "label": "specific project-relevant label", "description": "one sentence explaining why this is relevant for this project", "icon": "single relevant emoji"}
   ],
+  "topCardType": "action | decision",
   "winSummary": "one sentence in this style: A messy [specific project situation] - turned into a focused path forward. That's the hard part done."
 }
 
-REQUIRED: topPriorities must contain 1-3 strings. doNotYet must contain 1-3 objects. Do not pad either list. roadmap must contain exactly 3 phase objects. secondaryActions must contain exactly 5 action objects for the UI. If an answer was not provided for a gap question, do not invent it.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had unsupported/padded content. Follow the shape precisely and include only genuinely earned top priorities and do-not-yet items.' : ''}`;
+REQUIRED: topPriorities must contain 1-3 strings. doNotYet must contain 1-3 objects. Do not pad either list. roadmap must contain exactly 3 phase objects. outputTemplates must contain exactly 6 objects using valid template IDs from the library. topCardType must be "action" or "decision". If an answer was not provided for a gap question, do not invent it.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had unsupported/padded content. Follow the shape precisely and include only genuinely earned top priorities, do-not-yet items, and output templates.' : ''}`;
 
   return callWithValidation(buildPrompt, apiKey, validateRecommendationShape);
 }
@@ -409,20 +478,30 @@ REQUIRED: topPriorities must contain 1-3 strings. doNotYet must contain 1-3 obje
 // ---------------------------------------------------------------------------
 // CALL 3 - QA self-check
 // ---------------------------------------------------------------------------
-async function runQACheckCall(confirmedUnderstanding, gapAnswers, draftRecommendation, apiKey) {
+async function runQACheckCall(confirmedUnderstanding, gapAnswers, confirmedTools, draftRecommendation, apiKey) {
   const readinessContext = loadContextBundle(['projectReadiness']);
+  const outputTemplateContext = readBundledRootFile(OUTPUT_TEMPLATES_FILE);
   const gapAnswerText = formatGapAnswers(gapAnswers);
+  const confirmedToolText = formatConfirmedTools(confirmedTools);
   const buildPrompt = (isRetry) => `You are operating as a ResolveOS QA self-check pass.
 
 The following is the real ResolveOS project-readiness governance model you must use as your validation source. Follow it exactly, including rules about evidence, fake certainty, readiness state, and not hiding uncertainty.
 
 ${readinessContext}
 
+The following is the Resolve output template library. Use it to verify whether each selected output template is allowed and genuinely earned.
+
+--- BEGIN RESOLVE OUTPUT TEMPLATE LIBRARY: ${OUTPUT_TEMPLATES_FILE} ---
+${outputTemplateContext}
+--- END RESOLVE OUTPUT TEMPLATE LIBRARY: ${OUTPUT_TEMPLATES_FILE} ---
+
 Your job is to check a draft recommendation against the confirmed understanding and paired gap answers it was supposed to be based on.
 
 CORE RULES:
 - Do not approve fake certainty. If the draft recommendation asserts something unsupported, correct it.
 - Do not approve padding. For variable-length list sections, keep only the count genuinely earned by the source material. If a section is conditional and the content is not genuinely supported, remove it or reduce it rather than letting thin placeholders through.
+- Do not approve an output template whose selection rules are not met. Replace it with a better supported template from the library while keeping exactly 6 outputTemplates.
+- notion-brief, ai-handoff, and github-issue require the relevant confirmed tool. risk-summary requires genuine identifiable risk. name-ideas requires no detected project name.
 - Never ask for information that has already been provided earlier in this same session.
 - For fixed UI fields required by the schema, correct unsupported generic content into grounded content instead of inventing new facts.
 
@@ -433,6 +512,9 @@ ${JSON.stringify(confirmedUnderstanding, null, 2)}
 
 PAIRED GAP ANSWERS:
 ${gapAnswerText}
+
+CONFIRMED TOOLS:
+${confirmedToolText}
 
 DRAFT RECOMMENDATION TO CHECK:
 """
@@ -448,6 +530,7 @@ Return ONLY valid JSON in this EXACT shape:
   "recommendedAction": "non-empty string",
   "why": "non-empty string",
   "milestone": "non-empty string",
+  "openDecision": "non-empty string",
   "roadmap": [
     {"phase": "non-empty string", "action": "non-empty string", "output": "non-empty string"},
     {"phase": "non-empty string", "action": "non-empty string", "output": "non-empty string"},
@@ -459,17 +542,19 @@ Return ONLY valid JSON in this EXACT shape:
   "doNotYet": [
     {"item": "1-3 genuinely supported do-not-yet items only", "reason": "grounded reason"}
   ],
-  "secondaryActions": [
-    {"icon": "non-empty string", "label": "non-empty string"},
-    {"icon": "non-empty string", "label": "non-empty string"},
-    {"icon": "non-empty string", "label": "non-empty string"},
-    {"icon": "non-empty string", "label": "non-empty string"},
-    {"icon": "non-empty string", "label": "non-empty string"}
+  "outputTemplates": [
+    {"templateId": "valid template ID", "label": "non-empty string", "description": "non-empty string", "icon": "non-empty string"},
+    {"templateId": "valid template ID", "label": "non-empty string", "description": "non-empty string", "icon": "non-empty string"},
+    {"templateId": "valid template ID", "label": "non-empty string", "description": "non-empty string", "icon": "non-empty string"},
+    {"templateId": "valid template ID", "label": "non-empty string", "description": "non-empty string", "icon": "non-empty string"},
+    {"templateId": "valid template ID", "label": "non-empty string", "description": "non-empty string", "icon": "non-empty string"},
+    {"templateId": "valid template ID", "label": "non-empty string", "description": "non-empty string", "icon": "non-empty string"}
   ],
+  "topCardType": "action | decision",
   "winSummary": "non-empty string"
 }
 
-topPriorities and doNotYet must each contain 1-3 genuinely supported entries. roadmap must always contain exactly 3 phases. secondaryActions must always contain exactly 5 UI action objects.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or still had unsupported/padded content. Copy every grounded field from the draft and correct only unsupported parts.' : ''}`;
+topPriorities and doNotYet must each contain 1-3 genuinely supported entries. roadmap must always contain exactly 3 phases. outputTemplates must always contain exactly 6 valid, genuinely relevant template objects. topCardType must be "action" or "decision".${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or still had unsupported/padded content. Copy every grounded field from the draft and correct only unsupported parts.' : ''}`;
 
   return callWithValidation(buildPrompt, apiKey, validateRecommendationShape);
 }
@@ -477,9 +562,10 @@ topPriorities and doNotYet must each contain 1-3 genuinely supported entries. ro
 // ---------------------------------------------------------------------------
 // CALL 4 - Fresh report sections only
 // ---------------------------------------------------------------------------
-async function runProjectPlanCall(confirmedUnderstanding, recommendationData, gapAnswers, apiKey) {
+async function runProjectPlanCall(confirmedUnderstanding, recommendationData, gapAnswers, confirmedTools, apiKey) {
   const fullContext = loadContextBundle(['businessAnalyst', 'strategicProductDirector', 'projectReadiness']);
   const gapAnswerText = formatGapAnswers(gapAnswers);
+  const confirmedToolText = formatConfirmedTools(confirmedTools);
   const buildPrompt = (isRetry) => `You are operating as Resolve's project-plan handoff writer.
 
 The following are the real ResolveOS Business Analyst role, Strategic Product Director role, and project-readiness governance files. Follow them exactly, especially the rules about evidence over invention, documenting assumptions, not approving fake certainty, and not padding optional sections.
@@ -511,6 +597,9 @@ ${JSON.stringify(recommendationData, null, 2)}
 
 PAIRED GAP ANSWERS:
 ${gapAnswerText}
+
+CONFIRMED TOOLS:
+${confirmedToolText}
 
 TASK:
 Return ONLY valid JSON matching this EXACT shape:

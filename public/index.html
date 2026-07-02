@@ -235,6 +235,53 @@ input[type="text"] { height: 48px; font-size: 14px; }
 }
 .gap-input:focus { border-color: var(--amber); }
 .gap-input::placeholder { color: var(--ink-ghost); }
+.tool-confirm-section {
+  margin: 12px 0 4px;
+}
+.tool-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tool-chip {
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--ink-soft);
+  border-radius: 999px;
+  padding: 7px 11px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, min-width 0.25s ease;
+}
+.tool-chip.active {
+  border-color: var(--amber);
+  background: var(--amber-light);
+  color: var(--terracotta);
+}
+.tool-chip.adding {
+  min-width: 170px;
+  padding: 4px 6px;
+}
+.tool-chip-input {
+  width: 112px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  padding: 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.tool-chip-confirm {
+  border: none;
+  background: var(--amber);
+  color: white;
+  border-radius: 999px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
 .assumed-item {
   background: var(--amber-light); border: 1px solid #E8D5A0; border-radius: var(--radius);
   padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 10px;
@@ -269,7 +316,51 @@ input[type="text"] { height: 48px; font-size: 14px; }
 }
 .action-card:hover { border-color: var(--amber); background: var(--amber-light); }
 .action-icon { font-size: 16px; flex-shrink: 0; }
-.action-text { font-size: 13px; font-weight: 500; color: var(--ink); line-height: 1.35; }
+.action-body { min-width: 0; flex: 1; }
+.action-text { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.35; }
+.action-desc { font-size: 11px; color: var(--ink-soft); line-height: 1.35; margin-top: 4px; }
+.output-card {
+  flex-direction: column;
+}
+.output-card-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+.output-card.is-working {
+  cursor: wait;
+  opacity: 0.82;
+}
+.output-preview {
+  width: 100%;
+  border-top: 1px solid var(--border);
+  margin-top: 10px;
+  padding-top: 10px;
+}
+.output-preview-text {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-height: 44px;
+  overflow: hidden;
+  white-space: pre-wrap;
+}
+.output-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.mini-btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
 .bottom-bar {
   position: sticky; bottom: 0; left: 0; right: 0; background: var(--surface);
   border-top: 1px solid var(--border); padding: 12px 20px 20px;
@@ -456,6 +547,7 @@ input[type="text"] { height: 48px; font-size: 14px; }
 .plan-card {
   border-color: rgba(200,160,64,0.9);
   background: var(--amber-light);
+  margin-bottom: 10px;
 }
 .plan-card .action-icon,
 .plan-card .action-text { color: var(--terracotta); }
@@ -686,6 +778,10 @@ input[type="text"] { height: 48px; font-size: 14px; }
       <div class="confirm-row">
         <button class="btn-outline" id="edit-understanding-btn" type="button" onclick="toggleUnderstandingEdit()" style="flex:none; padding:10px 20px;">✏️ Edit</button>
       </div>
+      <div class="tool-confirm-section collapsed" id="tool-confirm-section">
+        <div class="section-title">Tools we noticed you mentioned</div>
+        <div class="tool-chip-row" id="tool-chip-row"></div>
+      </div>
       <div class="divider"></div>
       <div class="section-title" id="s2-gap-title">Two things Resolve still needs</div>
       <div class="gap-item">
@@ -746,16 +842,16 @@ input[type="text"] { height: 48px; font-size: 14px; }
       </div>
       <div class="eyebrow" style="margin-top:20px;">Next steps</div>
       <div class="action-card-primary">
-        <div class="resolve-mark">
+        <div class="resolve-mark" id="primary-rec-icon">
           <svg viewBox="0 0 24 24" fill="none"><path d="M4 13L10 19L20 6" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
         <div>
-          <div class="apt-eyebrow">Resolve recommends</div>
+          <div class="apt-eyebrow" id="primary-rec-label">Do this first</div>
           <div class="apt-title">Shortlist to one name and test it this week</div>
         </div>
       </div>
-      <div class="action-grid" id="action-grid">
-        <div class="action-card plan-card" id="plan-card" onclick="handleProjectPlanClick()"><span class="action-icon" id="plan-icon">⬇</span><span class="action-text" id="plan-text">Output my project plan</span></div>
+      <div class="action-card plan-card" id="plan-card" onclick="handleProjectPlanClick()"><span class="action-icon" id="plan-icon">⬇</span><span class="action-text" id="plan-text">Output my project plan</span></div>
+      <div class="action-grid" id="output-grid">
       </div>
       <div class="field">
         <textarea placeholder="Or ask Resolve something specific about this project…" style="height:72px;"></textarea>
@@ -777,6 +873,8 @@ let recommendationData = null; // result from Call 2 (post QA-check)
 let projectPlanData = null; // result from Call 4
 let pendingCall = 'understand'; // tracks which call the processing screen should retry
 let isEditingUnderstanding = false;
+let confirmedTools = [];
+let outputContentCache = {};
 
 const total = 6;
 const screenIds = ['screen-0','screen-1','screen-processing','screen-2','screen-3','screen-4'];
@@ -818,6 +916,100 @@ function answeredGapSummary(gapAnswers) {
   const answered = (gapAnswers || []).filter(item => item.answer);
   if (!answered.length) return 'Based on what you confirmed.';
   return `Using your answer to "${answered[0].question}" as added context.`;
+}
+
+function getConfirmedTools() {
+  return confirmedTools.filter(tool => tool.active).map(tool => tool.name);
+}
+
+function markdownList(items, fallback = '- Nothing specific was confirmed.') {
+  const safeItems = (items || []).filter(Boolean);
+  return safeItems.length ? safeItems.map(item => `- ${item}`).join('\n') : fallback;
+}
+
+function formatGapMarkdown() {
+  const answered = collectGapAnswers().filter(item => item.answer);
+  if (!answered.length) return '- No extra gap answers were provided.';
+  return answered.map(item => `- ${item.question}: ${item.answer}`).join('\n');
+}
+
+function formatDoNotYet() {
+  const items = recommendationData?.doNotYet || [];
+  if (!items.length) return '- No specific stop-list items were confirmed.';
+  return items.map(item => `- ${item.item}: ${item.reason}`).join('\n');
+}
+
+function formatRoadmap() {
+  const roadmap = recommendationData?.roadmap || [];
+  if (!roadmap.length) return '- No roadmap phases were generated.';
+  return roadmap.map(item => `- ${item.phase}: ${item.action} (${item.output})`).join('\n');
+}
+
+function buildProjectBriefMarkdown({ notion = false } = {}) {
+  const heading = notion ? '# Resolve Project Brief' : '# Project Brief';
+  const props = notion ? `Status:: ${recommendationData?.topCardType === 'decision' ? 'Decision needed' : 'Action ready'}\nPhase:: ${understandingData?.state || 'Unclear'}\nOwner:: Project owner\nLast updated:: Today\n\n` : '';
+  return `${heading}
+
+${props}## Project
+${understandingData?.project || 'Project not clearly defined yet.'}
+
+## Objective
+${understandingData?.goal || 'Goal not clearly defined yet.'}
+
+## Current State
+${understandingData?.state || 'Current state not clearly defined yet.'}
+
+## Recommended Next Move
+${recommendationData?.recommendedAction || 'No recommendation generated yet.'}
+
+${recommendationData?.why || ''}
+
+## Top Priorities
+${markdownList(recommendationData?.topPriorities)}
+
+## What Not To Do Yet
+${formatDoNotYet()}
+
+## Key Assumptions
+${markdownList(understandingData?.assumptions)}
+`;
+}
+
+function buildFullReportMarkdown() {
+  if (!projectPlanData) return buildProjectBriefMarkdown();
+  const risks = Array.isArray(projectPlanData.risks) && projectPlanData.risks.length
+    ? projectPlanData.risks.map(item => `- ${item.risk}: ${item.whyItMatters}`).join('\n')
+    : '';
+  return `# Resolve Project Plan
+
+## 1. Project Identity, Objective, and Phase
+Project: ${understandingData?.project || 'Not clear yet.'}
+Objective: ${understandingData?.goal || 'Not clear yet.'}
+Current phase: ${understandingData?.state || 'Not clear yet.'}
+
+## 2. Highest-Leverage Next Action
+${recommendationData?.recommendedAction || 'No recommendation generated yet.'}
+
+${recommendationData?.why || ''}
+
+## 3. Top Priorities
+${markdownList(recommendationData?.topPriorities)}
+
+## 4. What Not To Do Yet
+${formatDoNotYet()}
+
+## 5. Speculative Long-Term Roadmap
+${(projectPlanData.longTermRoadmap || []).map(item => `- ${item.phase}: ${item.direction} (${item.note})`).join('\n')}
+
+## 6. Readiness
+${(projectPlanData.readiness || []).map(item => `- ${item.area}: ${item.status} - ${item.note}`).join('\n')}
+${risks ? `\n## 7. Risks\n${risks}\n` : ''}
+## 8. Sharing Paragraph
+${projectPlanData.sharingParagraph || ''}
+
+## 9. How To Use This
+${projectPlanData.howToUseThis || ''}
+`;
 }
 
 function updateNav() {
@@ -963,6 +1155,11 @@ function populateScreen2(d) {
   isEditingUnderstanding = false;
   document.getElementById('edit-understanding-btn').textContent = '✏️ Edit';
   renderUnderstandingCards(d);
+  confirmedTools = (Array.isArray(d.mentionedTools) ? d.mentionedTools : [])
+    .filter(Boolean)
+    .slice(0, 5)
+    .map(name => ({ name, active: true }));
+  renderToolConfirmation();
 
   if (Array.isArray(d.gapQuestions) && d.gapQuestions.length >= 2) {
     document.getElementById('s2-gap1-q').textContent = d.gapQuestions[0];
@@ -979,6 +1176,68 @@ function populateScreen2(d) {
     div.querySelector('.assumed-text').textContent = a;
     assumptionsEl.appendChild(div);
   });
+}
+
+function renderToolConfirmation({ adding = false } = {}) {
+  const section = document.getElementById('tool-confirm-section');
+  const row = document.getElementById('tool-chip-row');
+  row.innerHTML = '';
+
+  if (!confirmedTools.length && !adding) {
+    section.classList.add('collapsed');
+    return;
+  }
+
+  section.classList.remove('collapsed');
+  confirmedTools.forEach((tool, index) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'tool-chip' + (tool.active ? ' active' : '');
+    chip.textContent = tool.name;
+    chip.onclick = () => {
+      confirmedTools[index].active = !confirmedTools[index].active;
+      renderToolConfirmation();
+    };
+    row.appendChild(chip);
+  });
+
+  if (!adding) {
+    const addChip = document.createElement('button');
+    addChip.type = 'button';
+    addChip.className = 'tool-chip';
+    addChip.textContent = '+ Add';
+    addChip.onclick = () => renderToolConfirmation({ adding: true });
+    row.appendChild(addChip);
+    return;
+  }
+
+  const addChip = document.createElement('div');
+  addChip.className = 'tool-chip adding active';
+  addChip.innerHTML = '<input class="tool-chip-input" id="tool-chip-input" type="text" placeholder="Tool name"><button class="tool-chip-confirm" type="button" aria-label="Add tool">✓</button>';
+  row.appendChild(addChip);
+  const input = document.getElementById('tool-chip-input');
+  const confirm = addChip.querySelector('.tool-chip-confirm');
+  const addTool = () => {
+    const name = input.value.trim();
+    if (name && !confirmedTools.some(tool => tool.name.toLowerCase() === name.toLowerCase())) {
+      confirmedTools.push({ name, active: true });
+    }
+    renderToolConfirmation();
+  };
+  input.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      addTool();
+    }
+    if (event.key === 'Escape') {
+      renderToolConfirmation();
+    }
+  });
+  confirm.onclick = event => {
+    event.stopPropagation();
+    addTool();
+  };
+  setTimeout(() => input.focus(), 0);
 }
 
 function renderUnderstandingCards(d) {
@@ -1043,7 +1302,8 @@ async function runRecommendationCall() {
       body: JSON.stringify({
         stage: 'recommend',
         confirmedUnderstanding: understandingData,
-        gapAnswers
+        gapAnswers,
+        confirmedTools: getConfirmedTools()
       })
     });
 
@@ -1086,31 +1346,247 @@ function populateScreen3(d) {
 function populateScreen4(d) {
   const titleEl = document.querySelector('#screen-4 .apt-title');
   if (titleEl) titleEl.textContent = d.recommendedAction || 'Your recommended next move';
+  const labelEl = document.getElementById('primary-rec-label');
+  const iconEl = document.getElementById('primary-rec-icon');
+  if (labelEl) labelEl.textContent = d.topCardType === 'decision' ? 'Decide this first' : 'Do this first';
+  if (iconEl) {
+    if (d.topCardType === 'decision') {
+      iconEl.textContent = '⚖️';
+    } else {
+      iconEl.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 13L10 19L20 6" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    }
+  }
   document.getElementById('s4-win-desc').textContent = d.winSummary || "A messy project with no clear direction \u2014 turned into a focused path forward. That's the hard part done.";
-  renderSecondaryActions(d.secondaryActions);
+  renderOutputTemplates(d.outputTemplates);
 }
 
-function renderSecondaryActions(actions) {
-  const grid = document.getElementById('action-grid');
-  const planCard = document.getElementById('plan-card');
-  grid.querySelectorAll('.action-card:not(.plan-card)').forEach(card => card.remove());
+function renderOutputTemplates(templates) {
+  const grid = document.getElementById('output-grid');
+  grid.innerHTML = '';
 
-  const safeActions = Array.isArray(actions) ? actions.slice(0, 5) : [];
-  safeActions.forEach(action => {
+  const safeTemplates = Array.isArray(templates) ? templates.slice(0, 6) : [];
+  safeTemplates.forEach(template => {
     const card = document.createElement('div');
-    card.className = 'action-card';
+    card.className = 'action-card output-card';
+    card.dataset.templateId = template.templateId;
+    card.onclick = () => handleOutputTemplateClick(template.templateId);
 
     const icon = document.createElement('span');
     icon.className = 'action-icon';
-    icon.textContent = action.icon || '\u2022';
+    icon.textContent = template.icon || '\u2022';
+
+    const body = document.createElement('div');
+    body.className = 'action-body';
 
     const text = document.createElement('span');
     text.className = 'action-text';
-    text.textContent = action.label || 'Review this project step';
+    text.textContent = template.label || 'Generate project output';
 
-    card.append(icon, text);
-    grid.insertBefore(card, planCard);
+    const desc = document.createElement('div');
+    desc.className = 'action-desc';
+    desc.textContent = template.description || 'Create a useful output from this session.';
+
+    const main = document.createElement('div');
+    main.className = 'output-card-main';
+    body.append(text, desc);
+    main.append(icon, body);
+    card.append(main);
+
+    grid.appendChild(card);
   });
+}
+
+async function handleOutputTemplateClick(templateId) {
+  const card = document.querySelector(`.output-card[data-template-id="${templateId}"]`);
+  if (!card || card.classList.contains('is-working') || card.classList.contains('is-expanded')) return;
+
+  card.classList.add('is-working');
+  const original = card.innerHTML;
+  card.innerHTML = `<div class="output-card-main"><span class="mini-spinner" aria-hidden="true"></span><div class="action-body"><span class="action-text">Generating output</span><div class="action-desc">Assembling this from your session</div></div></div>`;
+
+  setTimeout(() => {
+    const content = generateOutput(templateId);
+    outputContentCache[templateId] = content;
+    card.classList.remove('is-working');
+    card.classList.add('is-expanded');
+    card.innerHTML = `${original}
+      <div class="output-preview">
+        <div class="output-preview-text">${escapeHtml(content)}</div>
+        <div class="output-actions">
+          <button class="mini-btn" type="button" onclick="copyOutputContent(event, '${templateId}')">Copy</button>
+          <button class="mini-btn" type="button" onclick="closeOutputCard(event)">Close</button>
+        </div>
+      </div>`;
+  }, 180);
+}
+
+async function copyOutputContent(event, templateId) {
+  event.stopPropagation();
+  const button = event.currentTarget;
+  const content = outputContentCache[templateId] || generateOutput(templateId);
+  try {
+    await navigator.clipboard.writeText(content);
+    button.textContent = 'Copied ✓';
+    setTimeout(() => { button.textContent = 'Copy'; }, 1400);
+  } catch {
+    button.textContent = 'Select text';
+  }
+}
+
+function closeOutputCard(event) {
+  event.stopPropagation();
+  renderOutputTemplates(recommendationData?.outputTemplates || []);
+}
+
+function generateOutput(templateId) {
+  const project = understandingData?.project || 'this project';
+  const goal = understandingData?.goal || 'the intended outcome';
+  const state = understandingData?.state || 'the current state is still being clarified';
+  const recommendation = recommendationData?.recommendedAction || 'clarify the next concrete move';
+  const why = recommendationData?.why || 'because it is the clearest way to move from uncertainty to progress.';
+  const milestone = recommendationData?.milestone || 'A clear next step is defined and ready to act on.';
+  const openDecision = recommendationData?.openDecision || recommendation;
+  const priorities = recommendationData?.topPriorities || [recommendation];
+
+  const templates = {
+    'key-decision': () => `# Key Decision
+
+Decision: ${openDecision}
+
+Why it is blocking: ${why}
+
+Options:
+- Do the smallest reversible version first: lowest risk, but may not answer every question.
+- Decide now and move into execution: faster, but only sensible if the evidence already feels strong enough.
+- Pause to validate the riskiest assumption: slower upfront, but reduces the chance of building around the wrong premise.
+
+Suggested lean: start with the option that creates the clearest evidence fastest.`,
+
+    'one-week-plan': () => `# One-Week Action Plan
+
+1. ${priorities[0] || recommendation}
+Done when: ${milestone}
+Timebox: 60-90 minutes.
+
+2. ${priorities[1] || 'Turn the recommendation into a visible artifact someone can react to.'}
+Done when: one draft, shortlist, brief, or testable version exists.
+Timebox: 2 focused hours.
+
+3. ${priorities[2] || 'Ask one relevant person or tool to stress-test the next move.'}
+Done when: you have one concrete piece of feedback or evidence.
+Timebox: 30-45 minutes.`,
+
+    'ai-continuation': () => `I am continuing a project from Resolve. Here is the context:
+
+Project: ${project}
+Goal: ${goal}
+Current state: ${state}
+
+Resolve recommended this next move:
+${recommendation}
+
+Why:
+${why}
+
+Milestone:
+${milestone}
+
+Top priorities:
+${markdownList(priorities)}
+
+Things not to do yet:
+${formatDoNotYet()}
+
+Extra answers from me:
+${formatGapMarkdown()}
+
+Please help me work through the next practical step. Keep the advice grounded in this context and do not re-ask for information already provided above.`,
+
+    'plain-english': () => `${project} The goal is ${goal.toLowerCase()}. Right now, ${state.toLowerCase()}. The next useful move is to ${recommendation.toLowerCase()} because ${why.toLowerCase()}`,
+
+    'share-message': () => `I'm working on ${project}. Resolve helped me narrow it down to one next move: ${recommendation}. I could use a quick second pair of eyes on whether this feels like the right thing to do next.`,
+
+    'project-brief': () => buildFullReportMarkdown(),
+
+    'stakeholder-update': () => `Quick project update:
+
+Where we are: ${state}
+
+What changed: Resolve narrowed the project down to this next move: ${recommendation}
+
+Why this matters: ${why}
+
+What I need next: feedback on whether this next move and milestone feel right before I go further.`,
+
+    'risk-summary': () => {
+      const risks = Array.isArray(projectPlanData?.risks) && projectPlanData.risks.length
+        ? projectPlanData.risks.map(item => `- ${item.risk}: ${item.whyItMatters} Watch for: ${item.sourceSignal}`).join('\n')
+        : `- ${understandingData?.uncertainty || 'The main uncertainty is not fully resolved yet.'}: this could affect whether the recommendation is the right first move.\n${formatDoNotYet()}`;
+      return `# What Could Go Wrong
+
+${risks}`;
+    },
+
+    'notion-brief': () => buildProjectBriefMarkdown({ notion: true }),
+
+    'ai-handoff': () => `# AI Handoff Context
+
+You are helping me with this project from a fresh conversation.
+
+Project context:
+${project}
+
+Goal:
+${goal}
+
+Current state:
+${state}
+
+Recommended next move:
+${recommendation}
+
+Reasoning:
+${why}
+
+Please act as a practical project partner. Help me turn the recommendation into a usable next artifact, and do not ask me to repeat the context above unless something is genuinely missing.`,
+
+    'stop-list': () => `# What To Avoid Right Now
+
+${formatDoNotYet()}`,
+
+    'speculative-roadmap': () => `# Where This Could Go
+
+If the immediate priorities go well, here's a plausible longer-term direction. This is extrapolation, not a plan.
+
+${(projectPlanData?.longTermRoadmap || recommendationData?.roadmap || []).map(item => `- ${item.phase}: ${item.direction || item.action} ${item.note ? `(${item.note})` : item.output ? `(${item.output})` : ''}`).join('\n') || '- Generate the full project plan first to get a grounded speculative roadmap.'}`,
+
+    'elevator-pitch': () => `${project} It is for moving from ${state.toLowerCase()} toward ${goal.toLowerCase()}.`,
+
+    'name-ideas': () => `# Name Ideas
+
+1. Clearpath - suggests making progress through uncertainty; may not capture the project's specific domain.
+2. First Move - highlights action and momentum; may feel broad.
+3. Signal Plan - suggests evidence-led planning; may feel slightly analytical.
+4. Northstep - suggests direction plus action; may feel abstract.
+5. Proofline - suggests a path built from evidence; may not suit a softer consumer project.`,
+
+    'github-issue': () => `# ${recommendation}
+
+## Description
+${why}
+
+## Done When
+- ${milestone}
+- The next action is documented clearly enough for someone else to understand.
+- Any remaining assumptions are listed rather than hidden.
+
+## Suggested Labels
+- project-intake
+- next-action
+- needs-validation`,
+  };
+
+  return (templates[templateId] || templates['project-brief'])();
 }
 
 async function handleProjectPlanClick() {
@@ -1134,7 +1610,8 @@ async function handleProjectPlanClick() {
         stage: 'plan',
         confirmedUnderstanding: understandingData,
         recommendationData,
-        gapAnswers: collectGapAnswers()
+        gapAnswers: collectGapAnswers(),
+        confirmedTools: getConfirmedTools()
       })
     });
 
@@ -1314,6 +1791,8 @@ function resetFlow() {
   projectPlanData = null;
   pendingCall = 'understand';
   isEditingUnderstanding = false;
+  confirmedTools = [];
+  outputContentCache = {};
   screen0Stage = 'name';
 
   ['name-input', 'project-input', 'supporting-material', 'gap1', 'gap2'].forEach(id => {
@@ -1341,6 +1820,8 @@ function resetFlow() {
   document.getElementById('s4-win-desc').textContent = "A messy project with no clear direction \u2014 turned into a focused path forward. That's the hard part done.";
   document.getElementById('s2-gap1-q').textContent = 'What would make this session a success for you?';
   document.getElementById('s2-gap2-q').textContent = 'What else should Resolve know before recommending a next move?';
+  document.getElementById('tool-confirm-section').classList.add('collapsed');
+  document.getElementById('tool-chip-row').innerHTML = '';
   document.getElementById('optional-section').classList.add('collapsed');
   document.getElementById('handoff-panel').classList.add('collapsed');
   document.getElementById('mic-status').textContent = '';
@@ -1348,7 +1829,9 @@ function resetFlow() {
 
   const planCard = document.getElementById('plan-card');
   planCard.classList.remove('is-working', 'is-ready');
-  renderSecondaryActions([]);
+  renderOutputTemplates([]);
+  document.getElementById('primary-rec-label').textContent = 'Do this first';
+  document.getElementById('primary-rec-icon').innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 13L10 19L20 6" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   document.getElementById('plan-icon').textContent = '⬇';
   document.getElementById('plan-text').textContent = 'Output my project plan';
 
