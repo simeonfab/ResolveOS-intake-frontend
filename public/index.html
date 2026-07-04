@@ -395,8 +395,19 @@ input[type="text"] { height: 48px; font-size: 14px; }
   padding-top: 12px;
 }
 .primary-rec-message { color: #FFF; font-size: 13px; line-height: 1.45; margin-bottom: 6px; }
-.primary-rec-soon { color: rgba(255,255,255,0.58); font-size: 12px; line-height: 1.45; margin-bottom: 10px; }
+.primary-rec-status { color: rgba(255,255,255,0.58); font-size: 12px; line-height: 1.45; margin-bottom: 10px; }
+.primary-rec-status.error { color: #F2B8B5; }
 .primary-rec-expanded .mini-btn { background: rgba(255,255,255,0.08); color: #FFF; border-color: rgba(255,255,255,0.18); }
+.primary-rec-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.primary-rec-actions .mini-btn.primary {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--ink);
+}
+.primary-rec-actions .mini-btn[disabled] {
+  cursor: wait;
+  opacity: 0.72;
+}
 .bottom-bar {
   position: sticky; bottom: 0; left: 0; right: 0; background: var(--surface);
   border-top: 1px solid var(--border); padding: 12px 20px 20px;
@@ -897,9 +908,12 @@ input[type="text"] { height: 48px; font-size: 14px; }
           <div class="apt-title">Shortlist to one name and test it this week</div>
         </div>
         <div class="primary-rec-expanded collapsed" id="primary-rec-expanded">
-          <div class="primary-rec-message">This will connect to the next stage of your Resolve journey.</div>
-          <div class="primary-rec-soon">Coming soon &mdash; join the next cohort to be first.</div>
-          <button class="mini-btn" type="button" onclick="closePrimaryRecommendationCard(event)">Close</button>
+          <div class="primary-rec-message">Turn this session into a ResolvePM workspace with your project context carried across.</div>
+          <div class="primary-rec-status" id="primary-rec-status">This will send your confirmed session data to ResolvePM and open the secure sign-up flow.</div>
+          <div class="primary-rec-actions">
+            <button class="mini-btn primary" id="primary-rec-handoff-btn" type="button" onclick="handleResolvePmHandoff(event)">Open in ResolvePM</button>
+            <button class="mini-btn" type="button" onclick="closePrimaryRecommendationCard(event)">Close</button>
+          </div>
         </div>
       </div>
       <div class="action-card plan-card" id="plan-card" onclick="handleProjectPlanClick()"><span class="action-icon" id="plan-icon">⬇</span><span class="action-text" id="plan-text">Output my project plan</span></div>
@@ -928,8 +942,11 @@ let isEditingUnderstanding = false;
 let confirmedTools = [];
 let outputContentCache = {};
 let outputCardState = {};
+let handoffInProgress = false;
 let recommendationStatusTimer = null;
 let recommendationStatusIndex = 0;
+
+const RESOLVE_PM_HANDOFF_URL = '/api/project-handoffs';
 
 const total = 6;
 const screenIds = ['screen-0','screen-1','screen-processing','screen-2','screen-3','screen-4'];
@@ -1498,6 +1515,126 @@ function closePrimaryRecommendationCard(event) {
   const panel = document.getElementById('primary-rec-expanded');
   if (card) card.classList.remove('is-expanded');
   if (panel) panel.classList.add('collapsed');
+}
+
+function setPrimaryHandoffState({ working = false, message = '', error = false } = {}) {
+  const button = document.getElementById('primary-rec-handoff-btn');
+  const status = document.getElementById('primary-rec-status');
+
+  handoffInProgress = working;
+
+  if (button) {
+    button.disabled = working;
+    button.textContent = working ? 'Opening ResolvePM' : 'Open in ResolvePM';
+  }
+
+  if (status) {
+    status.textContent = message || 'This will send your confirmed session data to ResolvePM and open the secure sign-up flow.';
+    status.classList.toggle('error', Boolean(error));
+  }
+}
+
+function getOutputTemplatesUsed() {
+  const templates = Array.isArray(recommendationData?.outputTemplates)
+    ? recommendationData.outputTemplates
+    : [];
+  return templates
+    .filter(template => outputContentCache[template.templateId])
+    .map(template => ({
+      templateId: template.templateId,
+      label: template.label,
+      description: template.description
+    }));
+}
+
+function buildResolvePmHandoffPayload() {
+  return {
+    project_understanding: understandingData,
+    recommended_action: recommendationData?.recommendedAction || '',
+    top_priorities: recommendationData?.topPriorities || [],
+    what_not_to_do: recommendationData?.doNotYet || [],
+    confirmed_tools: getConfirmedTools(),
+    project_plan_report: buildFullReportMarkdown(),
+    gap_answers: collectGapAnswers(),
+    output_templates_used: getOutputTemplatesUsed()
+  };
+}
+
+async function ensureProjectPlanData() {
+  if (projectPlanData) return projectPlanData;
+
+  const res = await fetch('/api/resolve', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      stage: 'plan',
+      confirmedUnderstanding: understandingData,
+      recommendationData,
+      gapAnswers: collectGapAnswers(),
+      confirmedTools: getConfirmedTools()
+    })
+  });
+
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody.error || 'Could not build your project plan.');
+  }
+
+  projectPlanData = await res.json();
+  const planCard = document.getElementById('plan-card');
+  if (planCard) {
+    planCard.classList.remove('is-working');
+    planCard.classList.add('is-ready');
+  }
+  document.getElementById('plan-icon').textContent = '↓';
+  document.getElementById('plan-text').textContent = 'Download report';
+  return projectPlanData;
+}
+
+async function handleResolvePmHandoff(event) {
+  if (event) event.stopPropagation();
+  if (handoffInProgress) return;
+
+  if (!understandingData || !recommendationData) {
+    setPrimaryHandoffState({
+      error: true,
+      message: 'Resolve needs a completed recommendation before it can open ResolvePM.'
+    });
+    return;
+  }
+
+  setPrimaryHandoffState({
+    working: true,
+    message: projectPlanData
+      ? 'Sending your session to ResolvePM...'
+      : 'Building your project plan, then sending it to ResolvePM...'
+  });
+
+  try {
+    await ensureProjectPlanData();
+    const res = await fetch(RESOLVE_PM_HANDOFF_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(buildResolvePmHandoffPayload())
+    });
+
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || !body.signup_url) {
+      throw new Error(body.error || 'ResolvePM could not create the handoff.');
+    }
+
+    setPrimaryHandoffState({
+      working: true,
+      message: 'Opening ResolvePM sign-up...'
+    });
+    window.location.assign(body.signup_url);
+  } catch (err) {
+    console.error(err);
+    setPrimaryHandoffState({
+      error: true,
+      message: err.message || 'ResolvePM handoff failed. Try again.'
+    });
+  }
 }
 
 function renderOutputTemplates(templates) {
