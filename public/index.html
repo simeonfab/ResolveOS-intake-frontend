@@ -32,15 +32,15 @@ html, body {
 }
 
 @media (min-width: 768px) {
-  html, body { background: #0F0F0D; }
+  html, body { background: var(--surface); }
 
   .phone {
     display: grid;
-    grid-template-columns: 280px 1fr;
+    grid-template-columns: 308px 1fr;
     grid-template-rows: auto 1fr;
     min-height: 100vh;
-    max-width: 960px;
-    margin: 0 auto;
+    max-width: none;
+    margin: 0;
     border-radius: 0;
     box-shadow: none;
     background: var(--surface);
@@ -51,21 +51,23 @@ html, body {
     grid-column: 1 / -1;
     display: flex;
     align-items: center;
-    gap: 24px;
-    padding: 14px 32px;
+    gap: 20px;
+    height: 64px;
+    padding: 0 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
   }
 
   .nav-top { margin-bottom: 0; }
 
-  .progress-wrap { flex: 1; max-width: 400px; }
+  .progress-wrap { flex: 1; max-width: 360px; }
 
   /* Sidebar */
   .desktop-sidebar {
     display: flex;
     flex-direction: column;
-    background: #1A1A16;
-    padding: 32px 24px;
-    min-height: calc(100vh - 56px);
+    background: var(--ink);
+    padding: 26px 24px;
+    min-height: calc(100vh - 64px);
     border-right: 1px solid rgba(255,255,255,0.06);
     opacity: 0;
     transition: opacity 0.35s ease;
@@ -80,35 +82,34 @@ html, body {
 
   .sidebar-step {
     display: flex; align-items: flex-start; gap: 12px;
-    margin-bottom: 20px; opacity: 0.3; transition: opacity 0.3s;
+    margin-bottom: 22px; opacity: 1; transition: opacity 0.3s;
   }
-  .sidebar-step.done { opacity: 0.5; }
-  .sidebar-step.active { opacity: 1; }
 
   .step-num {
-    width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.2);
+    width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.16);
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4);
-    flex-shrink: 0; margin-top: 1px;
+    font-size: 12px; font-weight: 600; color: #8A8578;
+    flex-shrink: 0; margin-top: 0;
   }
-  .sidebar-step.active .step-num { border-color: var(--amber); color: var(--amber); background: rgba(200,160,64,0.1); }
-  .sidebar-step.done .step-num { background: rgba(200,160,64,0.2); border-color: var(--amber); color: var(--amber); }
+  .sidebar-step.active .step-num { border-color: var(--amber); color: var(--amber); background: none; }
+  .sidebar-step.done .step-num { background: none; border-color: var(--amber); color: var(--amber); }
 
   .step-info {}
-  .step-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.5); margin-bottom: 3px; }
-  .sidebar-step.active .step-name { color: #FFFFFF; }
-  .sidebar-step.done .step-name { color: rgba(255,255,255,0.4); }
-  .step-desc { font-size: 12px; color: rgba(255,255,255,0.3); line-height: 1.4; }
-  .sidebar-step.active .step-desc { color: rgba(255,255,255,0.5); }
+  .step-name { font-size: 13.5px; font-weight: 600; color: #6B665A; margin-bottom: 3px; }
+  .sidebar-step.active .step-name { color: #F5F1E8; }
+  .sidebar-step.done .step-name { color: #6B665A; }
+  .step-desc { font-size: 12px; color: #57534A; line-height: 1.45; }
+  .sidebar-step.active .step-desc { color: #9A9488; }
 
-  .sidebar-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 24px 0; }
+  .sidebar-divider { display: none; }
 
   .sidebar-badge {
-    background: rgba(200,160,64,0.08); border: 1px solid rgba(200,160,64,0.2);
-    border-radius: 8px; padding: 14px;
+    margin-top: auto;
+    background: none; border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px; padding: 14px;
   }
-  .sidebar-badge-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); margin-bottom: 6px; }
-  .sidebar-badge-text { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.5; }
+  .sidebar-badge-label { font-size: 11px; font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--amber); margin-bottom: 6px; }
+  .sidebar-badge-text { font-size: 12px; color: #8A8578; line-height: 1.5; }
 
   /* Content area on desktop */
   .content {
@@ -134,30 +135,32 @@ html, body {
   .phase-strip { grid-template-columns: repeat(3, 1fr); }
   .action-grid { grid-template-columns: repeat(3, 1fr); }
 }
-.nav { background: var(--nav-bg); padding: 16px 20px; flex-shrink: 0; position: relative; }
-.nav-top { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-.nav-logo { width: 24px; height: 24px; background: var(--amber); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
-.nav-logo svg { width: 13px; height: 13px; }
-.nav-name { font-family: 'DM Serif Display', serif; font-size: 15px; color: #FFF; }
+.nav { background: var(--ink); padding: 16px 20px; flex-shrink: 0; position: relative; }
+.nav-top { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+.nav-logo { width: 26px; height: 26px; background: var(--amber); border-radius: 7px; display: flex; align-items: center; justify-content: center; color: var(--ink); font-family: 'DM Serif Display', serif; font-size: 15px; line-height: 1; }
+.nav-name { font-size: 16px; font-weight: 700; color: #F5F1E8; }
 .reset-btn {
   position: absolute;
   top: 14px;
   right: 18px;
   border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.04);
-  color: rgba(255,255,255,0.64);
+  background: none;
+  color: #8A8578;
   border-radius: var(--radius-sm);
-  padding: 6px 9px;
+  padding: 7px 12px;
   font-family: 'Inter', sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
 }
 .reset-btn:hover { color: #FFF; border-color: rgba(255,255,255,0.28); }
 .progress-wrap { display: flex; align-items: center; gap: 10px; }
-.progress-bar-outer { flex: 1; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+.progress-bar-outer { flex: 1; height: 4px; background: rgba(255,255,255,0.12); border-radius: 2px; overflow: hidden; }
 .progress-bar-inner { height: 100%; background: var(--amber); border-radius: 2px; transition: width 0.4s ease; }
-.progress-label { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.4); white-space: nowrap; flex-shrink: 0; }
+.progress-label { font-size: 12px; font-weight: 600; color: #8A8578; white-space: nowrap; flex-shrink: 0; }
+@media (min-width: 768px) {
+  .reset-btn { top: 50%; transform: translateY(-50%); right: 24px; }
+}
 .content {
   --content-pad-top: 24px;
   --content-pad-x: 20px;
@@ -468,23 +471,59 @@ input[type="text"] { height: 48px; font-size: 14px; }
   min-height: 60vh;
 }
 .screen0-pure h1 { font-size: 34px; }
-#greeting-h1 { font-size: 48px; }
+/* Beat 1 - name entry */
+#s0-h1 { font-size: 40px; }
+input.name-field {
+  max-width: 380px;
+  height: 52px;
+  border: 1.5px solid var(--amber);
+  box-shadow: 0 0 0 3px rgba(200,160,64,0.18);
+  font-size: 16px;
+}
+.name-hint { font-size: 12.5px; color: #8A8578; margin-top: 14px; }
+/* Beat 2 - fused welcome -> problem */
+#greeting-h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 46px;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.1;
+}
 #greeting-sub {
-  font-size: 18px;
+  font-size: 19px;
   line-height: 1.45;
+  color: #6B665A;
+  margin: 14px 0 0;
   max-width: 520px;
   white-space: nowrap;
+  transition: opacity 0.45s ease, transform 0.45s ease;
 }
 #greeting-sub .product-name {
   color: var(--amber);
+  font-weight: 600;
 }
+#greeting-sub.welcome-out {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+.reveal-prompt { margin-top: 34px; width: 100%; transition: opacity 0.5s ease, transform 0.5s ease; }
+.reveal-prompt .eyebrow {
+  font-size: 14px; font-weight: 600; color: var(--terracotta);
+  text-transform: none; letter-spacing: 0; margin-bottom: 6px;
+}
+.reveal-question { font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+.opts { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; max-width: 640px; }
+.opts .journey-option { margin-bottom: 0; transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.2s, background 0.2s; }
+.opts .journey-icon { width: 40px; height: 40px; }
+.opts .journey-option.active { background: #FBF3E4; box-shadow: 0 0 0 3px rgba(200,160,64,0.14); }
+.opts .journey-option.disabled { opacity: 0.5; }
 .inline-affirm-btn {
-  margin-top: 18px;
+  margin-top: 22px;
   background: var(--ink);
   color: white;
   border: none;
   border-radius: var(--radius-sm);
-  padding: 11px 22px;
+  padding: 12px 22px;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   font-weight: 600;
@@ -493,21 +532,27 @@ input[type="text"] { height: 48px; font-size: 14px; }
   transition: background 0.2s, opacity 0.4s ease;
 }
 .inline-affirm-btn:hover { background: #2E2E2A; }
+.inline-affirm-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--ink);
+}
 .inline-affirm-btn.is-hidden {
   opacity: 0;
   pointer-events: none;
 }
 .beat-hidden {
   opacity: 0;
+  transform: translateY(12px);
   pointer-events: none;
 }
-#greeting-h1,
-#greeting-sub {
-  transition: opacity 0.4s ease;
+#greeting-h1 {
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 @media (max-width: 520px) {
   #greeting-h1 { font-size: 40px; }
-  #greeting-sub { font-size: 16px; }
+  #greeting-sub { font-size: 16px; white-space: normal; }
+  #s0-h1 { font-size: 34px; }
 }
 @media (max-width: 360px) {
   #greeting-sub { font-size: 14px; }
@@ -621,23 +666,13 @@ input[type="text"] { height: 48px; font-size: 14px; }
 .plan-card.is-ready .action-icon,
 .plan-card.is-ready .action-text { color: #FFF; }
 
-/* PROCESSING SCREEN */
-.processing-ring {
-  width: 80px; height: 80px; margin-bottom: 28px;
-}
-.processing-ring svg { width: 80px; height: 80px; }
-#progress-circle {
-  transform-origin: center;
-  transform: rotate(-90deg);
-  transition: stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1);
-}
+/* PROCESSING SCREEN (narrated loader) */
 .processing-label {
-  font-family: 'DM Serif Display', serif; font-size: 22px;
-  color: var(--ink); margin-bottom: 10px; line-height: 1.3;
-  transition: opacity 0.28s ease;
+  font-family: 'DM Serif Display', serif; font-size: 28px;
+  color: var(--ink); margin: 0 0 6px; line-height: 1.3;
 }
 .processing-sub {
-  font-size: 14px; color: var(--ink-soft); line-height: 1.5; max-width: 260px;
+  font-size: 14px; color: #6B665A; line-height: 1.5; margin: 0;
 }
 
 /* WIN BANNER */
@@ -651,6 +686,127 @@ input[type="text"] { height: 48px; font-size: 14px; }
   color: #FFFFFF; margin-bottom: 8px; line-height: 1.25;
 }
 .win-desc { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.6; }
+
+/* ============================================================= */
+/* Ticket I1 reskin — screens 1-5, sentence-case labels, loaders */
+/* ============================================================= */
+
+/* Brand rule: sentence case, never ALL CAPS (mockups clean caps) */
+.eyebrow, .card-label, .focus-label, .phase-label, .journey-soon {
+  text-transform: none; letter-spacing: 0;
+}
+
+/* ---- Screen 1: Bring it in ---- */
+#project-input {
+  min-height: 280px;
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px rgba(200,160,64,0.16);
+}
+.starters { margin-top: 16px; max-width: 760px; }
+.starters .lead { font-size: 12.5px; color: #8A8578; margin-bottom: 9px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.starter-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px;
+  padding: 8px 13px; font-size: 13px; font-weight: 500; color: var(--ink);
+  cursor: pointer; font-family: 'Inter', sans-serif;
+}
+.starter-chip:hover { border-color: var(--amber); }
+.starter-chip .pl { color: var(--terracotta); font-weight: 700; }
+.helprow {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 18px; max-width: 760px;
+  border-top: 1px solid var(--border); padding-top: 18px;
+}
+.hbtn {
+  display: inline-flex; align-items: center; gap: 8px; border-radius: 8px;
+  padding: 10px 15px; font-size: 13.5px; font-weight: 600;
+  font-family: 'Inter', sans-serif; cursor: pointer;
+}
+.hbtn.primary { background: var(--card-bg); border: 1px solid var(--amber); color: var(--ink); }
+.hbtn.primary .sp { color: var(--amber); }
+.hbtn.soon { background: transparent; border: 1px dashed var(--border); color: #8A8578; cursor: default; }
+.hbtn.soon .soonlab { font-weight: 500; color: #A8A296; }
+.pastelink {
+  margin-left: auto; font-size: 13px; font-weight: 600; color: var(--terracotta);
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  background: none; border: none; font-family: 'Inter', sans-serif;
+}
+.pastelink svg { width: 13px; height: 13px; }
+.build-hint { font-size: 12.5px; color: #8A8578; }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary:disabled:hover { background: var(--ink); }
+
+/* ---- Loaders: narrated checklist ---- */
+.loader-wrap {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 460px; text-align: center; padding: 0 20px;
+}
+.loader-ring {
+  width: 66px; height: 66px; border-radius: 50%;
+  border: 3px solid rgba(200,160,64,0.2); border-top-color: var(--amber);
+  animation: loader-spin 900ms linear infinite; margin-bottom: 26px;
+}
+@keyframes loader-spin { to { transform: rotate(360deg); } }
+.checklist { display: flex; flex-direction: column; gap: 13px; width: 320px; max-width: 100%; margin-top: 30px; text-align: left; }
+.ci { display: flex; align-items: center; gap: 11px; font-size: 14px; font-weight: 500; }
+.ci .mk {
+  width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: background 0.3s, border-color 0.3s;
+}
+.ci .mk svg { width: 11px; height: 11px; color: var(--ink); opacity: 0; transition: opacity 0.3s; }
+.ci .lb { color: #A8A296; transition: color 0.3s; }
+.ci.done .mk { background: var(--amber); border-color: var(--amber); }
+.ci.done .mk svg { opacity: 1; }
+.ci.done .lb { color: var(--ink); }
+
+/* ---- Screen 2: Confirm understanding ---- */
+.card-grid .card { position: relative; }
+.pencil {
+  position: absolute; top: 12px; right: 12px; width: 26px; height: 26px;
+  border-radius: 6px; border: 1px solid var(--border); background: var(--surface);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.pencil svg { width: 13px; height: 13px; color: #8A8578; }
+.pencil:hover { border-color: var(--amber); }
+.pencil.editing { border-color: var(--amber); background: var(--amber-light); }
+.pencil.editing svg { color: var(--amber); }
+.card-grid .card-label { padding-right: 32px; }
+.gap-item { border-left: 3px solid var(--amber); }
+.assume {
+  background: #FBF3E4; border: 1px solid rgba(200,160,64,0.4); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 11px;
+}
+.assume .ck {
+  width: 20px; height: 20px; border-radius: 50%; background: var(--amber);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+}
+.assume .ck svg { width: 12px; height: 12px; color: var(--ink); }
+.assume .atxt { font-size: 13.5px; color: #5C4A2A; line-height: 1.5; flex: 1; }
+.assume .notquite {
+  color: var(--terracotta); font-weight: 600; cursor: pointer; white-space: nowrap;
+  font-size: 13px; align-self: center; background: none; border: none; font-family: 'Inter', sans-serif;
+}
+.assume .assume-edit { width: 100%; margin-top: 4px; min-height: 64px; font-size: 13.5px; }
+
+/* ---- Screen 3: Your next move ---- */
+#s3-h { font-family: 'Inter', sans-serif; font-size: 26px; font-weight: 700; }
+@media (min-width: 768px) { #s3-h { font-size: 26px; } }
+.focus-card { position: relative; overflow: hidden; padding: 26px; }
+.focus-card .glow {
+  position: absolute; top: -70px; right: -50px; width: 240px; height: 240px;
+  background: radial-gradient(circle, rgba(200,160,64,0.2), transparent 70%); pointer-events: none;
+}
+.focus-label, .focus-action, .focus-why { position: relative; }
+.focus-action { font-size: 26px; line-height: 1.28; }
+.phase-strip { gap: 14px; }
+.phase-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.phase-card.now { border-color: var(--amber); border-width: 1.5px; }
+.phase-label { font-size: 11px; font-weight: 600; color: #8A8578; margin-bottom: 8px; }
+.phase-card.now .phase-label { color: var(--terracotta); }
+.phase-action { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+.phase-output { font-size: 12.5px; color: #6B665A; line-height: 1.45; font-style: italic; }
 </style>
 <script type="text/javascript">
   (function(c,l,a,r,i,t,y){
@@ -664,9 +820,7 @@ input[type="text"] { height: 48px; font-size: 14px; }
 <div class="phone">
   <div class="nav">
     <div class="nav-top">
-      <div class="nav-logo">
-        <svg viewBox="0 0 14 14" fill="none"><path d="M2 7L6 11L12 3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
+      <div class="nav-logo">R</div>
       <span class="nav-name">Resolve</span>
     </div>
     <button class="reset-btn" type="button" onclick="resetFlow()" title="Restart">↻ Reset</button>
@@ -711,7 +865,7 @@ input[type="text"] { height: 48px; font-size: 14px; }
     <div class="sidebar-divider"></div>
 
     <div class="sidebar-badge">
-      <div class="sidebar-badge-label">🔒 After this session</div>
+      <div class="sidebar-badge-label">After this session</div>
       <div class="sidebar-badge-text">Unlock the ability to save your path, track progress, and return to your project any time.</div>
     </div>
   </div>
@@ -720,45 +874,48 @@ input[type="text"] { height: 48px; font-size: 14px; }
 
     <!-- S0 -->
     <div class="screen active" id="screen-0">
+      <!-- Beat 1: name entry -->
       <div id="name-step" class="screen0-step screen0-pure">
         <div class="eyebrow" id="s0-eyebrow">Let's get started</div>
         <h1 id="s0-h1">What's your name?</h1>
-        <div class="field" style="margin-top:24px; max-width:340px;">
-          <input type="text" id="name-input" placeholder="Your first name" onkeydown="if(event.key==='Enter'){event.preventDefault(); revealGreetingStep();}" />
+        <div class="field" style="margin-top:26px; max-width:380px;">
+          <input type="text" id="name-input" class="name-field" placeholder="Your first name" autocomplete="off" oninput="onNameInput()" onkeydown="if(event.key==='Enter'){event.preventDefault(); revealGreetingStep();}" />
         </div>
-        <button class="inline-affirm-btn" onclick="revealGreetingStep()">Continue →</button>
+        <button class="inline-affirm-btn" id="name-continue-btn" onclick="revealGreetingStep()" disabled>Continue →</button>
+        <div class="name-hint">Press Enter to continue</div>
       </div>
 
+      <!-- Beat 2: fused welcome -> problem -->
       <div id="greeting-step" class="screen0-step screen0-pure screen0-step-hidden">
         <h1 id="greeting-h1" class="beat-hidden">Hi.</h1>
-        <p class="subtitle beat-hidden" id="greeting-sub" style="margin-bottom:28px;">Welcome to <span class="product-name">Resolve</span>.</p>
-        <button class="inline-affirm-btn is-hidden" id="get-started-btn" onclick="revealJourneyStep()">Get started →</button>
-      </div>
-
-      <div id="journey-step" class="screen0-step screen0-step-hidden">
-        <div class="eyebrow" id="journey-greeting">So,</div>
-        <h1 id="journey-h1">What do you need help with?</h1>
-        <div class="journey-option active" onclick="selectJourneyAndGo(this)">
-          <div class="journey-icon">🗂️</div>
-          <div>
-            <div class="journey-title">I have a messy project</div>
-            <div class="journey-desc">Notes everywhere, old AI chats, no clear next step. Help me make sense of it.</div>
-          </div>
-        </div>
-        <div class="journey-option disabled">
-          <div class="journey-icon">💡</div>
-          <div>
-            <div class="journey-title">I have a new idea</div>
-            <div class="journey-desc">I want to shape it into something real.</div>
-            <div class="journey-soon">Coming soon</div>
-          </div>
-        </div>
-        <div class="journey-option disabled">
-          <div class="journey-icon">🤔</div>
-          <div>
-            <div class="journey-title">I'm stuck, not sure where to start</div>
-            <div class="journey-desc">Help me figure out what the actual problem is.</div>
-            <div class="journey-soon">Coming soon</div>
+        <p id="greeting-sub" class="beat-hidden">Welcome to <span class="product-name">Resolve</span>.</p>
+        <div class="reveal-prompt beat-hidden" id="journey-block">
+          <div class="eyebrow" id="journey-greeting">So,</div>
+          <div class="reveal-question" id="journey-h1">What do you need help with?</div>
+          <div class="opts">
+            <div class="journey-option active beat-hidden" id="opt-1" onclick="selectJourneyAndGo(this)">
+              <div class="journey-icon">📁</div>
+              <div>
+                <div class="journey-title">I have a messy project</div>
+                <div class="journey-desc">Notes everywhere, old AI chats, no clear next step. Help me make sense of it.</div>
+              </div>
+            </div>
+            <div class="journey-option disabled beat-hidden" id="opt-2">
+              <div class="journey-icon">💡</div>
+              <div>
+                <div class="journey-title">I have a new idea</div>
+                <div class="journey-desc">I want to shape it into something real.</div>
+                <div class="journey-soon">Coming soon</div>
+              </div>
+            </div>
+            <div class="journey-option disabled beat-hidden" id="opt-3">
+              <div class="journey-icon">🧭</div>
+              <div>
+                <div class="journey-title">I'm stuck, not sure where to start</div>
+                <div class="journey-desc">Help me figure out what the actual problem is.</div>
+                <div class="journey-soon">Coming soon</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -766,45 +923,56 @@ input[type="text"] { height: 48px; font-size: 14px; }
 
     <!-- S1 -->
     <div class="screen" id="screen-1">
+      <div class="eyebrow">In your own words</div>
       <h1>Tell Resolve what's going on.</h1>
 
-      <div class="field">
+      <div class="field" style="max-width:760px;">
         <div class="textarea-wrap">
-          <textarea id="project-input" placeholder="Describe the project however you like. What exists, what's confusing, what you're trying to decide, what's blocking you. Don't tidy it up." style="height:220px;"></textarea>
+          <textarea id="project-input" placeholder="Describe the project however you like. What exists, what's confusing, what you're trying to decide, what's blocking you. Don't tidy it up." oninput="onProjectInput()"></textarea>
           <button class="mic-btn" id="mic-btn" onclick="toggleVoiceInput()" title="Voice note">🎙️</button>
         </div>
         <span class="input-hint" id="mic-status"></span>
       </div>
 
-      <button class="handoff-link" type="button" id="handoff-toggle" onclick="toggleHandoffPrompt()">Already started this somewhere else? Get a prompt to pull it in →</button>
-      <div class="handoff-panel collapsed" id="handoff-panel" tabindex="-1" onfocusout="collapseHandoffOnBlur(event)">
+      <div class="starters">
+        <div class="lead">Not sure where to start? Pick one and Resolve drops in a scaffold:</div>
+        <div class="chips">
+          <button class="starter-chip" type="button" onclick="loadStarter('rebrand')"><span class="pl">+</span>A rebrand that's stalled</button>
+          <button class="starter-chip" type="button" onclick="loadStarter('notes')"><span class="pl">+</span>Too many notes, no plan</button>
+          <button class="starter-chip" type="button" onclick="loadStarter('options')"><span class="pl">+</span>Deciding between options</button>
+        </div>
+      </div>
+
+      <div class="helprow">
+        <button class="hbtn primary" type="button" onclick="loadExample()" title="Load an example project"><span class="sp">✦</span>Try an example</button>
+        <button class="hbtn soon" type="button" disabled title="Supporting material is coming soon">Add material<span class="soonlab"> · Coming soon</span></button>
+        <button class="pastelink" type="button" id="handoff-toggle" onclick="toggleHandoffPrompt()">Coming from another AI chat? Get a prompt to pull it in<svg viewBox="0 0 13 13" fill="none"><path d="M2 6.5h8M6.5 3l3.5 3.5L6.5 10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+
+      <div class="handoff-panel collapsed" id="handoff-panel" tabindex="-1" onfocusout="collapseHandoffOnBlur(event)" style="max-width:760px;">
         <p id="handoff-prompt">I am moving this project into Resolve. Summarise everything important from this conversation: project goal, current state, key decisions, open questions, and anything that should not be lost.</p>
         <button class="utility-icon-btn" type="button" onclick="copyHandoffPrompt()">Copy prompt</button>
       </div>
 
-      <div class="s1-utility-row">
-        <button class="utility-icon-btn disabled" type="button" disabled title="Supporting material is coming soon">📎 Add material <span class="journey-soon">Coming soon</span></button>
-        <button class="utility-icon-btn" onclick="loadExample()" title="Load an example project">✨ Try an example</button>
-      </div>
       <div id="optional-section" class="collapsed">
-        <div class="field" style="margin-top:8px;">
+        <div class="field" style="margin-top:8px; max-width:760px;">
           <textarea id="supporting-material" placeholder="Links, copied notes, screenshots described in text, old AI chat summaries, anything else worth including." style="height:100px;"></textarea>
         </div>
       </div>
     </div>
 
-    <!-- PROCESSING (between S1 and S2) -->
+    <!-- PROCESSING (narrated loader, shared by both calls) -->
     <div class="screen" id="screen-processing">
-      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:400px; text-align:center; padding: 0 20px;">
-        <div class="processing-ring" id="processing-ring">
-          <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="30" cy="30" r="26" stroke="#DDD8CE" stroke-width="3"/>
-            <circle cx="30" cy="30" r="26" stroke="#C8A040" stroke-width="3" stroke-dasharray="163" stroke-dashoffset="163" id="progress-circle" stroke-linecap="round"/>
-            <path d="M20 30L27 37L40 23" stroke="#C8A040" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0" id="check-mark"/>
-          </svg>
-        </div>
+      <div class="loader-wrap">
+        <div class="loader-ring"></div>
         <p class="processing-label" id="processing-label">Reading your project…</p>
         <p class="processing-sub" id="processing-sub">Resolve is making sense of what you shared</p>
+        <div class="checklist" id="checklist">
+          <div class="ci" id="ci-0"><span class="mk"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3L9.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lb">Reading what you shared</span></div>
+          <div class="ci" id="ci-1"><span class="mk"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3L9.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lb">Separating what's decided from what's open</span></div>
+          <div class="ci" id="ci-2"><span class="mk"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3L9.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lb">Spotting the gaps</span></div>
+          <div class="ci" id="ci-3"><span class="mk"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3L9.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lb">Shaping your path</span></div>
+        </div>
       </div>
     </div>
 
@@ -814,24 +982,25 @@ input[type="text"] { height: 48px; font-size: 14px; }
       <p class="subtitle">Correct anything wrong — it shapes everything that follows.</p>
       <div class="card-grid">
         <div class="card">
+          <button class="pencil" type="button" onclick="editUnderstandingCard('project')" aria-label="Edit project"><svg viewBox="0 0 13 13" fill="none"><path d="M9 1.5l2.5 2.5L4 11.5H1.5V9L9 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button>
           <div class="card-label">📁 Project</div>
           <div class="card-value" id="s2-project">—</div>
         </div>
         <div class="card">
+          <button class="pencil" type="button" onclick="editUnderstandingCard('goal')" aria-label="Edit what you want"><svg viewBox="0 0 13 13" fill="none"><path d="M9 1.5l2.5 2.5L4 11.5H1.5V9L9 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button>
           <div class="card-label">🎯 What you want</div>
           <div class="card-value" id="s2-goal">—</div>
         </div>
         <div class="card">
+          <button class="pencil" type="button" onclick="editUnderstandingCard('state')" aria-label="Edit where it is"><svg viewBox="0 0 13 13" fill="none"><path d="M9 1.5l2.5 2.5L4 11.5H1.5V9L9 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button>
           <div class="card-label">📍 Where it is</div>
           <div class="card-value" id="s2-state">—</div>
         </div>
         <div class="card">
+          <button class="pencil" type="button" onclick="editUnderstandingCard('uncertainty')" aria-label="Edit biggest uncertainty"><svg viewBox="0 0 13 13" fill="none"><path d="M9 1.5l2.5 2.5L4 11.5H1.5V9L9 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button>
           <div class="card-label">❓ Biggest uncertainty</div>
           <div class="card-value" id="s2-uncertainty">—</div>
         </div>
-      </div>
-      <div class="confirm-row">
-        <button class="btn-outline" id="edit-understanding-btn" type="button" onclick="toggleUnderstandingEdit()" style="flex:none; padding:10px 20px;">✏️ Edit</button>
       </div>
       <div class="tool-confirm-section collapsed" id="tool-confirm-section">
         <div class="section-title">Tools we noticed you mentioned</div>
@@ -852,16 +1021,15 @@ input[type="text"] { height: 48px; font-size: 14px; }
       </div>
       <div class="divider"></div>
       <div class="section-title">What Resolve is assuming</div>
-      <div id="s2-assumptions">
-        <div class="assumed-item"><span style="font-size:14px;">✓</span><span class="assumed-text">—</span></div>
-      </div>
+      <div id="s2-assumptions"></div>
     </div>
 
     <!-- S3 -->
     <div class="screen" id="screen-3">
       <div class="eyebrow">Your next move</div>
-      <h2 id="s3-h">Here's what to do next.</h2>
+      <h1 id="s3-h">Here's what to do next.</h1>
       <div class="focus-card" style="margin-top:20px;">
+        <div class="glow"></div>
         <div class="focus-label">🎯 Do this first</div>
         <div class="focus-action" id="s3-action">—</div>
         <div class="focus-why" id="s3-why">—</div>
@@ -873,17 +1041,17 @@ input[type="text"] { height: 48px; font-size: 14px; }
       <div class="divider"></div>
       <div class="section-title">What happens after this</div>
       <div class="phase-strip" id="s3-phase-strip">
-        <div class="phase-card" style="border-top:3px solid var(--amber);">
-          <div class="phase-label" id="p1-label">This Week</div>
+        <div class="phase-card now">
+          <div class="phase-label" id="p1-label">This week</div>
           <div class="phase-action" id="p1-action">—</div>
           <div class="phase-output" id="p1-output">—</div>
         </div>
-        <div class="phase-card" style="border-top:3px solid var(--terracotta);">
+        <div class="phase-card">
           <div class="phase-label" id="p2-label">Next</div>
           <div class="phase-action" id="p2-action">—</div>
           <div class="phase-output" id="p2-output">—</div>
         </div>
-        <div class="phase-card" style="border-top:3px solid var(--border);">
+        <div class="phase-card">
           <div class="phase-label" id="p3-label">Later</div>
           <div class="phase-action" id="p3-action">—</div>
           <div class="phase-output" id="p3-output">—</div>
@@ -929,6 +1097,7 @@ input[type="text"] { height: 48px; font-size: 14px; }
   <div class="bottom-bar" id="bottom-bar">
     <button class="btn-back" onclick="goBack()" id="back-btn" style="display:none;">Back</button>
     <button class="btn-primary" onclick="goNext()" id="next-btn">Get started →</button>
+    <span class="build-hint" id="build-hint" style="display:none;">Add a little context to continue</span>
   </div>
 </div>
 
@@ -938,29 +1107,19 @@ let understandingData = null; // result from Call 1
 let recommendationData = null; // result from Call 2 (post QA-check)
 let projectPlanData = null; // result from Call 4
 let pendingCall = 'understand'; // tracks which call the processing screen should retry
-let isEditingUnderstanding = false;
 let confirmedTools = [];
 let outputContentCache = {};
 let outputCardState = {};
 let handoffInProgress = false;
-let recommendationStatusTimer = null;
-let recommendationStatusIndex = 0;
 
 const RESOLVE_PM_HANDOFF_URL = '/api/project-handoffs';
 
 const total = 6;
 const screenIds = ['screen-0','screen-1','screen-processing','screen-2','screen-3','screen-4'];
-const nextLabels = ['Get started \u2192','Build my path \u2192','','Show my next move \u2192','See what to do next \u2192','Start over'];
+const nextLabels = ['Get started \u2192','Build my path \u2192','','This looks right \u2014 build my path \u2192','Continue \u2192','Start over'];
 const progressPct = [0, 20, 20, 50, 75, 100];
 const stepLabels = ['Step 1 of 4','Step 2 of 4','Step 2 of 4','Step 3 of 4','Step 4 of 4','Complete'];
 const SCREEN_FADE_MS = 240;
-const RING_CIRCUMFERENCE = 163;
-const RECOMMENDATION_STATUS_MESSAGES = [
-  'Reading your project...',
-  'Identifying what matters most...',
-  'Shaping your path forward...',
-  'Almost there...'
-];
 
 const EXAMPLE_PROJECT = `I run a small e-commerce business called Nook & Thread, handmade homewares, been trading for about 4 years. Sales have plateaued and I think the brand feels too homespun for the price point I want to move to. I'm trying to rebrand to something more premium.
 
@@ -968,8 +1127,49 @@ I've got three different name shortlists but haven't committed to any of them. T
 
 I want to relaunch within about 8 weeks, before peak gifting season starts.`;
 
+// Starter chips prefill a light scaffold to beat the blank page.
+const STARTER_SCAFFOLDS = {
+  rebrand: `I'm working on a rebrand that's stalled and I'm not sure how to move it forward.
+
+What the brand is now:
+Why I'm rebranding / what I want it to become:
+What's already decided (names, logo, direction):
+What's still open or stuck:
+Any deadline or pressure:`,
+  notes: `I've got a pile of notes and context for this project but no clear plan.
+
+What the project is:
+What I'm trying to achieve:
+The main things sitting in my notes:
+What I keep going back and forth on:
+What I want out of this session:`,
+  options: `I'm trying to decide between a few options and I'm stuck.
+
+The decision I'm facing:
+The options on the table:
+What matters most in the choice:
+What's making it hard to decide:
+Any deadline for deciding:`
+};
+
+function loadStarter(kind) {
+  const ta = document.getElementById('project-input');
+  ta.value = STARTER_SCAFFOLDS[kind] || '';
+  ta.focus();
+  onProjectInput();
+}
+
 function loadExample() {
   document.getElementById('project-input').value = EXAMPLE_PROJECT;
+  onProjectInput();
+}
+
+function onProjectInput() {
+  if (current !== 1) return;
+  const hasText = document.getElementById('project-input').value.trim().length > 0;
+  document.getElementById('next-btn').disabled = !hasText;
+  const buildHint = document.getElementById('build-hint');
+  if (buildHint) buildHint.style.display = hasText ? 'none' : 'inline';
 }
 
 function setText(id, value) {
@@ -1096,6 +1296,18 @@ function updateNav() {
   document.getElementById('next-btn').style.display = (current === 2) ? 'none' : 'flex';
   document.getElementById('back-btn').style.display = current > 0 && current !== 2 ? 'block' : 'none';
 
+  // "Build my path" stays disabled until there's context on the Bring-it-in screen.
+  const nextBtn = document.getElementById('next-btn');
+  const buildHint = document.getElementById('build-hint');
+  if (current === 1) {
+    const hasText = document.getElementById('project-input').value.trim().length > 0;
+    nextBtn.disabled = !hasText;
+    if (buildHint) buildHint.style.display = hasText ? 'none' : 'inline';
+  } else {
+    nextBtn.disabled = false;
+    if (buildHint) buildHint.style.display = 'none';
+  }
+
   // Processing screen (index 2) is shared by two different transitions.
   // Show the correct climbing progress depending on which call is pending,
   // rather than always resetting to the Call-1 value.
@@ -1118,8 +1330,15 @@ function updateNav() {
   for (let i = 0; i < 4; i++) {
     const el = document.getElementById('ss-' + i);
     if (!el) continue;
-    el.className = 'sidebar-step' + (i < activeSidebar ? ' done' : i === activeSidebar ? ' active' : '');
+    const isDone = i < activeSidebar;
+    el.className = 'sidebar-step' + (isDone ? ' done' : i === activeSidebar ? ' active' : '');
+    const numEl = el.querySelector('.step-num');
+    if (numEl) numEl.textContent = isDone ? '✓' : String(i + 1);
   }
+
+  // Restore the numeric step counter on any real navigation (it is only
+  // hidden mid-way through the fused welcome reveal on screen 0).
+  if (current !== 0) setStepCounterVisible(true);
 }
 
 function setProcessingText(label, sub) {
@@ -1127,57 +1346,70 @@ function setProcessingText(label, sub) {
   document.getElementById('processing-sub').textContent = sub;
 }
 
-function fadeProcessingLabel(label) {
-  const el = document.getElementById('processing-label');
-  el.style.opacity = '0';
-  setTimeout(() => {
-    el.textContent = label;
-    el.style.opacity = '1';
-  }, 280);
-}
-
-function startRecommendationStatusCycle() {
-  stopRecommendationStatusCycle();
-  recommendationStatusIndex = 0;
-  setProcessingText(RECOMMENDATION_STATUS_MESSAGES[0], 'Weighing this against everything you confirmed');
-  recommendationStatusTimer = setInterval(() => {
-    recommendationStatusIndex = (recommendationStatusIndex + 1) % RECOMMENDATION_STATUS_MESSAGES.length;
-    fadeProcessingLabel(RECOMMENDATION_STATUS_MESSAGES[recommendationStatusIndex]);
-  }, 3500);
-}
-
-function stopRecommendationStatusCycle() {
-  if (recommendationStatusTimer) {
-    clearInterval(recommendationStatusTimer);
-    recommendationStatusTimer = null;
+// ---- Narrated loader (amber ring + 4-item checklist that ticks in sequence) ----
+const LOADER_CONFIG = {
+  understand: {
+    headline: 'Reading your project…',
+    sub: 'Resolve is making sense of what you shared',
+    items: ['Reading what you shared', "Separating what's decided from what's open", 'Spotting the gaps', 'Shaping your path']
+  },
+  recommend: {
+    headline: 'Weighing it up…',
+    sub: 'Checking this against everything you confirmed',
+    items: ['Weighing what matters most', 'Checking against what you confirmed', 'Sequencing the work', 'Choosing your first move']
   }
-  document.getElementById('processing-label').style.opacity = '1';
+};
+const LOADER_MIN_MS = 2600;
+let loaderTimers = [];
+let loaderStartedAt = 0;
+
+function clearLoaderTimers() {
+  loaderTimers.forEach(t => clearTimeout(t));
+  loaderTimers = [];
 }
 
-function resetProcessingRing() {
-  const circle = document.getElementById('progress-circle');
-  const check = document.getElementById('check-mark');
-  circle.style.transition = 'none';
-  circle.style.strokeDashoffset = String(RING_CIRCUMFERENCE);
-  check.style.opacity = '0';
-  // force reflow so the next transition actually animates
-  void circle.offsetWidth;
-  circle.style.transition = 'stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1)';
+function startLoader(kind) {
+  clearLoaderTimers();
+  const cfg = LOADER_CONFIG[kind] || LOADER_CONFIG.understand;
+  setProcessingText(cfg.headline, cfg.sub);
+  const checklist = document.getElementById('checklist');
+  if (checklist) checklist.style.display = 'flex';
+  for (let i = 0; i < 4; i++) {
+    const ci = document.getElementById('ci-' + i);
+    if (!ci) continue;
+    ci.classList.remove('done');
+    ci.querySelector('.lb').textContent = cfg.items[i] || '';
+    ci.style.display = cfg.items[i] ? 'flex' : 'none';
+  }
+  loaderStartedAt = Date.now();
+  // Runs once through — tick each item on a gentle schedule.
+  const schedule = [400, 1500, 2600, 3700];
+  cfg.items.forEach((_, i) => {
+    loaderTimers.push(setTimeout(() => {
+      const ci = document.getElementById('ci-' + i);
+      if (ci) ci.classList.add('done');
+    }, schedule[i]));
+  });
 }
 
-function setRingProgress(progress) {
-  const clamped = Math.max(0, Math.min(1, progress));
-  document.getElementById('progress-circle').style.strokeDashoffset = String(RING_CIRCUMFERENCE * (1 - clamped));
-}
-
-function showCheck() {
-  const check = document.getElementById('check-mark');
-  check.style.transition = 'opacity 0.3s ease';
-  check.style.opacity = '1';
+// Tick any remaining items, then run `done` once the minimum display time is met.
+function finishLoader(done) {
+  clearLoaderTimers();
+  const elapsed = Date.now() - loaderStartedAt;
+  const wait = Math.max(0, LOADER_MIN_MS - elapsed);
+  setTimeout(() => {
+    for (let i = 0; i < 4; i++) {
+      const ci = document.getElementById('ci-' + i);
+      if (ci && ci.style.display !== 'none') ci.classList.add('done');
+    }
+    setTimeout(done, 500);
+  }, wait);
 }
 
 function showProcessingError(message) {
-  stopRecommendationStatusCycle();
+  clearLoaderTimers();
+  const checklist = document.getElementById('checklist');
+  if (checklist) checklist.style.display = 'none';
   setProcessingText('Something went wrong', message);
   document.getElementById('next-btn').style.display = 'flex';
   document.getElementById('next-btn').textContent = 'Try again';
@@ -1217,9 +1449,7 @@ function goToScreen(idx) {
 // ---------------------------------------------------------------------------
 async function runUnderstandingCall() {
   pendingCall = 'understand';
-  resetProcessingRing();
-  setProcessingText('Reading your project\u2026', 'Resolve is making sense of what you shared');
-  setRingProgress(0);
+  startLoader('understand');
 
   const projectInput = document.getElementById('project-input').value.trim();
 
@@ -1227,8 +1457,6 @@ async function runUnderstandingCall() {
     showProcessingError('Add a few sentences about your project before continuing.');
     return;
   }
-
-  setTimeout(() => setRingProgress(0.5), 200);
 
   try {
     const res = await fetch('/api/resolve', {
@@ -1243,14 +1471,8 @@ async function runUnderstandingCall() {
     }
 
     understandingData = await res.json();
-
-    setRingProgress(1);
-    showCheck();
-    setProcessingText('Path found.', "Here's what Resolve understood");
-
     populateScreen2(understandingData);
-
-    setTimeout(() => goToScreen(3), 700);
+    finishLoader(() => goToScreen(3));
   } catch (err) {
     console.error(err);
     showProcessingError(err.message || 'Resolve could not read this project. Try again or simplify your input.');
@@ -1258,9 +1480,10 @@ async function runUnderstandingCall() {
 }
 
 function populateScreen2(d) {
-  isEditingUnderstanding = false;
-  document.getElementById('edit-understanding-btn').textContent = '✏️ Edit';
+  editingCards = {};
+  editingAssumption = -1;
   renderUnderstandingCards(d);
+  document.querySelectorAll('#screen-2 .pencil').forEach(p => setPencilState(p, false));
   confirmedTools = (Array.isArray(d.mentionedTools) ? d.mentionedTools : [])
     .filter(Boolean)
     .slice(0, 5)
@@ -1269,16 +1492,7 @@ function populateScreen2(d) {
 
   renderGapQuestions(d.gapQuestions);
 
-  const assumptionsEl = document.getElementById('s2-assumptions');
-  assumptionsEl.innerHTML = '';
-  const assumptions = Array.isArray(d.assumptions) && d.assumptions.length ? d.assumptions : ['No explicit assumptions were needed \u2014 the input was specific enough.'];
-  assumptions.forEach(a => {
-    const div = document.createElement('div');
-    div.className = 'assumed-item';
-    div.innerHTML = `<span style="font-size:14px;">\u2713</span><span class="assumed-text"></span>`;
-    div.querySelector('.assumed-text').textContent = a;
-    assumptionsEl.appendChild(div);
-  });
+  renderAssumptions(d.assumptions);
 }
 
 function renderGapQuestions(gapQuestions) {
@@ -1384,34 +1598,124 @@ function renderUnderstandingCards(d) {
   setText('s2-uncertainty', d.uncertainty);
 }
 
-function toggleUnderstandingEdit() {
+// ---- Per-card inline editing (each understanding card has its own pencil) ----
+const UNDERSTANDING_FIELDS = { project: 's2-project', goal: 's2-goal', state: 's2-state', uncertainty: 's2-uncertainty' };
+const PENCIL_SVG = '<svg viewBox="0 0 13 13" fill="none"><path d="M9 1.5l2.5 2.5L4 11.5H1.5V9L9 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>';
+const CHECK_SVG = '<svg viewBox="0 0 13 13" fill="none"><path d="M2.5 6.8l2.6 2.6L10.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+let editingCards = {};
+
+function setPencilState(pencil, editing) {
+  if (!pencil) return;
+  pencil.innerHTML = editing ? CHECK_SVG : PENCIL_SVG;
+  pencil.classList.toggle('editing', editing);
+}
+
+function pencilFor(valId) {
+  const el = document.getElementById(valId);
+  const card = el && el.closest('.card');
+  return card && card.querySelector('.pencil');
+}
+
+function editUnderstandingCard(key) {
   if (!understandingData) return;
+  const valId = UNDERSTANDING_FIELDS[key];
+  if (!valId) return;
 
-  const fields = [
-    ['s2-project', 'project'],
-    ['s2-goal', 'goal'],
-    ['s2-state', 'state'],
-    ['s2-uncertainty', 'uncertainty']
-  ];
-
-  if (!isEditingUnderstanding) {
-    fields.forEach(([id, key]) => {
-      const el = document.getElementById(id);
-      el.innerHTML = `<textarea class="edit-field" id="${id}-edit"></textarea>`;
-      document.getElementById(`${id}-edit`).value = understandingData[key] || '';
-    });
-    document.getElementById('edit-understanding-btn').textContent = 'Save';
-    isEditingUnderstanding = true;
+  if (editingCards[key]) {
+    saveUnderstandingCard(key);
     return;
   }
 
-  fields.forEach(([id, key]) => {
-    const input = document.getElementById(`${id}-edit`);
-    understandingData[key] = input.value.trim() || understandingData[key] || '';
+  editingCards[key] = true;
+  const valEl = document.getElementById(valId);
+  valEl.innerHTML = `<textarea class="edit-field" id="${valId}-edit"></textarea>`;
+  const ta = document.getElementById(`${valId}-edit`);
+  ta.value = understandingData[key] || '';
+  ta.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); saveUnderstandingCard(key); }
+    if (e.key === 'Escape') {
+      editingCards[key] = false;
+      setText(valId, understandingData[key]);
+      setPencilState(pencilFor(valId), false);
+    }
   });
-  renderUnderstandingCards(understandingData);
-  document.getElementById('edit-understanding-btn').textContent = '✏️ Edit';
-  isEditingUnderstanding = false;
+  ta.focus();
+  setPencilState(pencilFor(valId), true);
+}
+
+function saveUnderstandingCard(key) {
+  const valId = UNDERSTANDING_FIELDS[key];
+  const ta = document.getElementById(`${valId}-edit`);
+  if (ta) {
+    const v = ta.value.trim();
+    if (v) understandingData[key] = v;
+  }
+  editingCards[key] = false;
+  setText(valId, understandingData[key]);
+  setPencilState(pencilFor(valId), false);
+}
+
+function commitOpenUnderstandingEdits() {
+  Object.keys(UNDERSTANDING_FIELDS).forEach(key => {
+    if (editingCards[key]) saveUnderstandingCard(key);
+  });
+}
+
+// ---- Assumption inline challenge ("Not quite?") ----
+let editingAssumption = -1;
+
+function renderAssumptions(assumptions) {
+  const el = document.getElementById('s2-assumptions');
+  if (!el) return;
+  el.innerHTML = '';
+  const list = Array.isArray(assumptions) && assumptions.length
+    ? assumptions
+    : ['No explicit assumptions were needed — the input was specific enough.'];
+  list.forEach((a, i) => {
+    const box = document.createElement('div');
+    box.className = 'assume';
+    box.id = 'assume-' + i;
+    box.innerHTML = `
+      <div class="ck"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3L9.5 3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="atxt" id="assume-txt-${i}"></div>
+      <button class="notquite" type="button" onclick="challengeAssumption(${i})">Not quite?</button>`;
+    box.querySelector('.atxt').textContent = a;
+    el.appendChild(box);
+  });
+}
+
+function challengeAssumption(i) {
+  if (editingAssumption === i) { saveAssumption(i); return; }
+  if (!Array.isArray(understandingData.assumptions) || !understandingData.assumptions.length) {
+    understandingData.assumptions = [document.getElementById('assume-txt-' + i).textContent];
+  }
+  editingAssumption = i;
+  const txt = document.getElementById('assume-txt-' + i);
+  const current = txt.textContent;
+  txt.innerHTML = `<textarea class="assume-edit" id="assume-edit-${i}"></textarea>`;
+  const ta = document.getElementById('assume-edit-' + i);
+  ta.value = current;
+  ta.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); saveAssumption(i); }
+    if (e.key === 'Escape') { editingAssumption = -1; renderAssumptions(understandingData.assumptions); }
+  });
+  ta.focus();
+  const btn = document.getElementById('assume-' + i).querySelector('.notquite');
+  if (btn) btn.textContent = 'Save';
+}
+
+function saveAssumption(i) {
+  const ta = document.getElementById('assume-edit-' + i);
+  if (ta && Array.isArray(understandingData.assumptions)) {
+    const v = ta.value.trim();
+    if (v) understandingData.assumptions[i] = v;
+  }
+  editingAssumption = -1;
+  renderAssumptions(understandingData.assumptions);
+}
+
+function commitOpenAssumptionEdit() {
+  if (editingAssumption >= 0) saveAssumption(editingAssumption);
 }
 
 // ---------------------------------------------------------------------------
@@ -1420,17 +1724,13 @@ function toggleUnderstandingEdit() {
 // ---------------------------------------------------------------------------
 async function runRecommendationCall() {
   pendingCall = 'recommend';
-  resetProcessingRing();
-  startRecommendationStatusCycle();
-  setRingProgress(0);
+  startLoader('recommend');
 
-  if (isEditingUnderstanding) {
-    toggleUnderstandingEdit();
-  }
+  // Commit any inline edits left open on the confirm screen before sending.
+  commitOpenUnderstandingEdits();
+  commitOpenAssumptionEdit();
 
   const gapAnswers = collectGapAnswers();
-
-  setTimeout(() => setRingProgress(0.5), 200);
 
   try {
     const res = await fetch('/api/resolve', {
@@ -1450,18 +1750,10 @@ async function runRecommendationCall() {
     }
 
     recommendationData = await res.json();
-
-    stopRecommendationStatusCycle();
-    setRingProgress(1);
-    showCheck();
-    setProcessingText('Path found.', 'Here\'s what to do next');
-
     populateScreen3(recommendationData, gapAnswers);
     populateScreen4(recommendationData);
-
-    setTimeout(() => goToScreen(4), 700);
+    finishLoader(() => goToScreen(4));
   } catch (err) {
-    stopRecommendationStatusCycle();
     console.error(err);
     showProcessingError(err.message || 'Resolve could not finish your recommendation. Try again.');
   }
@@ -2041,14 +2333,8 @@ function goNext() {
   if (current === 0) {
     if (screen0Stage === 'name') {
       revealGreetingStep();
-      return;
     }
-    if (screen0Stage === 'greeting') {
-      revealJourneyStep();
-      return;
-    }
-    // journey stage: handled by selectJourneyAndGo() directly on click,
-    // bottom bar has no separate action here
+    // reveal stage: a journey card advances via selectJourneyAndGo()
     return;
   }
 
@@ -2101,7 +2387,8 @@ function resetFlow() {
   recommendationData = null;
   projectPlanData = null;
   pendingCall = 'understand';
-  isEditingUnderstanding = false;
+  editingCards = {};
+  editingAssumption = -1;
   confirmedTools = [];
   outputContentCache = {};
   outputCardState = {};
@@ -2121,13 +2408,19 @@ function resetFlow() {
   document.getElementById('name-step').style.opacity = '1';
   document.getElementById('greeting-step').className = 'screen0-step screen0-pure screen0-step-hidden';
   document.getElementById('greeting-step').style.opacity = '1';
-  document.getElementById('journey-step').className = 'screen0-step screen0-step-hidden';
-  document.getElementById('journey-step').style.opacity = '1';
-  document.getElementById('get-started-btn').classList.add('is-hidden');
   document.getElementById('greeting-h1').textContent = 'Hi.';
   document.getElementById('greeting-h1').classList.add('beat-hidden');
   document.getElementById('greeting-sub').classList.add('beat-hidden');
+  document.getElementById('greeting-sub').classList.remove('welcome-out');
+  document.getElementById('journey-block').classList.add('beat-hidden');
+  ['opt-1', 'opt-2', 'opt-3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('beat-hidden');
+  });
   document.getElementById('journey-greeting').textContent = 'So,';
+  const nameContinueBtn = document.getElementById('name-continue-btn');
+  if (nameContinueBtn) nameContinueBtn.disabled = true;
+  setStepCounterVisible(true);
   document.getElementById('s4-win-title').textContent = 'You just cleared the fog.';
   document.getElementById('s4-win-desc').textContent = "A messy project with no clear direction \u2014 turned into a focused path forward. That's the hard part done.";
   renderGapQuestions([]);
@@ -2184,9 +2477,30 @@ async function copyHandoffPrompt() {
   }
 }
 
-let screen0Stage = 'name'; // 'name' | 'greeting' | 'journey'
+let screen0Stage = 'name'; // 'name' | 'reveal'
 
-// Beat 1 -> Beat 2: name entered, fade to greeting + explanation
+// Continue stays disabled until a name is typed (no dead-end)
+function onNameInput() {
+  const input = document.getElementById('name-input');
+  const btn = document.getElementById('name-continue-btn');
+  const has = input.value.trim().length > 0;
+  if (btn) btn.disabled = !has;
+  if (has) input.style.borderColor = '';
+}
+
+function revealSidebar() {
+  const sidebar = document.getElementById('desktop-sidebar');
+  if (sidebar) sidebar.classList.add('sidebar-visible');
+}
+
+// The numeric step counter is hidden during the fused welcome moment;
+// the sidebar stepper carries progress there.
+function setStepCounterVisible(visible) {
+  const el = document.getElementById('progress-label');
+  if (el) el.style.visibility = visible ? 'visible' : 'hidden';
+}
+
+// Beat 1 -> Beat 2: name entered, fused welcome -> problem reveal (runs once)
 function revealGreetingStep() {
   const n = document.getElementById('name-input').value.trim();
   if (!n) {
@@ -2195,59 +2509,43 @@ function revealGreetingStep() {
     return;
   }
   userName = n;
+  screen0Stage = 'reveal';
 
   const nameStep = document.getElementById('name-step');
   const greetingStep = document.getElementById('greeting-step');
+  const hero = document.getElementById('greeting-h1');
+  const welcome = document.getElementById('greeting-sub');
+  const promptBlock = document.getElementById('journey-block');
+  const opts = ['opt-1', 'opt-2', 'opt-3'].map(id => document.getElementById(id));
 
   nameStep.style.opacity = '0';
 
   setTimeout(() => {
     nameStep.classList.add('screen0-step-hidden');
     greetingStep.classList.remove('screen0-step-hidden');
-    greetingStep.style.opacity = '0';
-    void greetingStep.offsetWidth;
-    document.getElementById('greeting-h1').textContent = `Hi ${n}.`;
     greetingStep.style.opacity = '1';
+    hero.textContent = `Hi ${n}.`;
 
-    setTimeout(() => {
-      document.getElementById('greeting-h1').classList.remove('beat-hidden');
-    }, 120);
+    // sidebar carries progress from this moment; hide the numeric counter
+    revealSidebar();
+    setStepCounterVisible(false);
 
+    // "Hi [name]." rises in and holds
+    setTimeout(() => hero.classList.remove('beat-hidden'), 60);
+    // "Welcome to Resolve" fades in
+    setTimeout(() => welcome.classList.remove('beat-hidden'), 1100);
+    // welcome gives way to the question, which reveals with the three paths
     setTimeout(() => {
-      document.getElementById('greeting-sub').classList.remove('beat-hidden');
-    }, 1620);
-
-    setTimeout(() => {
-      document.getElementById('get-started-btn').classList.remove('is-hidden');
-    }, 3120);
+      welcome.classList.add('welcome-out');
+      promptBlock.classList.remove('beat-hidden');
+    }, 2300);
+    // three option cards stagger in beneath the same headline
+    setTimeout(() => opts[0] && opts[0].classList.remove('beat-hidden'), 2650);
+    setTimeout(() => opts[1] && opts[1].classList.remove('beat-hidden'), 2900);
+    setTimeout(() => opts[2] && opts[2].classList.remove('beat-hidden'), 3150);
   }, 400);
 
-  screen0Stage = 'greeting';
   document.getElementById('s4-win-title').textContent = `You just cleared the fog, ${n}.`;
-}
-
-// Beat 2 -> Beat 3: greeting confirmed, fade to journey selection
-function revealJourneyStep() {
-  const greetingStep = document.getElementById('greeting-step');
-  const journeyStep = document.getElementById('journey-step');
-
-  greetingStep.style.opacity = '0';
-
-  setTimeout(() => {
-    greetingStep.classList.add('screen0-step-hidden');
-    journeyStep.classList.remove('screen0-step-hidden');
-    journeyStep.style.opacity = '0';
-    void journeyStep.offsetWidth;
-    document.getElementById('journey-greeting').textContent = 'So,';
-    journeyStep.style.opacity = '1';
-  }, 400);
-
-  screen0Stage = 'journey';
-
-  const sidebar = document.getElementById('desktop-sidebar');
-  if (sidebar) {
-    sidebar.classList.add('sidebar-visible');
-  }
 }
 
 // Clicking a journey option navigates immediately - no separate button needed
@@ -2255,6 +2553,7 @@ function selectJourneyAndGo(el) {
   if (el.classList.contains('disabled')) return;
   document.querySelectorAll('.journey-option:not(.disabled)').forEach(j => j.classList.remove('active'));
   el.classList.add('active');
+  setStepCounterVisible(true);
   setTimeout(() => goToScreen(1), 150);
 }
 
