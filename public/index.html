@@ -317,21 +317,6 @@ input[type="text"] { height: 48px; font-size: 14px; }
 .phase-label { font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-ghost); margin-bottom: 6px; }
 .phase-action { font-size: 12px; font-weight: 500; color: var(--ink); line-height: 1.4; margin-bottom: 6px; }
 .phase-output { font-size: 11px; color: var(--ink-soft); line-height: 1.3; font-style: italic; }
-.action-card-primary {
-  background: var(--ink); border-radius: var(--radius); padding: 16px 14px;
-  margin-bottom: 10px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-  flex-wrap: wrap;
-}
-.action-card-primary.is-expanded { border: 1.5px solid rgba(200,160,64,0.55); background: #25251F; }
-.apt-icon { font-size: 20px; flex-shrink: 0; }
-.apt-eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); margin-bottom: 5px; }
-.apt-title { font-size: 16px; font-weight: 600; color: white; line-height: 1.35; }
-.resolve-mark {
-  width: 32px; height: 32px; border-radius: 50%; background: var(--amber);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.resolve-mark svg { width: 16px; height: 16px; }
 .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; align-items: start; }
 .action-card {
   background: var(--card-bg); border: 1.5px solid var(--border); border-radius: var(--radius);
@@ -390,26 +375,6 @@ input[type="text"] { height: 48px; font-size: 14px; }
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-}
-.primary-rec-expanded {
-  width: 100%;
-  border-top: 1px solid rgba(255,255,255,0.12);
-  margin-top: 2px;
-  padding-top: 12px;
-}
-.primary-rec-message { color: #FFF; font-size: 13px; line-height: 1.45; margin-bottom: 6px; }
-.primary-rec-status { color: rgba(255,255,255,0.58); font-size: 12px; line-height: 1.45; margin-bottom: 10px; }
-.primary-rec-status.error { color: #F2B8B5; }
-.primary-rec-expanded .mini-btn { background: rgba(255,255,255,0.08); color: #FFF; border-color: rgba(255,255,255,0.18); }
-.primary-rec-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.primary-rec-actions .mini-btn.primary {
-  background: var(--amber);
-  border-color: var(--amber);
-  color: var(--ink);
-}
-.primary-rec-actions .mini-btn[disabled] {
-  cursor: wait;
-  opacity: 0.72;
 }
 .bottom-bar {
   position: sticky; bottom: 0; left: 0; right: 0; background: var(--surface);
@@ -636,13 +601,20 @@ input.name-field {
   line-height: 1.5;
   margin-bottom: 10px;
 }
+/* Download report row — dark, matches mockup .download (Ticket I2) */
 .plan-card {
-  border-color: rgba(200,160,64,0.9);
-  background: var(--amber-light);
+  border: none;
+  background: var(--ink);
+  border-radius: var(--radius);
+  padding: 15px 20px;
+  margin-top: 14px;
   margin-bottom: 10px;
+  align-items: center;
+  gap: 9px;
 }
-.plan-card .action-icon,
-.plan-card .action-text { color: var(--terracotta); }
+.plan-card:hover { border: none; background: #25251F; }
+.plan-card .action-icon { color: var(--amber); font-size: 15px; }
+.plan-card .action-text { color: #D8D3C7; font-size: 14px; font-weight: 600; }
 .plan-card.is-working {
   cursor: wait;
   opacity: 0.82;
@@ -661,10 +633,10 @@ input.name-field {
 }
 .plan-card.is-ready {
   background: var(--ink);
-  border-color: var(--ink);
+  border: none;
 }
-.plan-card.is-ready .action-icon,
-.plan-card.is-ready .action-text { color: #FFF; }
+.plan-card.is-ready .action-icon { color: var(--amber); }
+.plan-card.is-ready .action-text { color: #D8D3C7; }
 
 /* PROCESSING SCREEN (narrated loader) */
 .processing-label {
@@ -675,17 +647,20 @@ input.name-field {
   font-size: 14px; color: #6B665A; line-height: 1.5; margin: 0;
 }
 
-/* WIN BANNER */
+/* WIN BANNER / TROPHY (Ticket I2 — matches mockup .trophy) */
 .win-banner {
-  background: var(--ink); border-radius: var(--radius);
-  padding: 24px 20px; text-align: center; margin-bottom: 8px;
+  background: var(--ink); border-radius: 12px;
+  padding: 30px; text-align: center; margin-bottom: 26px;
 }
-.win-icon { font-size: 32px; margin-bottom: 12px; }
+.win-icon { font-size: 30px; margin-bottom: 0; }
 .win-title {
-  font-family: 'DM Serif Display', serif; font-size: 22px;
-  color: #FFFFFF; margin-bottom: 8px; line-height: 1.25;
+  font-family: 'DM Serif Display', serif; font-size: 26px;
+  color: #FBF8F2; margin: 8px 0 10px; line-height: 1.25;
 }
-.win-desc { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.6; }
+.win-desc {
+  font-size: 14px; color: #C9C4B7; line-height: 1.55;
+  margin: 0 auto; max-width: 440px;
+}
 
 /* ============================================================= */
 /* Ticket I1 reskin — screens 1-5, sentence-case labels, loaders */
@@ -807,6 +782,179 @@ input.name-field {
 .phase-card.now .phase-label { color: var(--terracotta); }
 .phase-action { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
 .phase-output { font-size: 12.5px; color: #6B665A; line-height: 1.45; font-style: italic; }
+
+/* ============================================================= */
+/* Ticket I2 — Intake Transition handoff card + bridge animation */
+/* ============================================================= */
+
+/* Benefit-led handoff card (replaces the old system-dialog block) */
+.handoff {
+  background: var(--ink); border-radius: 12px; padding: 24px;
+  position: relative; overflow: hidden; margin-bottom: 10px;
+}
+.handoff .glow {
+  position: absolute; top: -60px; right: -40px; width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(200,160,64,0.22), transparent 70%);
+  pointer-events: none;
+}
+.ho-eb {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 600; color: var(--amber);
+  margin-bottom: 10px; position: relative;
+}
+.ho-eb .rd {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(200,160,64,0.16);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ho-eb .rd svg { width: 12px; height: 12px; }
+.handoff h2 {
+  font-family: 'Inter', sans-serif;
+  font-size: 19px; font-weight: 700; color: #FBF8F2;
+  margin: 0 0 8px; line-height: 1.3; position: relative;
+}
+.handoff .ho-sub {
+  font-size: 14px; color: #B4AFA3; line-height: 1.55;
+  margin: 0 0 18px; max-width: 560px; position: relative;
+}
+.carry {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+  position: relative;
+}
+.carry .pill {
+  display: flex; align-items: center; gap: 7px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 8px; padding: 8px 12px;
+  font-size: 12.5px; font-weight: 500; color: #D8D3C7;
+}
+.carry .pill svg { width: 13px; height: 13px; color: var(--amber); flex-shrink: 0; }
+.ho-actions {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  position: relative;
+}
+.cta {
+  display: inline-flex; align-items: center; gap: 9px;
+  background: var(--amber); color: var(--ink); border: none; border-radius: 10px;
+  padding: 13px 22px; font-size: 15px; font-weight: 700;
+  font-family: 'Inter', sans-serif; cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+.cta:hover { background: #D4AD4C; }
+.cta:disabled { cursor: wait; opacity: 0.72; }
+.cta svg { width: 16px; height: 16px; }
+.quietlink {
+  font-size: 13.5px; color: #8A8578; font-weight: 500;
+  background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif;
+  padding: 0;
+}
+.quietlink:hover { color: #B4AFA3; }
+.ho-error {
+  display: none; position: relative; margin-top: 12px;
+  font-size: 12.5px; color: #F2B8B5; line-height: 1.45;
+}
+.ho-error.show { display: block; }
+.handoff.notnow { opacity: 0.55; transition: opacity 0.3s; }
+
+/* ---- Bridge transition overlay (auto-plays ~1.6s, then redirects) ---- */
+.bridge-overlay {
+  display: none; position: fixed; inset: 0; z-index: 1000;
+  background: var(--ink); overflow: hidden;
+}
+.bridge-overlay.playing { display: block; }
+.bridge-glow {
+  position: absolute; left: 50%; top: 50%;
+  width: 520px; height: 520px; max-width: 90vw; max-height: 90vw;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(200,160,64,0.16), transparent 62%);
+  animation: bridge-glowpulse 2600ms ease-in-out infinite;
+  pointer-events: none;
+}
+.bridge-layer {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 0 40px; opacity: 0;
+}
+.bridge-overlay.playing .b-fog   { animation: bfog 620ms cubic-bezier(.4,0,.2,1) forwards; }
+.bridge-overlay.playing .b-pin   { animation: bpin 660ms cubic-bezier(.4,0,.2,1) 400ms forwards; }
+.bridge-overlay.playing .b-brand { animation: bbrand 660ms cubic-bezier(.4,0,.2,1) 900ms forwards; }
+.bridge-overlay.playing .b-settle{ animation: bsettle 460ms cubic-bezier(.4,0,.2,1) 1350ms forwards; }
+
+.b-fog .ic { font-size: 40px; margin-bottom: 14px; }
+.b-fog h1 { font-family: 'DM Serif Display', serif; color: #FBF8F2; font-size: 34px; margin: 0; }
+.b-fog p { font-size: 15px; color: #B4AFA3; margin: 12px 0 0; }
+.bchip {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(200,160,64,0.4);
+  border-radius: 12px; padding: 16px 22px;
+  font-size: 18px; font-weight: 600; color: #F5F1E8; max-width: 560px;
+}
+.bchip .ck {
+  width: 26px; height: 26px; border-radius: 50%; background: var(--amber);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.bchip .ck svg { width: 15px; height: 15px; color: var(--ink); }
+.bcap { font-size: 14px; color: #8A8578; font-weight: 500; margin-top: 20px; letter-spacing: 0.02em; }
+.bmark { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+.bmark .dot {
+  width: 44px; height: 44px; border-radius: 12px; background: var(--amber);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink); font-family: 'DM Serif Display', serif; font-size: 24px;
+}
+.bmark .nm { font-size: 26px; font-weight: 700; color: #F5F1E8; }
+.bfan { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.bfan .p {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 9px; padding: 9px 14px; font-size: 13px; color: #D8D3C7; font-weight: 500;
+}
+.b-settle .eb { font-size: 12px; font-weight: 600; color: var(--terracotta); margin-bottom: 10px; }
+.b-settle h1 { font-family: 'DM Serif Display', serif; color: #FBF8F2; font-size: 30px; margin: 0 0 22px; }
+.bfield {
+  width: 320px; max-width: 80vw; height: 46px; border-radius: 10px;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+  display: flex; align-items: center; padding: 0 14px; color: #8A8578; font-size: 14px;
+}
+.bbtn {
+  width: 320px; max-width: 80vw; height: 46px; border-radius: 10px;
+  background: var(--amber); color: var(--ink); font-weight: 700; font-size: 14px;
+  display: flex; align-items: center; justify-content: center; margin-top: 10px;
+}
+
+@keyframes bfog {
+  0% { opacity: 0; transform: scale(1.02); }
+  22% { opacity: 1; transform: scale(1); }
+  68% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: translateY(-26px) scale(0.94); }
+}
+@keyframes bpin {
+  0% { opacity: 0; transform: translateY(24px) scale(0.96); }
+  34% { opacity: 1; transform: translateY(0) scale(1); }
+  66% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-18px) scale(0.98); }
+}
+@keyframes bbrand {
+  0% { opacity: 0; transform: translateY(20px); }
+  34% { opacity: 1; transform: translateY(0); }
+  66% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-16px); }
+}
+@keyframes bsettle {
+  0% { opacity: 0; transform: translateY(18px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes bridge-glowpulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.9; }
+}
+
+/* Reduced motion: skip the four-beat sequence, hold the forming sign-up */
+.bridge-overlay.reduced .b-fog,
+.bridge-overlay.reduced .b-pin,
+.bridge-overlay.reduced .b-brand { display: none; }
+.bridge-overlay.reduced .bridge-glow { animation: none; opacity: 0.6; }
+.bridge-overlay.reduced.playing .b-settle { animation: none; opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .bridge-glow { animation: none; opacity: 0.6; }
+}
 </style>
 <script type="text/javascript">
   (function(c,l,a,r,i,t,y){
@@ -1067,22 +1215,24 @@ input.name-field {
         <div class="win-desc" id="s4-win-desc">A messy project with no clear direction — turned into a focused path forward. That's the hard part done.</div>
       </div>
       <div class="eyebrow" style="margin-top:20px;">Next steps</div>
-      <div class="action-card-primary" id="primary-rec-card" onclick="togglePrimaryRecommendationCard()">
-        <div class="resolve-mark" id="primary-rec-icon">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M4 13L10 19L20 6" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="handoff" id="handoff-card">
+        <div class="glow"></div>
+        <div class="ho-eb">
+          <div class="rd"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5L10 3" stroke="#C8A040" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <span id="handoff-eyebrow">Decide this first</span>
         </div>
-        <div>
-          <div class="apt-eyebrow" id="primary-rec-label">Do this first</div>
-          <div class="apt-title">Shortlist to one name and test it this week</div>
+        <h2 id="handoff-action">Your recommended next move</h2>
+        <p class="ho-sub">This becomes your first move inside Resolve — pinned and waiting, with everything you just untangled carried across. Pick up exactly where you left off, no re-explaining.</p>
+        <div class="carry">
+          <div class="pill"><svg viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Your first move, ready</div>
+          <div class="pill"><svg viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 5.5h5M4.5 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Full roadmap</div>
+          <div class="pill"><svg viewBox="0 0 14 14" fill="none"><path d="M2 3.5h10M2 7h10M2 10.5h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Project context</div>
         </div>
-        <div class="primary-rec-expanded collapsed" id="primary-rec-expanded">
-          <div class="primary-rec-message">Turn this session into a ResolvePM workspace with your project context carried across.</div>
-          <div class="primary-rec-status" id="primary-rec-status">This will send your confirmed session data to ResolvePM and open the secure sign-up flow.</div>
-          <div class="primary-rec-actions">
-            <button class="mini-btn primary" id="primary-rec-handoff-btn" type="button" onclick="handleResolvePmHandoff(event)">Open in ResolvePM</button>
-            <button class="mini-btn" type="button" onclick="closePrimaryRecommendationCard(event)">Close</button>
-          </div>
+        <div class="ho-actions">
+          <button class="cta" id="continue-cta" type="button" onclick="startBridgeToResolve(event)">Continue in Resolve<svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="quietlink" id="notnow-link" type="button" onclick="handleNotNow(event)">Not now</button>
         </div>
+        <div class="ho-error" id="handoff-error"></div>
       </div>
       <div class="action-card plan-card" id="plan-card" onclick="handleProjectPlanClick()"><span class="action-icon" id="plan-icon">⬇</span><span class="action-text" id="plan-text">Output my project plan</span></div>
       <div class="action-grid" id="output-grid">
@@ -1098,6 +1248,31 @@ input.name-field {
     <button class="btn-back" onclick="goBack()" id="back-btn" style="display:none;">Back</button>
     <button class="btn-primary" onclick="goNext()" id="next-btn">Get started →</button>
     <span class="build-hint" id="build-hint" style="display:none;">Add a little context to continue</span>
+  </div>
+</div>
+
+<!-- Bridge transition (Ticket I2): auto-plays ~1.6s on "Continue in Resolve",
+     runs entirely on the Intake side, then redirects to the real sign-up screen. -->
+<div class="bridge-overlay" id="bridge-overlay" aria-hidden="true">
+  <div class="bridge-glow"></div>
+  <div class="bridge-layer b-fog" id="b-fog">
+    <div class="ic">🏆</div>
+    <h1 id="b-fog-h">You just cleared the fog.</h1>
+    <p>That's the hard part done.</p>
+  </div>
+  <div class="bridge-layer b-pin" id="b-pin">
+    <div class="bchip"><div class="ck"><svg viewBox="0 0 15 15" fill="none"><path d="M3 7.5l3 3L12 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span id="b-pin-action">Your first move</span></div>
+    <div class="bcap">Bringing your first move with you</div>
+  </div>
+  <div class="bridge-layer b-brand" id="b-brand">
+    <div class="bmark"><div class="dot">R</div><div class="nm">Resolve</div></div>
+    <div class="bfan"><div class="p">First move</div><div class="p">Roadmap</div><div class="p">Context</div></div>
+    <div class="bcap">Setting up your workspace</div>
+  </div>
+  <div class="bridge-layer b-settle" id="b-settle">
+    <h1>Create your Resolve workspace</h1>
+    <div class="bfield">Your email</div>
+    <div class="bbtn">Send code</div>
   </div>
 </div>
 
@@ -1774,56 +1949,54 @@ function populateScreen3(d) {
 }
 
 function populateScreen4(d) {
-  closePrimaryRecommendationCard();
+  resetHandoffCard();
   outputCardState = {};
-  const titleEl = document.querySelector('#screen-4 .apt-title');
-  if (titleEl) titleEl.textContent = d.recommendedAction || 'Your recommended next move';
-  const labelEl = document.getElementById('primary-rec-label');
-  const iconEl = document.getElementById('primary-rec-icon');
-  if (labelEl) labelEl.textContent = d.topCardType === 'decision' ? 'Decide this first' : 'Do this first';
-  if (iconEl) {
-    if (d.topCardType === 'decision') {
-      iconEl.textContent = '\u2696\uFE0F';
-    } else {
-      iconEl.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 13L10 19L20 6" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    }
-  }
+  const actionEl = document.getElementById('handoff-action');
+  // Headline is the recommended action, verbatim from Call 2 \u2014 never hardcoded.
+  if (actionEl) actionEl.textContent = d.recommendedAction || 'Your recommended next move';
+  const ebEl = document.getElementById('handoff-eyebrow');
+  // "Decide this first" vs "Do this first" reflects Call 2's topCardType, matching
+  // the dynamic label from the recommendation itself (mockup shows the decision case).
+  if (ebEl) ebEl.textContent = d.topCardType === 'decision' ? 'Decide this first' : 'Do this first';
   document.getElementById('s4-win-desc').textContent = d.winSummary || "A messy project with no clear direction \u2014 turned into a focused path forward. That's the hard part done.";
   renderOutputTemplates(d.outputTemplates);
 }
 
-// Primary recommendation placeholder: replace this block when next-stage routing is ready.
-function togglePrimaryRecommendationCard() {
-  const card = document.getElementById('primary-rec-card');
-  const panel = document.getElementById('primary-rec-expanded');
-  const isOpen = !panel.classList.contains('collapsed');
-  card.classList.toggle('is-expanded', !isOpen);
-  panel.classList.toggle('collapsed', isOpen);
+// ---- Handoff card state helpers (Ticket I2) ----
+function resetHandoffCard() {
+  handoffInProgress = false;
+  setHandoffCtaWorking(false);
+  hideHandoffError();
+  const card = document.getElementById('handoff-card');
+  if (card) card.classList.remove('notnow');
 }
 
-function closePrimaryRecommendationCard(event) {
-  if (event) event.stopPropagation();
-  const card = document.getElementById('primary-rec-card');
-  const panel = document.getElementById('primary-rec-expanded');
-  if (card) card.classList.remove('is-expanded');
-  if (panel) panel.classList.add('collapsed');
+function setHandoffCtaWorking(working) {
+  const cta = document.getElementById('continue-cta');
+  if (cta) cta.disabled = working;
 }
 
-function setPrimaryHandoffState({ working = false, message = '', error = false } = {}) {
-  const button = document.getElementById('primary-rec-handoff-btn');
-  const status = document.getElementById('primary-rec-status');
+function showHandoffError(message) {
+  const el = document.getElementById('handoff-error');
+  if (!el) return;
+  el.textContent = message;
+  el.classList.add('show');
+}
 
-  handoffInProgress = working;
+function hideHandoffError() {
+  const el = document.getElementById('handoff-error');
+  if (!el) return;
+  el.textContent = '';
+  el.classList.remove('show');
+}
 
-  if (button) {
-    button.disabled = working;
-    button.textContent = working ? 'Opening ResolvePM' : 'Open in ResolvePM';
-  }
-
-  if (status) {
-    status.textContent = message || 'This will send your confirmed session data to ResolvePM and open the secure sign-up flow.';
-    status.classList.toggle('error', Boolean(error));
-  }
+// "Not now" is a quiet dismissal \u2014 it keeps the user on the final screen (they can
+// still download the report or explore outputs), no redirect, nothing destructive.
+function handleNotNow(event) {
+  if (event) event.preventDefault();
+  if (handoffInProgress) return;
+  const card = document.getElementById('handoff-card');
+  if (card) card.classList.add('notnow');
 }
 
 function getOutputTemplatesUsed() {
@@ -1883,49 +2056,77 @@ async function ensureProjectPlanData() {
   return projectPlanData;
 }
 
-async function handleResolvePmHandoff(event) {
-  if (event) event.stopPropagation();
+// Backend prep for the handoff: build the project plan (if not cached) and create
+// the ResolvePM handoff record, returning the real sign-up URL. Throws on failure.
+async function prepareResolveHandoff() {
+  await ensureProjectPlanData();
+  const res = await fetch(RESOLVE_PM_HANDOFF_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(buildResolvePmHandoffPayload())
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok || !body.signup_url) {
+    throw new Error(body.error || 'ResolvePM could not create the handoff.');
+  }
+  return body.signup_url;
+}
+
+// Populate the bridge overlay with real, non-hardcoded session data.
+function populateBridge() {
+  const name = (userName || '').trim();
+  document.getElementById('b-fog-h').textContent = name
+    ? `You just cleared the fog, ${name}.`
+    : 'You just cleared the fog.';
+  document.getElementById('b-pin-action').textContent =
+    (recommendationData && recommendationData.recommendedAction) || 'Your first move';
+}
+
+// "Continue in Resolve": play the ~1.6s bridge on the Intake side while the handoff
+// backend prepares in parallel, then redirect to the real sign-up screen. The overlay
+// holds on its final "forming sign-up" beat until the real URL is ready — so the
+// animation never hard-cuts and the redirect only fires once everything is set up.
+async function startBridgeToResolve(event) {
+  if (event) event.preventDefault();
   if (handoffInProgress) return;
 
   if (!understandingData || !recommendationData) {
-    setPrimaryHandoffState({
-      error: true,
-      message: 'Resolve needs a completed recommendation before it can open ResolvePM.'
-    });
+    showHandoffError('Resolve needs a completed recommendation before it can open ResolvePM.');
     return;
   }
 
-  setPrimaryHandoffState({
-    working: true,
-    message: projectPlanData
-      ? 'Sending your session to ResolvePM...'
-      : 'Building your project plan, then sending it to ResolvePM...'
-  });
+  handoffInProgress = true;
+  hideHandoffError();
+  setHandoffCtaWorking(true);
+  populateBridge();
+
+  const reduce = window.matchMedia
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const overlay = document.getElementById('bridge-overlay');
+  overlay.classList.toggle('reduced', Boolean(reduce));
+  // Force a restart of the CSS animations if the overlay was shown before.
+  overlay.classList.remove('playing');
+  void overlay.offsetWidth;
+  overlay.classList.add('playing');
+  overlay.setAttribute('aria-hidden', 'false');
+
+  // The animation reaches its settled "forming sign-up" beat at ~1.6s; keep the
+  // full sequence visible even if the backend resolves sooner.
+  const animMs = reduce ? 200 : 1600;
+  const animationSettled = new Promise(resolve => setTimeout(resolve, animMs));
 
   try {
-    await ensureProjectPlanData();
-    const res = await fetch(RESOLVE_PM_HANDOFF_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(buildResolvePmHandoffPayload())
-    });
-
-    const body = await res.json().catch(() => ({}));
-    if (!res.ok || !body.signup_url) {
-      throw new Error(body.error || 'ResolvePM could not create the handoff.');
-    }
-
-    setPrimaryHandoffState({
-      working: true,
-      message: 'Opening ResolvePM sign-up...'
-    });
-    window.location.assign(body.signup_url);
+    // Run backend prep and the animation concurrently; wait for both.
+    const [signupUrl] = await Promise.all([prepareResolveHandoff(), animationSettled]);
+    window.location.assign(signupUrl);
   } catch (err) {
     console.error(err);
-    setPrimaryHandoffState({
-      error: true,
-      message: err.message || 'ResolvePM handoff failed. Try again.'
-    });
+    // Backend failed — retract the overlay and let the user try again.
+    overlay.classList.remove('playing');
+    overlay.setAttribute('aria-hidden', 'true');
+    handoffInProgress = false;
+    setHandoffCtaWorking(false);
+    showHandoffError(err.message || 'Could not open Resolve. Please try again.');
   }
 }
 
@@ -2442,9 +2643,14 @@ function resetFlow() {
   const planCard = document.getElementById('plan-card');
   planCard.classList.remove('is-working', 'is-ready');
   renderOutputTemplates([]);
-  closePrimaryRecommendationCard();
-  document.getElementById('primary-rec-label').textContent = 'Do this first';
-  document.getElementById('primary-rec-icon').innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 13L10 19L20 6" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  resetHandoffCard();
+  document.getElementById('handoff-eyebrow').textContent = 'Decide this first';
+  document.getElementById('handoff-action').textContent = 'Your recommended next move';
+  const bridgeOverlay = document.getElementById('bridge-overlay');
+  if (bridgeOverlay) {
+    bridgeOverlay.classList.remove('playing');
+    bridgeOverlay.setAttribute('aria-hidden', 'true');
+  }
   document.getElementById('plan-icon').textContent = '⬇';
   document.getElementById('plan-text').textContent = 'Output my project plan';
 
