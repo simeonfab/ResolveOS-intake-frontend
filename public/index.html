@@ -601,24 +601,19 @@ input.name-field {
   line-height: 1.5;
   margin-bottom: 10px;
 }
-/* Download report row — dark, matches mockup .download (Ticket I2) */
-.plan-card {
-  border: none;
-  background: var(--ink);
-  border-radius: var(--radius);
-  padding: 15px 20px;
-  margin-top: 14px;
-  margin-bottom: 10px;
-  align-items: center;
-  gap: 9px;
+/* Download report — secondary button inside the handoff card (Ticket I2, mockup .secbtn) */
+.secbtn {
+  display: inline-flex; align-items: center; gap: 9px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 10px; padding: 12px 18px;
+  font-size: 14px; font-weight: 600; font-family: inherit;
+  color: #D8D3C7; cursor: pointer;
+  margin-bottom: 14px; position: relative;
 }
-.plan-card:hover { border: none; background: #25251F; }
-.plan-card .action-icon { color: var(--amber); font-size: 15px; }
-.plan-card .action-text { color: #D8D3C7; font-size: 14px; font-weight: 600; }
-.plan-card.is-working {
-  cursor: wait;
-  opacity: 0.82;
-}
+.secbtn:hover { background: rgba(255,255,255,0.09); }
+.secbtn svg { width: 15px; height: 15px; color: var(--amber); }
+.secbtn #plan-icon { display: inline-flex; align-items: center; color: var(--amber); }
+.secbtn.is-working { cursor: wait; opacity: 0.82; }
 .mini-spinner {
   display: inline-block;
   width: 16px;
@@ -631,12 +626,7 @@ input.name-field {
 @keyframes mini-spin {
   to { transform: rotate(360deg); }
 }
-.plan-card.is-ready {
-  background: var(--ink);
-  border: none;
-}
-.plan-card.is-ready .action-icon { color: var(--amber); }
-.plan-card.is-ready .action-text { color: #D8D3C7; }
+.secbtn.is-ready { color: #D8D3C7; }
 
 /* PROCESSING SCREEN (narrated loader) */
 .processing-label {
@@ -817,17 +807,6 @@ input.name-field {
   font-size: 14px; color: #B4AFA3; line-height: 1.55;
   margin: 0 0 18px; max-width: 560px; position: relative;
 }
-.carry {
-  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
-  position: relative;
-}
-.carry .pill {
-  display: flex; align-items: center; gap: 7px;
-  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 8px; padding: 8px 12px;
-  font-size: 12.5px; font-weight: 500; color: #D8D3C7;
-}
-.carry .pill svg { width: 13px; height: 13px; color: var(--amber); flex-shrink: 0; }
 .ho-actions {
   display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
   position: relative;
@@ -842,20 +821,13 @@ input.name-field {
 .cta:hover { background: #D4AD4C; }
 .cta:disabled { cursor: wait; opacity: 0.72; }
 .cta svg { width: 16px; height: 16px; }
-.quietlink {
-  font-size: 13.5px; color: #8A8578; font-weight: 500;
-  background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif;
-  padding: 0;
-}
-.quietlink:hover { color: #B4AFA3; }
 .ho-error {
   display: none; position: relative; margin-top: 12px;
   font-size: 12.5px; color: #F2B8B5; line-height: 1.45;
 }
 .ho-error.show { display: block; }
-.handoff.notnow { opacity: 0.55; transition: opacity 0.3s; }
 
-/* ---- Bridge transition overlay (auto-plays ~1.6s, then redirects) ---- */
+/* ---- Bridge transition overlay (auto-plays ~6.8s, then redirects) ---- */
 .bridge-overlay {
   display: none; position: fixed; inset: 0; z-index: 1000;
   background: var(--ink); overflow: hidden;
@@ -866,7 +838,7 @@ input.name-field {
   width: 520px; height: 520px; max-width: 90vw; max-height: 90vw;
   transform: translate(-50%, -50%);
   background: radial-gradient(circle, rgba(200,160,64,0.16), transparent 62%);
-  animation: bridge-glowpulse 2600ms ease-in-out infinite;
+  animation: bridge-glowpulse 4400ms ease-in-out infinite;
   pointer-events: none;
 }
 .bridge-layer {
@@ -874,11 +846,16 @@ input.name-field {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   text-align: center; padding: 0 40px; opacity: 0;
 }
-.bridge-overlay.playing .b-fog   { animation: bfog 620ms cubic-bezier(.4,0,.2,1) forwards; }
-.bridge-overlay.playing .b-pin   { animation: bpin 660ms cubic-bezier(.4,0,.2,1) 400ms forwards; }
-.bridge-overlay.playing .b-brand { animation: bbrand 660ms cubic-bezier(.4,0,.2,1) 900ms forwards; }
-.bridge-overlay.playing .b-settle{ animation: bsettle 460ms cubic-bezier(.4,0,.2,1) 1350ms forwards; }
+/* Four held beats, ~2s each, one continuous run (no loop in production). */
+.bridge-overlay.playing .b-fog   { animation: bfog 2300ms cubic-bezier(.4,0,.2,1) forwards; }
+.bridge-overlay.playing .b-pin   { animation: bpin 2200ms cubic-bezier(.4,0,.2,1) 2300ms forwards; }
+.bridge-overlay.playing .b-brand { animation: bbrand 2100ms cubic-bezier(.4,0,.2,1) 4500ms forwards; }
+.bridge-overlay.playing .b-settle{ animation: bsettle 600ms cubic-bezier(.4,0,.2,1) 6600ms forwards; }
 
+.b-fog .growcard {
+  background: var(--ink); border: 1px solid rgba(200,160,64,0.28);
+  border-radius: 16px; padding: 38px 46px; box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+}
 .b-fog .ic { font-size: 40px; margin-bottom: 14px; }
 .b-fog h1 { font-family: 'DM Serif Display', serif; color: #FBF8F2; font-size: 34px; margin: 0; }
 .b-fog p { font-size: 15px; color: #B4AFA3; margin: 12px 0 0; }
@@ -919,23 +896,25 @@ input.name-field {
   display: flex; align-items: center; justify-content: center; margin-top: 10px;
 }
 
+/* Beat 1: one continuous zoom — the trophy box grows to take over the screen. */
 @keyframes bfog {
-  0% { opacity: 0; transform: scale(1.02); }
-  22% { opacity: 1; transform: scale(1); }
-  68% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: translateY(-26px) scale(0.94); }
+  0% { opacity: 0; transform: scale(0.5); }
+  8% { opacity: 1; transform: scale(0.62); }
+  70% { opacity: 1; transform: scale(1); }
+  88% { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 0; transform: scale(1.16); }
 }
 @keyframes bpin {
-  0% { opacity: 0; transform: translateY(24px) scale(0.96); }
-  34% { opacity: 1; transform: translateY(0) scale(1); }
-  66% { opacity: 1; transform: translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateY(-18px) scale(0.98); }
+  0% { opacity: 0; transform: translateY(22px) scale(0.97); }
+  14% { opacity: 1; transform: translateY(0) scale(1); }
+  82% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-16px) scale(0.99); }
 }
 @keyframes bbrand {
-  0% { opacity: 0; transform: translateY(20px); }
-  34% { opacity: 1; transform: translateY(0); }
-  66% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-16px); }
+  0% { opacity: 0; transform: translateY(18px); }
+  16% { opacity: 1; transform: translateY(0); }
+  80% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-14px); }
 }
 @keyframes bsettle {
   0% { opacity: 0; transform: translateY(18px); }
@@ -1223,22 +1202,11 @@ input.name-field {
         </div>
         <h2 id="handoff-action">Your recommended next move</h2>
         <p class="ho-sub">This becomes your first move inside Resolve — pinned and waiting, with everything you just untangled carried across. Pick up exactly where you left off, no re-explaining.</p>
-        <div class="carry">
-          <div class="pill"><svg viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>Your first move, ready</div>
-          <div class="pill"><svg viewBox="0 0 14 14" fill="none"><rect x="1.5" y="1.5" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 5.5h5M4.5 8.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Full roadmap</div>
-          <div class="pill"><svg viewBox="0 0 14 14" fill="none"><path d="M2 3.5h10M2 7h10M2 10.5h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Project context</div>
-        </div>
+        <button class="secbtn" id="plan-card" type="button" onclick="handleProjectPlanClick()"><span id="plan-icon"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5v9M4 7l3.5 3.5L11 7M2.5 13h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span id="plan-text">Download report</span></button>
         <div class="ho-actions">
           <button class="cta" id="continue-cta" type="button" onclick="startBridgeToResolve(event)">Continue in Resolve<svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-          <button class="quietlink" id="notnow-link" type="button" onclick="handleNotNow(event)">Not now</button>
         </div>
         <div class="ho-error" id="handoff-error"></div>
-      </div>
-      <div class="action-card plan-card" id="plan-card" onclick="handleProjectPlanClick()"><span class="action-icon" id="plan-icon">⬇</span><span class="action-text" id="plan-text">Output my project plan</span></div>
-      <div class="action-grid" id="output-grid">
-      </div>
-      <div class="field">
-        <textarea placeholder="Or ask Resolve something specific about this project…" style="height:72px;"></textarea>
       </div>
     </div>
 
@@ -1251,14 +1219,16 @@ input.name-field {
   </div>
 </div>
 
-<!-- Bridge transition (Ticket I2): auto-plays ~1.6s on "Continue in Resolve",
-     runs entirely on the Intake side, then redirects to the real sign-up screen. -->
+<!-- Bridge transition (Ticket I2): auto-plays ~6.8s (four held beats) on "Continue in
+     Resolve", runs entirely on the Intake side, then redirects to the real dark sign-in. -->
 <div class="bridge-overlay" id="bridge-overlay" aria-hidden="true">
   <div class="bridge-glow"></div>
   <div class="bridge-layer b-fog" id="b-fog">
-    <div class="ic">🏆</div>
-    <h1 id="b-fog-h">You just cleared the fog.</h1>
-    <p>That's the hard part done.</p>
+    <div class="growcard">
+      <div class="ic">🏆</div>
+      <h1 id="b-fog-h">You just cleared the fog.</h1>
+      <p>That's the hard part done.</p>
+    </div>
   </div>
   <div class="bridge-layer b-pin" id="b-pin">
     <div class="bchip"><div class="ck"><svg viewBox="0 0 15 15" fill="none"><path d="M3 7.5l3 3L12 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span id="b-pin-action">Your first move</span></div>
@@ -1288,6 +1258,13 @@ let outputCardState = {};
 let handoffInProgress = false;
 
 const RESOLVE_PM_HANDOFF_URL = '/api/project-handoffs';
+
+// Download-report icon (mockup .secbtn glyph) — restored after spinner/error states.
+const DOWNLOAD_ICON_SVG = '<svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5v9M4 7l3.5 3.5L11 7M2.5 13h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function setPlanIcon(html) {
+  const el = document.getElementById('plan-icon');
+  if (el) el.innerHTML = html;
+}
 
 const total = 6;
 const screenIds = ['screen-0','screen-1','screen-processing','screen-2','screen-3','screen-4'];
@@ -1959,7 +1936,6 @@ function populateScreen4(d) {
   // the dynamic label from the recommendation itself (mockup shows the decision case).
   if (ebEl) ebEl.textContent = d.topCardType === 'decision' ? 'Decide this first' : 'Do this first';
   document.getElementById('s4-win-desc').textContent = d.winSummary || "A messy project with no clear direction \u2014 turned into a focused path forward. That's the hard part done.";
-  renderOutputTemplates(d.outputTemplates);
 }
 
 // ---- Handoff card state helpers (Ticket I2) ----
@@ -1967,8 +1943,6 @@ function resetHandoffCard() {
   handoffInProgress = false;
   setHandoffCtaWorking(false);
   hideHandoffError();
-  const card = document.getElementById('handoff-card');
-  if (card) card.classList.remove('notnow');
 }
 
 function setHandoffCtaWorking(working) {
@@ -1988,15 +1962,6 @@ function hideHandoffError() {
   if (!el) return;
   el.textContent = '';
   el.classList.remove('show');
-}
-
-// "Not now" is a quiet dismissal \u2014 it keeps the user on the final screen (they can
-// still download the report or explore outputs), no redirect, nothing destructive.
-function handleNotNow(event) {
-  if (event) event.preventDefault();
-  if (handoffInProgress) return;
-  const card = document.getElementById('handoff-card');
-  if (card) card.classList.add('notnow');
 }
 
 function getOutputTemplatesUsed() {
@@ -2051,7 +2016,7 @@ async function ensureProjectPlanData() {
     planCard.classList.remove('is-working');
     planCard.classList.add('is-ready');
   }
-  document.getElementById('plan-icon').textContent = '↓';
+  setPlanIcon(DOWNLOAD_ICON_SVG);
   document.getElementById('plan-text').textContent = 'Download report';
   return projectPlanData;
 }
@@ -2082,10 +2047,10 @@ function populateBridge() {
     (recommendationData && recommendationData.recommendedAction) || 'Your first move';
 }
 
-// "Continue in Resolve": play the ~1.6s bridge on the Intake side while the handoff
-// backend prepares in parallel, then redirect to the real sign-up screen. The overlay
-// holds on its final "forming sign-up" beat until the real URL is ready — so the
-// animation never hard-cuts and the redirect only fires once everything is set up.
+// "Continue in Resolve": play the ~6.8s four-beat bridge on the Intake side while the
+// handoff backend prepares in parallel, then redirect to the real dark sign-in. The
+// overlay holds on its final "forming sign-in" beat until the real URL is ready — so
+// the animation never hard-cuts and the redirect only fires once everything is set up.
 async function startBridgeToResolve(event) {
   if (event) event.preventDefault();
   if (handoffInProgress) return;
@@ -2110,9 +2075,9 @@ async function startBridgeToResolve(event) {
   overlay.classList.add('playing');
   overlay.setAttribute('aria-hidden', 'false');
 
-  // The animation reaches its settled "forming sign-up" beat at ~1.6s; keep the
-  // full sequence visible even if the backend resolves sooner.
-  const animMs = reduce ? 200 : 1600;
+  // The four beats settle onto the "forming dark sign-in" at ~6.8s; keep the full
+  // sequence visible even if the backend resolves sooner, so nothing gets skipped.
+  const animMs = reduce ? 200 : 6800;
   const animationSettled = new Promise(resolve => setTimeout(resolve, animMs));
 
   try {
@@ -2131,7 +2096,9 @@ async function startBridgeToResolve(event) {
 }
 
 function renderOutputTemplates(templates) {
+  // Output grid was removed in the I2 revision; guard so stray calls are no-ops.
   const grid = document.getElementById('output-grid');
+  if (!grid) return;
   grid.innerHTML = '';
 
   const safeTemplates = Array.isArray(templates) ? templates.slice(0, 6) : [];
@@ -2376,7 +2343,7 @@ async function handleProjectPlanClick() {
   }
 
   card.classList.add('is-working');
-  document.getElementById('plan-icon').innerHTML = '<span class="mini-spinner" aria-hidden="true"></span>';
+  setPlanIcon('<span class="mini-spinner" aria-hidden="true"></span>');
   document.getElementById('plan-text').textContent = 'Building your project plan';
 
   try {
@@ -2400,12 +2367,12 @@ async function handleProjectPlanClick() {
     projectPlanData = await res.json();
     card.classList.remove('is-working');
     card.classList.add('is-ready');
-    document.getElementById('plan-icon').textContent = '↓';
+    setPlanIcon(DOWNLOAD_ICON_SVG);
     document.getElementById('plan-text').textContent = 'Download report';
   } catch (err) {
     console.error(err);
     card.classList.remove('is-working');
-    document.getElementById('plan-icon').textContent = '!';
+    setPlanIcon('!');
     document.getElementById('plan-text').textContent = 'Could not build report. Try again';
   }
 }
@@ -2642,7 +2609,6 @@ function resetFlow() {
 
   const planCard = document.getElementById('plan-card');
   planCard.classList.remove('is-working', 'is-ready');
-  renderOutputTemplates([]);
   resetHandoffCard();
   document.getElementById('handoff-eyebrow').textContent = 'Decide this first';
   document.getElementById('handoff-action').textContent = 'Your recommended next move';
@@ -2651,8 +2617,8 @@ function resetFlow() {
     bridgeOverlay.classList.remove('playing');
     bridgeOverlay.setAttribute('aria-hidden', 'true');
   }
-  document.getElementById('plan-icon').textContent = '⬇';
-  document.getElementById('plan-text').textContent = 'Output my project plan';
+  setPlanIcon(DOWNLOAD_ICON_SVG);
+  document.getElementById('plan-text').textContent = 'Download report';
 
   const sidebar = document.getElementById('desktop-sidebar');
   sidebar.classList.remove('sidebar-visible');
