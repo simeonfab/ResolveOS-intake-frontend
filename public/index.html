@@ -883,18 +883,60 @@ input.name-field {
   background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
   border-radius: 9px; padding: 9px 14px; font-size: 13px; color: #D8D3C7; font-weight: 500;
 }
-.b-settle .eb { font-size: 12px; font-weight: 600; color: var(--terracotta); margin-bottom: 10px; }
-.b-settle h1 { font-family: 'DM Serif Display', serif; color: #FBF8F2; font-size: 30px; margin: 0 0 22px; }
-.bfield {
-  width: 320px; max-width: 80vw; height: 46px; border-radius: 10px;
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
-  display: flex; align-items: center; padding: 0 14px; color: #8A8578; font-size: 14px;
+/* Beat 4 — canonical sign-in minimal state (Surface C2), pixel-identical to R1's
+   first frame: pane sheet + top-centre amber glow, brandmark pinned top, block
+   vertically centred (margin:auto 0), serif headline, amber focus-ring field and
+   Send code button. Eyebrow / subhead / footer live in the DOM at opacity:0 for
+   layout parity but never show here — they fade in only on the landed R1 screen. */
+.b-settle { padding: 0; align-items: center; justify-content: center; text-align: left; }
+.b-sheet {
+  position: relative; overflow: hidden;
+  width: 390px; max-width: 100%; height: 100%;
+  background: #201F1C;
+  padding: 36px 26px 30px;
+  display: flex; flex-direction: column;
 }
-.bbtn {
-  width: 320px; max-width: 80vw; height: 46px; border-radius: 10px;
-  background: var(--amber); color: var(--ink); font-weight: 700; font-size: 14px;
-  display: flex; align-items: center; justify-content: center; margin-top: 10px;
+.b-sheet .b-glow {
+  position: absolute; top: -70px; left: 50%; transform: translateX(-50%);
+  width: 420px; height: 420px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(200,160,64,0.20) 0%, rgba(200,160,64,0.07) 38%, transparent 70%);
+  pointer-events: none;
 }
+.b-brandmark { position: relative; display: flex; align-items: center; gap: 8px; }
+.b-brandmark .dot {
+  width: 22px; height: 22px; border-radius: 6px; background: var(--amber);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink); font-family: 'DM Serif Display', serif; font-size: 14px;
+}
+.b-brandmark .nm { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: #F5F1E8; }
+.b-block { position: relative; margin: auto 0; width: 100%; }
+.b-sronly {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.b-eyebrow { font-size: 12px; font-weight: 600; color: var(--amber); margin-bottom: 12px; }
+.b-block h1 {
+  font-family: 'DM Serif Display', serif; font-size: 30px; line-height: 1.22;
+  margin: 0 0 12px; color: #FBF8F2;
+}
+.b-subhead { font-size: 14px; line-height: 1.55; color: #B4AFA3; margin: 0 0 24px; }
+.b-input {
+  width: 100%; height: 48px; margin-top: 24px;
+  border: 1px solid var(--amber); border-radius: 10px;
+  background: rgba(255,255,255,0.05); padding: 0 14px;
+  font-size: 15px; font-family: inherit; color: #FBF8F2; outline: none;
+  box-shadow: 0 0 0 3px rgba(200,160,64,0.22);
+}
+.b-input::placeholder { color: #8A8578; }
+.b-btn {
+  width: 100%; height: 48px; margin-top: 14px;
+  border-radius: 10px; border: none;
+  background: var(--amber); color: var(--ink);
+  font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer;
+}
+.b-foot { font-size: 12.5px; color: #8A8578; text-align: center; margin-top: 20px; }
+.b-foot a { color: var(--amber); font-weight: 600; text-decoration: none; }
+.b-settle .lands { opacity: 0; }
 
 /* Beat 1: one continuous zoom — the trophy box grows to take over the screen. */
 @keyframes bfog {
@@ -1239,10 +1281,24 @@ input.name-field {
     <div class="bfan"><div class="p">First move</div><div class="p">Roadmap</div><div class="p">Context</div></div>
     <div class="bcap">Setting up your workspace</div>
   </div>
+  <!-- Beat 4 renders the canonical minimal sign-in (Surface C2), pixel-identical to
+       R1's first frame. The eyebrow/subhead/foot are kept at opacity:0 (the .lands
+       group) so the centred block's layout matches R1 exactly — they are never shown
+       here; they fade in only on the real landed R1 screen. -->
   <div class="bridge-layer b-settle" id="b-settle">
-    <h1>Create your Resolve workspace</h1>
-    <div class="bfield">Your email</div>
-    <div class="bbtn">Send code</div>
+    <div class="b-sheet">
+      <div class="b-glow"></div>
+      <div class="b-brandmark"><div class="dot">R</div><div class="nm">Resolve</div></div>
+      <div class="b-block">
+        <div class="b-eyebrow lands">Operational clarity for product work.</div>
+        <h1>Create your Resolve workspace</h1>
+        <p class="b-subhead lands">Enter your email and we'll send you a code to sign in.</p>
+        <label class="b-sronly" for="b-email">Email address</label>
+        <input id="b-email" class="b-input" placeholder="Your email" value="" readonly tabindex="-1" aria-hidden="true">
+        <button class="b-btn" type="button" tabindex="-1" aria-hidden="true">Send code</button>
+        <div class="b-foot lands">Already have a workspace? <a href="#" tabindex="-1">Sign in</a></div>
+      </div>
+    </div>
   </div>
 </div>
 
