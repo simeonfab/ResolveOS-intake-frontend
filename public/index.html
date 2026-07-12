@@ -1977,7 +1977,26 @@ function getOutputTemplatesUsed() {
     }));
 }
 
+// Resolve the intake outcome for handoff. The outcome question (when asked) is always the
+// first gap question and its text matches understandingData.outcomeQuestion exactly, so if the
+// founder answered it, that typed answer IS the outcome and it counts as confirmed. Otherwise we
+// fall back to what Call 1 extracted/inferred, which is not founder-confirmed.
+function resolveOutcome() {
+  const extracted = (understandingData?.outcome || '').trim();
+  const outcomeQuestion = (understandingData?.outcomeQuestion || '').trim();
+  if (outcomeQuestion) {
+    const match = collectGapAnswers().find(
+      item => item.question === outcomeQuestion && item.answer
+    );
+    if (match) {
+      return { outcome: match.answer, outcome_confirmed: true };
+    }
+  }
+  return { outcome: extracted, outcome_confirmed: false };
+}
+
 function buildResolvePmHandoffPayload() {
+  const { outcome, outcome_confirmed } = resolveOutcome();
   return {
     project_understanding: understandingData,
     recommended_action: recommendationData?.recommendedAction || '',
@@ -1986,7 +2005,9 @@ function buildResolvePmHandoffPayload() {
     confirmed_tools: getConfirmedTools(),
     project_plan_report: buildFullReportMarkdown(),
     gap_answers: collectGapAnswers(),
-    output_templates_used: getOutputTemplatesUsed()
+    output_templates_used: getOutputTemplatesUsed(),
+    outcome,
+    outcome_confirmed
   };
 }
 

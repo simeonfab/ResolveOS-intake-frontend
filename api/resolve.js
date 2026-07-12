@@ -134,16 +134,28 @@ function validateStringArray(data, key, { min = 1, max = Infinity } = {}) {
 }
 
 function validateUnderstandingShape(data) {
-  const required = ['project', 'goal', 'state', 'uncertainty', 'gapQuestions', 'assumptions'];
+  const required = ['project', 'goal', 'state', 'uncertainty', 'outcome', 'outcomeStated', 'outcomeQuestion', 'gapQuestions', 'assumptions'];
   for (const key of required) {
     if (!(key in data)) {
       throw new ResolveShapeError(`Understanding response missing required field: ${key}`);
     }
   }
-  for (const key of ['project', 'goal', 'state', 'uncertainty']) {
+  // "outcome" is required and non-empty so it can never silently arrive blank: it holds
+  // either the outcome extracted from the input, or Call 1's best grounded provisional read.
+  for (const key of ['project', 'goal', 'state', 'uncertainty', 'outcome']) {
     if (!isNonEmptyString(data[key])) {
       throw new ResolveShapeError(`Understanding field "${key}" is empty or not a string`);
     }
+  }
+  if (typeof data.outcomeStated !== 'boolean') {
+    throw new ResolveShapeError('Understanding field "outcomeStated" must be a boolean');
+  }
+  if (typeof data.outcomeQuestion !== 'string') {
+    throw new ResolveShapeError('Understanding field "outcomeQuestion" must be a string');
+  }
+  // When the founder did not already state the outcome, we must have a question to ask.
+  if (!data.outcomeStated && !isNonEmptyString(data.outcomeQuestion)) {
+    throw new ResolveShapeError('Understanding field "outcomeQuestion" is required when outcomeStated is false');
   }
   if (!Array.isArray(data.gapQuestions)) {
     throw new ResolveShapeError('Understanding field "gapQuestions" must be an array');
@@ -161,7 +173,6 @@ function validateUnderstandingShape(data) {
     data.mentionedTools = [];
   }
   validateStringArray(data, 'mentionedTools', { min: 0, max: 5 });
-  data.gapQuestions = data.gapQuestions.slice(0, 2);
   return data;
 }
 
@@ -397,7 +408,12 @@ SESSION RULES:
 - Detect explicitly mentioned tools case-insensitively, but do not infer tools that are not named.
 - Keep output concise and practical. No filler, no generic encouragement, no hype.
 
-CRITICAL RULE FOR GAP QUESTIONS: Gap questions must only ask for information that is DIRECTLY needed to produce a clear, grounded project recommendation and execution path. Do not ask strategic business questions, market questions, pricing questions, or anything that goes beyond what's needed to understand this project's current state and immediate next step. Valid gap questions are things like: "What have you already tried?" or "Is there a deadline driving this?" or "Who else is involved in this project?" Invalid gap questions are things like: "What should your first paid offer be?" or "What assets can be used commercially?" - these are business strategy questions, not intake blockers. If you genuinely have everything needed to produce a good recommendation from the input provided, return an empty gapQuestions array. Do not pad with questions just to fill the two slots.
+CRITICAL RULE FOR GAP QUESTIONS: Gap questions must only ask for information that is DIRECTLY needed to produce a clear, grounded project recommendation and execution path. Do not ask strategic business questions, market questions, pricing questions, or anything that goes beyond what's needed to understand this project's current state and immediate next step. Valid gap questions are things like: "What have you already tried?" or "Is there a deadline driving this?" or "Who else is involved in this project?" Invalid gap questions are things like: "What should your first paid offer be?" or "What assets can be used commercially?" - these are business strategy questions, not intake blockers. If you genuinely have everything needed to produce a good recommendation from the input provided, return an empty gapQuestions array. Do not pad with questions just to fill the slots. The outcome is handled separately via "outcome"/"outcomeStated"/"outcomeQuestion" below - do NOT also put an outcome question inside "gapQuestions".
+
+OUTCOME (REQUIRED - the single most important thing to capture):
+An outcome is WHO is different, and what they now observably do, experience, or measurably stop doing, if this project works. It is NOT an artifact ("the app is built", "the site is live", "the brand is refreshed") and NOT a restatement of the project or goal. A real outcome names a person or group and an observable change for them (for example: "returning customers reorder without being chased" or "the founder stops spending Sundays reconciling invoices by hand").
+- If the founder's input ALREADY states a clear outcome, EXTRACT it into "outcome", set "outcomeStated" to true, and set "outcomeQuestion" to an empty string. Never ask a question we already have the answer to.
+- If the outcome is ABSENT or VAGUE, set "outcomeStated" to false. Put your best grounded provisional read of the likely outcome in "outcome" (phrased as a plausible read of what they seem to want, never invented as fact), AND write a natural, project-specific "outcomeQuestion" that a non-technical founder can answer in one sentence. Shape it like "If this works, who is better off, and how would you know?" but phrased specifically for THIS project - do not paste that sentence verbatim as boilerplate.
 
 THE USER'S PROJECT:
 """
@@ -412,8 +428,11 @@ Produce a structured understanding of this project. Return ONLY valid JSON match
   "goal": "what the user appears to be trying to achieve, based only on what was stated or clearly implied",
   "state": "where the project currently stands, based only on what was stated",
   "uncertainty": "the single biggest open question or unknown that the input does not resolve",
+  "outcome": "who is better off and the observable change for them: extracted from the input if the outcome was stated, otherwise your best grounded provisional read of what they seem to want",
+  "outcomeStated": true or false - true ONLY if the input already clearly stated a real outcome (who is different and how), false if it is absent or vague,
+  "outcomeQuestion": "when outcomeStated is false, a natural, project-specific outcome question a non-technical founder can answer in one sentence; when outcomeStated is true, an empty string",
   "gapQuestions": [
-    "zero, one, or two specific intake-blocker questions whose answers are directly needed for a grounded recommendation"
+    "zero, one, or two OTHER specific intake-blocker questions whose answers are directly needed for a grounded recommendation - do NOT include an outcome question here"
   ],
   "assumptions": [
     "an assumption you are making to proceed, stated plainly as an assumption, not as fact"
@@ -423,10 +442,24 @@ Produce a structured understanding of this project. Return ONLY valid JSON match
   ]
 }
 
-REQUIRED: "project", "goal", "state", and "uncertainty" must each be a non-empty string. If the input is too sparse for confidence, say that plainly rather than leaving fields blank. "gapQuestions" must be an array containing 0-2 non-empty strings; return [] if no direct intake blockers remain. "assumptions" must be an array. "mentionedTools" must be an array; it may be empty. Include only tools explicitly named in the raw input, such as Notion, GitHub, Cursor, Codex, Claude, ChatGPT, Jira, Linear, Figma, Slack, Trello, Asana, Vercel, Supabase, Zapier, n8n, Google Docs, Google Sheets, Airtable, or Coda. Cap mentionedTools at 5.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had empty/missing fields. Follow the shape precisely this time.' : ''}`;
+REQUIRED: "project", "goal", "state", "uncertainty", and "outcome" must each be a non-empty string. If the input is too sparse for confidence, say that plainly rather than leaving fields blank. "outcomeStated" must be a boolean. "outcomeQuestion" must be a string, and must be a non-empty question whenever "outcomeStated" is false. "gapQuestions" must be an array containing 0-2 non-empty strings (excluding the outcome question); return [] if no other direct intake blockers remain. "assumptions" must be an array. "mentionedTools" must be an array; it may be empty. Include only tools explicitly named in the raw input, such as Notion, GitHub, Cursor, Codex, Claude, ChatGPT, Jira, Linear, Figma, Slack, Trello, Asana, Vercel, Supabase, Zapier, n8n, Google Docs, Google Sheets, Airtable, or Coda. Cap mentionedTools at 5.${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape or had empty/missing fields. Follow the shape precisely this time.' : ''}`;
 
   const result = await callWithValidation(buildPrompt, apiKey, validateUnderstandingShape);
   result.mentionedTools = detectMentionedTools(projectInput);
+
+  // The outcome question is ALWAYS asked first - unless the founder's input already stated a
+  // clear outcome, in which case Call 1 extracted it into `outcome` and we do not ask redundantly.
+  // Prepending here (rather than trusting the model to order gapQuestions) guarantees the outcome
+  // question is gapQuestions[0] and matches `outcomeQuestion` exactly, so the frontend can pair the
+  // founder's answer back to the outcome deterministically.
+  if (result.outcomeStated) {
+    result.outcomeQuestion = '';
+    result.gapQuestions = result.gapQuestions.slice(0, 2);
+  } else {
+    result.gapQuestions = [result.outcomeQuestion, ...result.gapQuestions]
+      .filter(isNonEmptyString)
+      .slice(0, 2);
+  }
   return result;
 }
 
