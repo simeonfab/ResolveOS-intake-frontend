@@ -20,587 +20,433 @@ html, body {
   margin: 0;
 }
 
-/* MOBILE: full screen, single column */
+/* ============================================================= */
+/* Shell — topbar (64px) + sidebar (308px) + main content       */
+/* Full-viewport adaptation of the pixel-exact I1 mockups.       */
+/* ============================================================= */
 .phone {
   display: flex; flex-direction: column; min-height: 100vh;
   background: var(--surface); position: relative;
 }
 
-/* DESKTOP sidebar */
+/* --- Topbar --- */
+.nav {
+  background: var(--ink); height: 64px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 20px; padding: 0 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.06); position: relative;
+}
+.brandmark { display: flex; align-items: center; gap: 9px; }
+.brandmark .dot {
+  width: 26px; height: 26px; border-radius: 7px; background: var(--amber);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink); font-family: 'DM Serif Display', serif; font-size: 15px; line-height: 1;
+}
+.brandmark .name { font-size: 16px; font-weight: 700; color: #F5F1E8; }
+.prog {
+  flex: 1; max-width: 360px; height: 4px; border-radius: 2px;
+  background: rgba(255,255,255,0.12); position: relative; overflow: hidden;
+}
+.prog i {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+  background: var(--amber); border-radius: 2px; transition: width 0.45s ease;
+}
+.progtxt { font-size: 12px; font-weight: 600; color: #8A8578; white-space: nowrap; }
+.reset {
+  margin-left: auto; font-size: 12px; font-weight: 600; color: #8A8578;
+  border: 1px solid rgba(255,255,255,0.14); border-radius: 7px; padding: 7px 12px;
+  display: flex; align-items: center; gap: 6px;
+  background: none; font-family: 'Inter', sans-serif; cursor: pointer;
+}
+.reset svg { width: 12px; height: 12px; }
+.reset:hover { color: #FFF; border-color: rgba(255,255,255,0.28); }
+
+/* --- Body row: sidebar + content --- */
+.bodyrow { flex: 1; display: flex; overflow: hidden; min-height: 0; }
+
 .desktop-sidebar {
-  display: none;
+  width: 308px; flex-shrink: 0; background: var(--ink);
+  padding: 26px 24px; display: flex; flex-direction: column;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  opacity: 0; transition: opacity 0.35s ease; pointer-events: none;
 }
+.desktop-sidebar.sidebar-visible { opacity: 1; pointer-events: auto; }
 
-@media (min-width: 768px) {
-  html, body { background: var(--surface); }
-
-  .phone {
-    display: grid;
-    grid-template-columns: 308px 1fr;
-    grid-template-rows: auto 1fr;
-    min-height: 100vh;
-    max-width: none;
-    margin: 0;
-    border-radius: 0;
-    box-shadow: none;
-    background: var(--surface);
-  }
-
-  /* Nav spans full width on desktop */
-  .nav {
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    height: 64px;
-    padding: 0 24px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-  }
-
-  .nav-top { margin-bottom: 0; }
-
-  .progress-wrap { flex: 1; max-width: 360px; }
-
-  /* Sidebar */
-  .desktop-sidebar {
-    display: flex;
-    flex-direction: column;
-    background: var(--ink);
-    padding: 26px 24px;
-    min-height: calc(100vh - 64px);
-    border-right: 1px solid rgba(255,255,255,0.06);
-    opacity: 0;
-    transition: opacity 0.35s ease;
-    pointer-events: none;
-  }
-  .desktop-sidebar.sidebar-visible {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .sidebar-steps { margin-bottom: 32px; }
-
-  .sidebar-step {
-    display: flex; align-items: flex-start; gap: 12px;
-    margin-bottom: 22px; opacity: 1; transition: opacity 0.3s;
-  }
-
-  .step-num {
-    width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.16);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 600; color: #8A8578;
-    flex-shrink: 0; margin-top: 0;
-  }
-  .sidebar-step.active .step-num { border-color: var(--amber); color: var(--amber); background: none; }
-  .sidebar-step.done .step-num { background: none; border-color: var(--amber); color: var(--amber); }
-
-  .step-info {}
-  .step-name { font-size: 13.5px; font-weight: 600; color: #6B665A; margin-bottom: 3px; }
-  .sidebar-step.active .step-name { color: #F5F1E8; }
-  .sidebar-step.done .step-name { color: #6B665A; }
-  .step-desc { font-size: 12px; color: #57534A; line-height: 1.45; }
-  .sidebar-step.active .step-desc { color: #9A9488; }
-
-  .sidebar-divider { display: none; }
-
-  .sidebar-badge {
-    margin-top: auto;
-    background: none; border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 10px; padding: 14px;
-  }
-  .sidebar-badge-label { font-size: 11px; font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--amber); margin-bottom: 6px; }
-  .sidebar-badge-text { font-size: 12px; color: #8A8578; line-height: 1.5; }
-
-  /* Content area on desktop */
-  .content {
-    --content-pad-top: 40px;
-    --content-pad-x: 48px;
-    --content-pad-bottom: 120px;
-    overflow-y: auto;
-  }
-
-  .bottom-bar {
-    position: sticky;
-    grid-column: 2;
-    bottom: 0;
-    margin-top: auto;
-  }
-
-  /* Wider text on desktop */
-  h1 { font-size: 36px; }
-  h2 { font-size: 28px; }
-  .subtitle { font-size: 15px; }
-
-  .card-grid { grid-template-columns: 1fr 1fr; }
-  .phase-strip { grid-template-columns: repeat(3, 1fr); }
-  .action-grid { grid-template-columns: repeat(3, 1fr); }
+.sidebar-step {
+  display: flex; align-items: flex-start; gap: 12px; margin-bottom: 22px;
 }
-.nav { background: var(--ink); padding: 16px 20px; flex-shrink: 0; position: relative; }
-.nav-top { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
-.nav-logo { width: 26px; height: 26px; background: var(--amber); border-radius: 7px; display: flex; align-items: center; justify-content: center; color: var(--ink); font-family: 'DM Serif Display', serif; font-size: 15px; line-height: 1; }
-.nav-name { font-size: 16px; font-weight: 700; color: #F5F1E8; }
-.reset-btn {
-  position: absolute;
-  top: 14px;
-  right: 18px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: none;
-  color: #8A8578;
-  border-radius: var(--radius-sm);
-  padding: 7px 12px;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
+.step-num {
+  width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.16);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: #8A8578; flex-shrink: 0;
 }
-.reset-btn:hover { color: #FFF; border-color: rgba(255,255,255,0.28); }
-.progress-wrap { display: flex; align-items: center; gap: 10px; }
-.progress-bar-outer { flex: 1; height: 4px; background: rgba(255,255,255,0.12); border-radius: 2px; overflow: hidden; }
-.progress-bar-inner { height: 100%; background: var(--amber); border-radius: 2px; transition: width 0.4s ease; }
-.progress-label { font-size: 12px; font-weight: 600; color: #8A8578; white-space: nowrap; flex-shrink: 0; }
-@media (min-width: 768px) {
-  .reset-btn { top: 50%; transform: translateY(-50%); right: 24px; }
+.sidebar-step.active .step-num { border-color: var(--amber); color: var(--amber); }
+.sidebar-step.done .step-num { border-color: var(--amber); color: var(--amber); }
+.step-name { font-size: 13.5px; font-weight: 600; color: #6B665A; }
+.sidebar-step.active .step-name { color: #F5F1E8; }
+.step-desc { font-size: 12px; color: #57534A; line-height: 1.45; margin-top: 3px; }
+.sidebar-step.active .step-desc { color: #9A9488; }
+
+.sidebar-badge {
+  margin-top: auto; border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px; padding: 14px;
 }
+.sidebar-badge-label { font-size: 11px; font-weight: 700; color: var(--amber); margin-bottom: 6px; }
+.sidebar-badge-text { font-size: 12px; color: #8A8578; line-height: 1.5; }
+
+/* --- Content scroll area (the mockup ".main") --- */
 .content {
-  --content-pad-top: 24px;
-  --content-pad-x: 20px;
-  --content-pad-bottom: 100px;
-  flex: 1; overflow-y: auto;
-  padding: var(--content-pad-top) var(--content-pad-x) var(--content-pad-bottom);
-  position: relative;
+  flex: 1; min-width: 0; background: var(--surface);
+  overflow-y: auto; position: relative; display: flex; flex-direction: column;
 }
 .content::-webkit-scrollbar { display: none; }
-.screen { display: none; opacity: 0; transition: opacity 0.24s ease; }
-.screen.active { display: block; opacity: 1; }
-.screen.fading-out {
-  display: block;
-  opacity: 0;
-  position: absolute;
-  inset: var(--content-pad-top) var(--content-pad-x) var(--content-pad-bottom);
-  pointer-events: none;
-}
-.eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 8px; }
-#journey-greeting { font-size: 18px; letter-spacing: 0; text-transform: none; }
-@media (min-width: 768px) {
-  .content {
-    --content-pad-top: 40px;
-    --content-pad-x: 48px;
-    --content-pad-bottom: 120px;
-  }
-}
-h1 { font-family: 'DM Serif Display', serif; font-size: 28px; line-height: 1.2; color: var(--ink); margin-bottom: 8px; }
-h2 { font-family: 'DM Serif Display', serif; font-size: 22px; line-height: 1.25; color: var(--ink); margin-bottom: 8px; }
-.subtitle { font-size: 14px; color: var(--ink-soft); line-height: 1.5; margin-bottom: 24px; }
-.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; }
-.card-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 6px; }
-.card-value { font-size: 14px; color: var(--ink); line-height: 1.5; }
-.card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-.edit-field {
-  min-height: 96px;
-  font-size: 13px;
-  line-height: 1.5;
-}
-textarea, input[type="text"] {
-  width: 100%; background: var(--card-bg); border: 1.5px solid var(--border);
-  border-radius: var(--radius); padding: 14px; font-family: 'Inter', sans-serif;
-  font-size: 13px; color: var(--ink); resize: none; outline: none;
-  transition: border-color 0.2s; line-height: 1.6;
-}
-textarea:focus, input[type="text"]:focus { border-color: var(--amber); }
-textarea::placeholder, input::placeholder { color: var(--ink-ghost); }
-input[type="text"] { height: 48px; font-size: 14px; }
+
+.screen { display: none; transition: opacity 0.24s ease; }
+.screen.active { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.screen.fading-out { display: none; }
+.collapsed { display: none !important; }
 .field { margin-bottom: 20px; }
-.journey-option {
-  background: var(--card-bg); border: 1.5px solid var(--border); border-radius: var(--radius);
-  padding: 16px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.2s, background 0.2s;
-  display: flex; align-items: flex-start; gap: 14px;
-}
-.journey-option:hover:not(.disabled) { border-color: var(--amber); }
-.journey-option.active { border-color: var(--amber); background: var(--amber-light); }
-.journey-option.disabled { opacity: 0.4; cursor: not-allowed; }
-.journey-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--surface); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; }
-.journey-title { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
-.journey-desc { font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
-.journey-soon { font-size: 10px; font-weight: 600; color: var(--ink-ghost); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
-.confirm-row { display: flex; gap: 8px; margin-top: 16px; }
-.btn-outline {
-  flex: 1; padding: 10px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
-  background: transparent; font-size: 13px; font-weight: 500; color: var(--ink-soft);
-  cursor: pointer; text-align: center; font-family: 'Inter', sans-serif;
-}
-.btn-outline:hover { border-color: var(--amber); color: var(--ink); }
-.gap-item { background: var(--card-bg); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; }
-.gap-question { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 10px; line-height: 1.4; }
-.gap-input {
-  width: 100%; background: var(--surface); border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm); padding: 10px 12px; font-family: 'Inter', sans-serif;
-  font-size: 13px; color: var(--ink); outline: none; transition: border-color 0.2s;
-}
-.gap-input:focus { border-color: var(--amber); }
-.gap-input::placeholder { color: var(--ink-ghost); }
-.gap-confirmation {
-  background: var(--amber-light);
-  border: 1px solid #E8D5A0;
-  border-radius: var(--radius);
-  padding: 12px 14px;
-  color: var(--terracotta);
-  font-size: 13px;
-  line-height: 1.45;
-  margin: 18px 0 4px;
-}
-.tool-confirm-section {
-  margin: 12px 0 4px;
-}
-.tool-chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  overflow: visible;
-}
-.tool-chip {
-  border: 1px solid var(--border);
-  background: var(--card-bg);
-  color: var(--ink-soft);
-  border-radius: 999px;
-  padding: 7px 11px;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  max-width: 100%;
-  overflow: hidden;
-  transition: border-color 0.2s, background 0.2s, color 0.2s, width 0.24s ease, padding 0.24s ease, opacity 0.2s ease;
-}
-.tool-chip.active {
-  border-color: var(--amber);
-  background: var(--amber-light);
-  color: var(--terracotta);
-}
-.tool-chip.adding {
-  width: 64px;
-  padding: 0;
-  cursor: text;
-  opacity: 0.85;
-}
-.tool-chip.adding.open {
-  width: min(220px, 100%);
-  opacity: 1;
-}
-.tool-chip-input {
-  width: 100%;
-  height: 36px;
-  border: 1.5px solid var(--border);
-  border-radius: 999px;
-  background: var(--card-bg);
-  padding: 0 12px;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: 'Inter', sans-serif;
-  outline: none;
-  opacity: 0;
-  transition: border-color 0.2s ease, opacity 0.2s ease;
-}
-.tool-chip.adding.open .tool-chip-input { opacity: 1; }
-.tool-chip-input:focus { border-color: var(--amber); }
-.assumed-item {
-  background: var(--amber-light); border: 1px solid #E8D5A0; border-radius: var(--radius);
-  padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 10px;
-}
-.assumed-text { font-size: 13px; color: var(--ink-soft); line-height: 1.4; }
-.focus-card { background: var(--ink); border-radius: var(--radius); padding: 20px; margin-bottom: 10px; }
-.focus-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--amber); margin-bottom: 8px; }
-.focus-action { font-family: 'DM Serif Display', serif; font-size: 20px; line-height: 1.25; margin-bottom: 12px; color: #FFF; }
-.focus-why { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.5; }
-.phase-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
-.phase-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 10px; }
-.phase-label { font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-ghost); margin-bottom: 6px; }
-.phase-action { font-size: 12px; font-weight: 500; color: var(--ink); line-height: 1.4; margin-bottom: 6px; }
-.phase-output { font-size: 11px; color: var(--ink-soft); line-height: 1.3; font-style: italic; }
-.action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; align-items: start; }
-.action-card {
-  background: var(--card-bg); border: 1.5px solid var(--border); border-radius: var(--radius);
-  padding: 14px 12px; cursor: pointer; transition: border-color 0.2s, background 0.2s;
-  display: flex; align-items: flex-start; gap: 8px;
-}
-.action-card:hover { border-color: var(--amber); background: var(--amber-light); }
-.action-icon { font-size: 16px; flex-shrink: 0; }
-.action-body { min-width: 0; flex: 1; }
-.action-text { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.35; }
-.action-desc { font-size: 11px; color: var(--ink-soft); line-height: 1.35; margin-top: 4px; }
-.output-card {
-  flex-direction: column;
-}
-.output-card-main {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  width: 100%;
-}
-.output-card.is-working {
-  cursor: wait;
-  opacity: 0.82;
-}
-.output-card.is-expanded {
-  background: #FFFCF5;
-  border-color: rgba(200,160,64,0.75);
-}
-.output-preview {
-  width: 100%;
-  border: 1px solid var(--border);
-  background: #FFFFFF;
-  border-radius: var(--radius-sm);
-  margin-top: 10px;
-  padding: 12px;
-}
-.output-preview-text {
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--ink);
-  max-height: 360px;
-  overflow: auto;
-  white-space: pre-wrap;
-}
-.output-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-}
-.mini-btn {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  border-radius: var(--radius-sm);
-  padding: 7px 10px;
-  font-family: 'Inter', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.bottom-bar {
-  position: sticky; bottom: 0; left: 0; right: 0; background: var(--surface);
-  border-top: 1px solid var(--border); padding: 12px 20px 20px;
-  display: flex; align-items: center; gap: 10px;
-  z-index: 10;
-}
-.btn-back {
-  padding: 12px 16px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
-  background: transparent; font-size: 14px; font-weight: 500; color: var(--ink-soft);
-  cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap;
-}
-.btn-primary {
-  flex: 1; padding: 13px 16px; background: var(--ink); color: white; border: none;
-  border-radius: var(--radius-sm); font-family: 'Inter', sans-serif; font-size: 14px;
-  font-weight: 600; cursor: pointer; transition: background 0.2s; text-align: center;
-}
-.btn-primary:hover { background: #2E2E2A; }
-.divider { height: 1px; background: var(--border); margin: 20px 0; }
-.section-title { font-size: 13px; font-weight: 600; color: var(--ink-soft); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-.collapse-toggle {
-  background: none; border: none; font-family: 'Inter', sans-serif;
-  font-size: 13px; color: var(--terracotta); font-weight: 500; cursor: pointer;
-  padding: 0; margin-bottom: 16px;
-}
-.collapsed { display: none; }
-.import-tag {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: #F0EBE1; border: 1px solid #D4C9B4; color: var(--terracotta);
-  font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 6px;
-  margin-bottom: 12px; letter-spacing: 0.04em;
-}
-.import-dot { width: 6px; height: 6px; background: var(--amber); border-radius: 50%; }
-.clearbase-output {
-  background: #FAF7F2; border: 1px solid var(--border); border-left: 3px solid var(--amber);
-  border-radius: var(--radius); padding: 16px; margin-bottom: 8px;
-  font-family: 'Inter', sans-serif; font-size: 12px; color: var(--ink-soft); line-height: 1.7;
-}
-.cb-heading { color: var(--terracotta); font-weight: 600; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 5px; margin-top: 14px; }
-.cb-heading:first-child { margin-top: 0; }
-.cb-value { color: var(--ink); font-size: 13px; }
-.cb-tag { display: inline-block; background: var(--amber-light); color: var(--terracotta); font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 600; margin-right: 4px; margin-bottom: 3px; border: 1px solid #E8D5A0; }
 
-/* inline highlight for dynamic data */
-.data-ref { color: var(--terracotta); font-weight: 600; }
+/* Before the sidebar reveals (name entry), the content spans full width. */
+.phone.pre-side .desktop-sidebar { display: none; }
 
-.screen0-step {
-  opacity: 1;
-  transition: opacity 0.4s ease;
-}
-.screen0-step.screen0-step-hidden {
-  display: none;
-}
+/* ============================================================= */
+/* SCREEN 1 (name) + SCREEN 2 (fused reveal) — centred, left-aligned */
+/* ============================================================= */
+#screen-0.screen.active { justify-content: center; }
+.stage-pad { padding: 0 72px; display: flex; flex-direction: column; align-items: flex-start; }
+.eyebrow { font-size: 13px; font-weight: 600; color: var(--terracotta); margin-bottom: 12px; }
+.serif { font-family: 'DM Serif Display', serif; color: var(--ink); margin: 0; }
+
+.screen0-step { opacity: 1; transition: opacity 0.4s ease; width: 100%; }
+.screen0-step.screen0-step-hidden { display: none; }
 .screen0-pure {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  min-height: 60vh;
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
 }
-.screen0-pure h1 { font-size: 34px; }
-/* Beat 1 - name entry */
-#s0-h1 { font-size: 40px; }
+#s0-h1 { font-family: 'DM Serif Display', serif; font-size: 40px; line-height: 1.15; }
 input.name-field {
-  max-width: 380px;
-  height: 52px;
-  border: 1.5px solid var(--amber);
-  box-shadow: 0 0 0 3px rgba(200,160,64,0.18);
-  font-size: 16px;
+  width: 380px; max-width: 100%; height: 52px; margin-top: 26px;
+  border: 1px solid var(--amber); border-radius: 10px; background: var(--card-bg);
+  padding: 0 16px; font-size: 16px; font-family: 'Inter', sans-serif; color: var(--ink);
+  outline: none; box-shadow: 0 0 0 3px rgba(200,160,64,0.18);
 }
 .name-hint { font-size: 12.5px; color: #8A8578; margin-top: 14px; }
-/* Beat 2 - fused welcome -> problem */
+
+/* Primary dark pill button (mockup .btn / .build / .cont) */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--ink); color: #F5F1E8; border: none; border-radius: 10px;
+  padding: 13px 22px; font-size: 15px; font-weight: 600;
+  font-family: 'Inter', sans-serif; cursor: pointer; transition: background 0.2s, opacity 0.2s;
+}
+.btn:hover { background: #2E2E2A; }
+.btn svg { width: 15px; height: 15px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; background: var(--ink); }
+#name-continue-btn { margin-top: 22px; }
+
+/* Fused welcome -> problem reveal (runs once, JS-timed) */
 #greeting-h1 {
-  font-family: 'DM Serif Display', serif;
-  font-size: 46px;
-  color: var(--ink);
-  margin: 0;
-  line-height: 1.1;
+  font-family: 'DM Serif Display', serif; font-size: 46px; color: var(--ink);
+  margin: 0; line-height: 1.1; transition: opacity 0.5s ease, transform 0.5s ease;
 }
 #greeting-sub {
-  font-size: 19px;
-  line-height: 1.45;
-  color: #6B665A;
-  margin: 14px 0 0;
-  max-width: 520px;
-  white-space: nowrap;
+  font-size: 19px; line-height: 1.45; color: #6B665A; margin: 14px 0 0;
   transition: opacity 0.45s ease, transform 0.45s ease;
 }
-#greeting-sub .product-name {
-  color: var(--amber);
-  font-weight: 600;
-}
-#greeting-sub.welcome-out {
-  opacity: 0;
-  transform: translateY(-8px);
-}
+#greeting-sub .product-name { color: var(--amber); font-weight: 600; }
+#greeting-sub.welcome-out { opacity: 0; transform: translateY(-8px); }
 .reveal-prompt { margin-top: 34px; width: 100%; transition: opacity 0.5s ease, transform 0.5s ease; }
-.reveal-prompt .eyebrow {
-  font-size: 14px; font-weight: 600; color: var(--terracotta);
-  text-transform: none; letter-spacing: 0; margin-bottom: 6px;
-}
+.reveal-prompt .eyebrow { font-size: 14px; font-weight: 600; color: var(--terracotta); margin-bottom: 6px; }
 .reveal-question { font-size: 22px; font-weight: 700; color: var(--ink); line-height: 1.3; }
-.opts { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; max-width: 640px; }
-.opts .journey-option { margin-bottom: 0; transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.2s, background 0.2s; }
-.opts .journey-icon { width: 40px; height: 40px; }
-.opts .journey-option.active { background: #FBF3E4; box-shadow: 0 0 0 3px rgba(200,160,64,0.14); }
-.opts .journey-option.disabled { opacity: 0.5; }
-.inline-affirm-btn {
-  margin-top: 22px;
-  background: var(--ink);
-  color: white;
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 12px 22px;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  opacity: 1;
-  transition: background 0.2s, opacity 0.4s ease;
+.opts { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; max-width: 640px; width: 100%; }
+.journey-option {
+  display: flex; align-items: flex-start; gap: 14px;
+  border: 1px solid var(--border); border-radius: 10px; background: var(--card-bg); padding: 16px;
+  cursor: pointer; transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
-.inline-affirm-btn:hover { background: #2E2E2A; }
-.inline-affirm-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  background: var(--ink);
+.journey-option:hover:not(.disabled):not(.active) { border-color: var(--amber); }
+.journey-option.active { border-color: var(--amber); background: #FBF3E4; box-shadow: 0 0 0 3px rgba(200,160,64,0.14); }
+.journey-option.disabled { opacity: 0.5; cursor: not-allowed; }
+.journey-icon {
+  width: 40px; height: 40px; border-radius: 8px; background: var(--surface);
+  display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0;
 }
-.inline-affirm-btn.is-hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-.beat-hidden {
-  opacity: 0;
-  transform: translateY(12px);
-  pointer-events: none;
-}
-#greeting-h1 {
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-@media (max-width: 520px) {
-  #greeting-h1 { font-size: 40px; }
-  #greeting-sub { font-size: 16px; white-space: normal; }
-  #s0-h1 { font-size: 34px; }
-}
-@media (max-width: 360px) {
-  #greeting-sub { font-size: 14px; }
-}
+.journey-title { font-size: 15px; font-weight: 600; color: var(--ink); }
+.journey-desc { font-size: 13px; color: #6B665A; line-height: 1.45; margin-top: 3px; }
+.journey-soon { font-size: 11px; font-weight: 600; color: #8A8578; margin-top: 6px; }
+.beat-hidden { opacity: 0; transform: translateY(12px); pointer-events: none; }
 
-/* mic + textarea */
-.textarea-wrap { position: relative; }
+/* ============================================================= */
+/* SCREEN 3 (Bring it in)                                        */
+/* ============================================================= */
+.pad-main { padding: 44px 56px 0; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+h1.hero { font-family: 'DM Serif Display', serif; color: var(--ink); margin: 0; font-size: 34px; line-height: 1.2; }
+#screen-1 .eyebrow { margin-bottom: 10px; }
+
+.textarea-wrap { position: relative; margin-top: 24px; max-width: 760px; width: 100%; }
+textarea, input[type="text"] { font-family: 'Inter', sans-serif; }
+#project-input {
+  width: 100%; height: 280px; border: 1px solid var(--amber); border-radius: 10px;
+  background: var(--card-bg); padding: 18px 20px; font-size: 15px; color: var(--ink);
+  line-height: 1.6; resize: none; outline: none; box-shadow: 0 0 0 3px rgba(200,160,64,0.16);
+}
+#project-input::placeholder { color: #9A9488; }
 .mic-btn {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 1.5px solid var(--border);
-  background: var(--card-bg);
-  font-size: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.2s, background 0.2s;
+  position: absolute; right: 14px; bottom: 14px; width: 34px; height: 34px; border-radius: 50%;
+  background: var(--surface); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s; font-size: 15px;
 }
+.mic-btn svg { width: 15px; height: 15px; color: #6B665A; }
 .mic-btn:hover { border-color: var(--amber); }
-.mic-btn.recording {
-  background: var(--terracotta);
-  border-color: var(--terracotta);
-  animation: pulse-mic 1.2s infinite;
-}
+.mic-btn.recording { background: var(--terracotta); border-color: var(--terracotta); animation: pulse-mic 1.2s infinite; }
+.mic-btn.recording svg { color: #FFF; }
 @keyframes pulse-mic {
   0%, 100% { box-shadow: 0 0 0 0 rgba(139,74,42,0.4); }
   50% { box-shadow: 0 0 0 8px rgba(139,74,42,0); }
 }
+.input-hint { display: block; font-size: 12px; color: #8A8578; margin-top: 8px; max-width: 760px; }
 
-/* Screen 1 utility row - minimal, icon-led */
-.s1-utility-row {
-  display: flex;
-  gap: 8px;
-  margin: 10px 0 16px;
+.starters { margin-top: 16px; max-width: 760px; width: 100%; }
+.starters .lead { font-size: 12.5px; color: #8A8578; margin-bottom: 9px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.starter-chip {
+  display: inline-flex; align-items: center; gap: 7px; background: var(--card-bg);
+  border: 1px solid var(--border); border-radius: 6px; padding: 8px 13px;
+  font-size: 13px; font-weight: 500; color: var(--ink); cursor: pointer; font-family: 'Inter', sans-serif;
 }
+.starter-chip:hover { border-color: var(--amber); }
+.starter-chip .pl { color: var(--terracotta); font-weight: 700; }
+
+.helprow {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 18px; max-width: 760px; width: 100%;
+  border-top: 1px solid var(--border); padding-top: 18px;
+}
+.hbtn {
+  display: inline-flex; align-items: center; gap: 8px; border-radius: 8px;
+  padding: 10px 15px; font-size: 13.5px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer;
+}
+.hbtn.primary { background: var(--card-bg); border: 1px solid var(--amber); color: var(--ink); }
+.hbtn.primary .sp { color: var(--amber); }
+.hbtn.soon { background: transparent; border: 1px dashed var(--border); color: #8A8578; cursor: default; }
+.hbtn.soon .soonlab { font-weight: 500; color: #A8A296; }
+.pastelink {
+  margin-left: auto; font-size: 13px; font-weight: 600; color: var(--terracotta);
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  background: none; border: none; font-family: 'Inter', sans-serif;
+}
+.pastelink svg { width: 13px; height: 13px; }
+.handoff-panel {
+  background: #FAF7F2; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px; margin-top: 12px; max-width: 760px; width: 100%;
+}
+.handoff-panel p { font-size: 12px; color: var(--ink-soft); line-height: 1.5; margin-bottom: 10px; }
 .utility-icon-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 7px 12px;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--ink-soft);
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
+  background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 7px 12px; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+  color: var(--ink-soft); cursor: pointer; transition: border-color 0.2s, color 0.2s;
 }
 .utility-icon-btn:hover { border-color: var(--amber); color: var(--ink); }
-.utility-icon-btn.disabled {
-  opacity: 0.42;
-  cursor: not-allowed;
-  background: #EEE8DD;
+
+/* Per-screen footer (mockup .footer / .cfoot) */
+.scfoot {
+  display: flex; align-items: center; gap: 16px; max-width: 760px; width: 100%;
+  padding: 20px 0 26px;
 }
-.utility-icon-btn.disabled:hover { border-color: var(--border); color: var(--ink-soft); }
-.handoff-link {
-  background: none;
-  border: none;
-  color: var(--terracotta);
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
-  margin: -6px 0 16px;
+.scfoot.wide { max-width: none; }
+#screen-1 .scfoot { margin-top: auto; }
+.back {
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+  padding: 13px 22px; font-size: 15px; font-weight: 600; color: var(--ink);
+  font-family: 'Inter', sans-serif; cursor: pointer;
 }
-.handoff-panel {
-  background: #FAF7F2;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 12px;
-  margin-bottom: 16px;
+.back:hover { border-color: var(--amber); }
+.buildhint { font-size: 12.5px; color: #8A8578; }
+
+/* ============================================================= */
+/* PROCESSING (narrated loader, shared by both calls)            */
+/* ============================================================= */
+#screen-processing.screen.active { justify-content: center; align-items: center; }
+.loader {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 40px; text-align: center; width: 100%;
 }
-.handoff-panel p {
-  font-size: 12px;
-  color: var(--ink-soft);
-  line-height: 1.5;
-  margin-bottom: 10px;
+.loader-ring {
+  width: 66px; height: 66px; border-radius: 50%;
+  border: 3px solid rgba(200,160,64,0.2); border-top-color: var(--amber);
+  animation: loader-spin 900ms linear infinite;
 }
+@keyframes loader-spin { to { transform: rotate(360deg); } }
+.processing-label { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--ink); margin: 26px 0 6px; line-height: 1.3; }
+.processing-sub { font-size: 14px; color: #6B665A; line-height: 1.5; margin: 0 0 30px; }
+.checklist { display: flex; flex-direction: column; gap: 13px; width: 320px; max-width: 100%; text-align: left; }
+.ci { display: flex; align-items: center; gap: 11px; font-size: 14px; font-weight: 500; }
+.ci .mk {
+  width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: background 0.3s, border-color 0.3s;
+}
+.ci .mk svg { width: 11px; height: 11px; color: var(--ink); opacity: 0; transition: opacity 0.3s; }
+.ci .lb { color: #A8A296; transition: color 0.3s; }
+.ci.done .mk { background: var(--amber); border-color: var(--amber); }
+.ci.done .mk svg { opacity: 1; }
+.ci.done .lb { color: var(--ink); }
+.processing-retry-row { display: flex; gap: 12px; margin-top: 24px; }
+
+/* ============================================================= */
+/* SCREEN 4 (Confirm understanding)                              */
+/* ============================================================= */
+.chead { padding: 40px 56px 0; }
+h1.chead-title { font-family: 'DM Serif Display', serif; color: var(--ink); margin: 0; font-size: 32px; line-height: 1.2; }
+.csub { font-size: 14px; color: #6B665A; margin: 10px 0 0; }
+.cscroll { padding: 26px 56px 0; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ucard {
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px; position: relative;
+}
+.ucard .ceb { font-size: 12px; font-weight: 600; color: var(--terracotta); margin-bottom: 8px; display: flex; align-items: center; gap: 7px; padding-right: 32px; }
+.ucard .cval { font-size: 14px; color: var(--ink); line-height: 1.55; }
+.pencil {
+  position: absolute; top: 12px; right: 12px; width: 26px; height: 26px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--surface);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.pencil svg { width: 13px; height: 13px; color: #8A8578; }
+.pencil:hover { border-color: var(--amber); }
+.pencil.editing { border-color: var(--amber); background: var(--amber-light); }
+.pencil.editing svg { color: var(--amber); }
+.edit-field {
+  width: 100%; min-height: 96px; margin-top: 2px; background: var(--surface);
+  border: 1.5px solid var(--amber); border-radius: var(--radius-sm); padding: 10px 12px;
+  font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.55; color: var(--ink);
+  resize: vertical; outline: none;
+}
+
+.divlbl { font-size: 13px; font-weight: 600; color: #6B665A; margin: 26px 0 12px; }
+.needs { display: flex; flex-direction: column; gap: 12px; }
+.qcard {
+  background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px; border-left: 3px solid var(--amber);
+}
+.qcard.is-required { border-left-color: var(--terracotta); }
+.qcard .q { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 11px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.req-tag { font-size: 11px; font-weight: 700; color: var(--terracotta); letter-spacing: 0.02em; }
+.opt-tag { font-size: 11px; font-weight: 600; color: #A8A296; }
+.qcard .qin {
+  width: 100%; height: 42px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); padding: 0 13px; font-size: 13.5px; font-family: 'Inter', sans-serif;
+  color: var(--ink); outline: none; transition: border-color 0.2s;
+}
+.qcard .qin:focus { border-color: var(--amber); }
+.qcard.is-required .qin:focus { border-color: var(--terracotta); }
+.qcard .qin::placeholder { color: #A8A296; }
+.gap-confirmation {
+  background: var(--amber-light); border: 1px solid #E8D5A0; border-radius: var(--radius);
+  padding: 12px 14px; color: var(--terracotta); font-size: 13px; line-height: 1.45; margin-top: 12px;
+}
+
+/* Tool confirmation chips */
+.tool-confirm-section { margin-top: 20px; }
+.section-title { font-size: 13px; font-weight: 600; color: #6B665A; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.tool-chip-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tool-chip {
+  border: 1px solid var(--border); background: var(--card-bg); color: var(--ink-soft);
+  border-radius: 999px; padding: 7px 11px; font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 600; cursor: pointer; max-width: 100%; overflow: hidden;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, width 0.24s ease, padding 0.24s ease, opacity 0.2s ease;
+}
+.tool-chip.active { border-color: var(--amber); background: var(--amber-light); color: var(--terracotta); }
+.tool-chip.adding { width: 64px; padding: 0; cursor: text; opacity: 0.85; }
+.tool-chip.adding.open { width: min(220px, 100%); opacity: 1; }
+.tool-chip-input {
+  width: 100%; height: 36px; border: 1.5px solid var(--border); border-radius: 999px;
+  background: var(--card-bg); padding: 0 12px; font-size: 12px; font-weight: 600;
+  font-family: 'Inter', sans-serif; outline: none; opacity: 0; transition: border-color 0.2s ease, opacity 0.2s ease;
+}
+.tool-chip.adding.open .tool-chip-input { opacity: 1; }
+.tool-chip-input:focus { border-color: var(--amber); }
+
+/* Assumption box + inline challenge */
+.assume {
+  background: #FBF3E4; border: 1px solid rgba(200,160,64,0.4); border-radius: 10px;
+  padding: 14px 16px; display: flex; align-items: flex-start; gap: 11px; margin-bottom: 8px;
+}
+.assume .ck {
+  width: 20px; height: 20px; border-radius: 50%; background: var(--amber);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+}
+.assume .ck svg { width: 12px; height: 12px; color: var(--ink); }
+.assume .atxt { font-size: 13.5px; color: #5C4A2A; line-height: 1.5; flex: 1; }
+.assume .notquite {
+  color: var(--terracotta); font-weight: 600; cursor: pointer; white-space: nowrap;
+  font-size: 13px; margin-left: auto; align-self: center;
+  background: none; border: none; font-family: 'Inter', sans-serif;
+}
+.assume .assume-edit {
+  width: 100%; margin-top: 6px; min-height: 64px; background: var(--card-bg);
+  border: 1.5px solid var(--amber); border-radius: var(--radius-sm); padding: 10px 12px;
+  font-family: 'Inter', sans-serif; font-size: 13.5px; line-height: 1.5; color: var(--ink); resize: vertical; outline: none;
+}
+.cfoot { padding: 26px 56px 30px; }
+
+/* ============================================================= */
+/* SCREEN 5 (Your next move)                                     */
+/* ============================================================= */
+.pageeb { font-size: 13px; font-weight: 600; color: var(--terracotta); margin-bottom: 8px; }
+.pagetitle { font-family: 'Inter', sans-serif; font-size: 26px; font-weight: 700; color: var(--ink); margin: 0; }
+.dofirst {
+  background: var(--ink); border-radius: 12px; padding: 26px; position: relative; overflow: hidden;
+}
+.dofirst .glow {
+  position: absolute; top: -70px; right: -50px; width: 240px; height: 240px;
+  background: radial-gradient(circle, rgba(200,160,64,0.2), transparent 70%); pointer-events: none;
+}
+.dofirst .df-eb { font-size: 12px; font-weight: 600; color: var(--amber); margin-bottom: 12px; display: flex; align-items: center; gap: 7px; position: relative; }
+.dofirst h2 { font-family: 'DM Serif Display', serif; color: #FBF8F2; font-size: 26px; margin: 0 0 12px; line-height: 1.28; position: relative; }
+.dofirst p { font-size: 14px; color: #C0BBAE; line-height: 1.6; margin: 0; max-width: 640px; position: relative; }
+.milestone { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-top: 14px; }
+.milestone .m-eb { font-size: 12px; font-weight: 600; color: var(--terracotta); margin-bottom: 7px; display: flex; align-items: center; gap: 7px; }
+.milestone .m-txt { font-size: 14px; color: var(--ink); line-height: 1.5; }
+.afterlbl { font-size: 13px; font-weight: 600; color: #6B665A; margin: 28px 0 12px; }
+.timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.tcard { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.tcard.nowc { border-color: var(--amber); border-width: 1.5px; }
+.tcard .t-eb { font-size: 11px; font-weight: 600; color: #8A8578; margin-bottom: 8px; }
+.tcard.nowc .t-eb { color: var(--terracotta); }
+.tcard .t-title { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+.tcard .t-out { font-size: 12.5px; color: #6B665A; line-height: 1.45; font-style: italic; }
+
+/* ============================================================= */
+/* Mobile stacking (< 860px): single column, sidebar hidden      */
+/* ============================================================= */
+@media (max-width: 860px) {
+  .desktop-sidebar { display: none !important; }
+  .prog { max-width: none; }
+  .stage-pad, #screen-0.screen.active { padding-left: 0; padding-right: 0; }
+  .stage-pad { padding: 0 20px; }
+  .pad-main { padding: 24px 20px 0; }
+  .chead { padding: 28px 20px 0; }
+  .cscroll { padding: 20px 20px 0; }
+  .cfoot { padding: 22px 20px 26px; }
+  .grid { grid-template-columns: 1fr; }
+  .timeline { grid-template-columns: 1fr; }
+  #greeting-h1 { font-size: 40px; }
+  #greeting-sub { font-size: 16px; }
+  #s0-h1 { font-size: 34px; }
+  h1.hero, h1.chead-title { font-size: 28px; }
+  .scfoot { flex-wrap: wrap; }
+}
+@media (max-width: 380px) {
+  #greeting-sub { font-size: 14px; }
+}
+
+/* Keep the fading screen absolutely-out-of-flow only if needed */
+
+/* ============================================================= */
+/* PRESERVED — Download report secbtn, spinner, win banner       */
+/* ============================================================= */
 /* Download report — secondary button inside the handoff card (Ticket I2, mockup .secbtn) */
 .secbtn {
   display: inline-flex; align-items: center; gap: 9px;
@@ -628,15 +474,6 @@ input.name-field {
 }
 .secbtn.is-ready { color: #D8D3C7; }
 
-/* PROCESSING SCREEN (narrated loader) */
-.processing-label {
-  font-family: 'DM Serif Display', serif; font-size: 28px;
-  color: var(--ink); margin: 0 0 6px; line-height: 1.3;
-}
-.processing-sub {
-  font-size: 14px; color: #6B665A; line-height: 1.5; margin: 0;
-}
-
 /* WIN BANNER / TROPHY (Ticket I2 — matches mockup .trophy) */
 .win-banner {
   background: var(--ink); border-radius: 12px;
@@ -653,126 +490,8 @@ input.name-field {
 }
 
 /* ============================================================= */
-/* Ticket I1 reskin — screens 1-5, sentence-case labels, loaders */
+/* PRESERVED — Ticket I2 handoff card + bridge animation          */
 /* ============================================================= */
-
-/* Brand rule: sentence case, never ALL CAPS (mockups clean caps) */
-.eyebrow, .card-label, .focus-label, .phase-label, .journey-soon {
-  text-transform: none; letter-spacing: 0;
-}
-
-/* ---- Screen 1: Bring it in ---- */
-#project-input {
-  min-height: 280px;
-  border-color: var(--amber);
-  box-shadow: 0 0 0 3px rgba(200,160,64,0.16);
-}
-.starters { margin-top: 16px; max-width: 760px; }
-.starters .lead { font-size: 12.5px; color: #8A8578; margin-bottom: 9px; }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.starter-chip {
-  display: inline-flex; align-items: center; gap: 7px;
-  background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px;
-  padding: 8px 13px; font-size: 13px; font-weight: 500; color: var(--ink);
-  cursor: pointer; font-family: 'Inter', sans-serif;
-}
-.starter-chip:hover { border-color: var(--amber); }
-.starter-chip .pl { color: var(--terracotta); font-weight: 700; }
-.helprow {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  margin-top: 18px; max-width: 760px;
-  border-top: 1px solid var(--border); padding-top: 18px;
-}
-.hbtn {
-  display: inline-flex; align-items: center; gap: 8px; border-radius: 8px;
-  padding: 10px 15px; font-size: 13.5px; font-weight: 600;
-  font-family: 'Inter', sans-serif; cursor: pointer;
-}
-.hbtn.primary { background: var(--card-bg); border: 1px solid var(--amber); color: var(--ink); }
-.hbtn.primary .sp { color: var(--amber); }
-.hbtn.soon { background: transparent; border: 1px dashed var(--border); color: #8A8578; cursor: default; }
-.hbtn.soon .soonlab { font-weight: 500; color: #A8A296; }
-.pastelink {
-  margin-left: auto; font-size: 13px; font-weight: 600; color: var(--terracotta);
-  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
-  background: none; border: none; font-family: 'Inter', sans-serif;
-}
-.pastelink svg { width: 13px; height: 13px; }
-.build-hint { font-size: 12.5px; color: #8A8578; }
-.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn-primary:disabled:hover { background: var(--ink); }
-
-/* ---- Loaders: narrated checklist ---- */
-.loader-wrap {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-height: 460px; text-align: center; padding: 0 20px;
-}
-.loader-ring {
-  width: 66px; height: 66px; border-radius: 50%;
-  border: 3px solid rgba(200,160,64,0.2); border-top-color: var(--amber);
-  animation: loader-spin 900ms linear infinite; margin-bottom: 26px;
-}
-@keyframes loader-spin { to { transform: rotate(360deg); } }
-.checklist { display: flex; flex-direction: column; gap: 13px; width: 320px; max-width: 100%; margin-top: 30px; text-align: left; }
-.ci { display: flex; align-items: center; gap: 11px; font-size: 14px; font-weight: 500; }
-.ci .mk {
-  width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  transition: background 0.3s, border-color 0.3s;
-}
-.ci .mk svg { width: 11px; height: 11px; color: var(--ink); opacity: 0; transition: opacity 0.3s; }
-.ci .lb { color: #A8A296; transition: color 0.3s; }
-.ci.done .mk { background: var(--amber); border-color: var(--amber); }
-.ci.done .mk svg { opacity: 1; }
-.ci.done .lb { color: var(--ink); }
-
-/* ---- Screen 2: Confirm understanding ---- */
-.card-grid .card { position: relative; }
-.pencil {
-  position: absolute; top: 12px; right: 12px; width: 26px; height: 26px;
-  border-radius: 6px; border: 1px solid var(--border); background: var(--surface);
-  display: flex; align-items: center; justify-content: center; cursor: pointer;
-}
-.pencil svg { width: 13px; height: 13px; color: #8A8578; }
-.pencil:hover { border-color: var(--amber); }
-.pencil.editing { border-color: var(--amber); background: var(--amber-light); }
-.pencil.editing svg { color: var(--amber); }
-.card-grid .card-label { padding-right: 32px; }
-.gap-item { border-left: 3px solid var(--amber); }
-.assume {
-  background: #FBF3E4; border: 1px solid rgba(200,160,64,0.4); border-radius: var(--radius);
-  padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 11px;
-}
-.assume .ck {
-  width: 20px; height: 20px; border-radius: 50%; background: var(--amber);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
-}
-.assume .ck svg { width: 12px; height: 12px; color: var(--ink); }
-.assume .atxt { font-size: 13.5px; color: #5C4A2A; line-height: 1.5; flex: 1; }
-.assume .notquite {
-  color: var(--terracotta); font-weight: 600; cursor: pointer; white-space: nowrap;
-  font-size: 13px; align-self: center; background: none; border: none; font-family: 'Inter', sans-serif;
-}
-.assume .assume-edit { width: 100%; margin-top: 4px; min-height: 64px; font-size: 13.5px; }
-
-/* ---- Screen 3: Your next move ---- */
-#s3-h { font-family: 'Inter', sans-serif; font-size: 26px; font-weight: 700; }
-@media (min-width: 768px) { #s3-h { font-size: 26px; } }
-.focus-card { position: relative; overflow: hidden; padding: 26px; }
-.focus-card .glow {
-  position: absolute; top: -70px; right: -50px; width: 240px; height: 240px;
-  background: radial-gradient(circle, rgba(200,160,64,0.2), transparent 70%); pointer-events: none;
-}
-.focus-label, .focus-action, .focus-why { position: relative; }
-.focus-action { font-size: 26px; line-height: 1.28; }
-.phase-strip { gap: 14px; }
-.phase-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-.phase-card.now { border-color: var(--amber); border-width: 1.5px; }
-.phase-label { font-size: 11px; font-weight: 600; color: #8A8578; margin-bottom: 8px; }
-.phase-card.now .phase-label { color: var(--terracotta); }
-.phase-action { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
-.phase-output { font-size: 12.5px; color: #6B665A; line-height: 1.45; font-style: italic; }
-
 /* ============================================================= */
 /* Ticket I2 — Intake Transition handoff card + bridge animation */
 /* ============================================================= */
@@ -944,278 +663,305 @@ input.name-field {
 </script>
 </head>
 <body>
-<div class="phone">
+<div class="phone pre-side" id="phone">
   <div class="nav">
-    <div class="nav-top">
-      <div class="nav-logo">R</div>
-      <span class="nav-name">Resolve</span>
-    </div>
-    <button class="reset-btn" type="button" onclick="resetFlow()" title="Restart">↻ Reset</button>
-    <div class="progress-wrap">
-      <div class="progress-bar-outer"><div class="progress-bar-inner" id="progress-bar" style="width:0%"></div></div>
-      <span class="progress-label" id="progress-label">Step 1 of 4</span>
-    </div>
+    <div class="brandmark"><div class="dot">R</div><div class="name">Resolve</div></div>
+    <div class="prog"><i id="progress-bar" style="width:25%"></i></div>
+    <div class="progtxt" id="progress-label">Step 1 of 4</div>
+    <button class="reset" type="button" onclick="resetFlow()" title="Restart">
+      <svg viewBox="0 0 12 12" fill="none"><path d="M10 3a4.5 4.5 0 10.6 3.5M10 1.5V3.5H8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Reset</button>
   </div>
 
-  <div class="desktop-sidebar" id="desktop-sidebar">
-    <div class="sidebar-steps">
-      <div class="sidebar-step active" id="ss-0">
-        <div class="step-num">1</div>
-        <div class="step-info">
-          <div class="step-name">Get started</div>
-          <div class="step-desc">Tell Resolve your name and what you need help with</div>
+  <div class="bodyrow">
+    <div class="desktop-sidebar" id="desktop-sidebar">
+      <div class="sidebar-steps">
+        <div class="sidebar-step active" id="ss-0">
+          <div class="step-num">1</div>
+          <div class="step-info">
+            <div class="step-name">Get started</div>
+            <div class="step-desc">Tell Resolve your name and what you need help with</div>
+          </div>
+        </div>
+        <div class="sidebar-step" id="ss-1">
+          <div class="step-num">2</div>
+          <div class="step-info">
+            <div class="step-name">Bring it in</div>
+            <div class="step-desc">Share your project context — rough notes, imports, anything you have</div>
+          </div>
+        </div>
+        <div class="sidebar-step" id="ss-2">
+          <div class="step-num">3</div>
+          <div class="step-info">
+            <div class="step-name">Confirm understanding</div>
+            <div class="step-desc">Check what Resolve understood and fill any gaps</div>
+          </div>
+        </div>
+        <div class="sidebar-step" id="ss-3">
+          <div class="step-num">4</div>
+          <div class="step-info">
+            <div class="step-name">Your next move</div>
+            <div class="step-desc">One clear recommended action and a roadmap built from your project</div>
+          </div>
         </div>
       </div>
-      <div class="sidebar-step" id="ss-1">
-        <div class="step-num">2</div>
-        <div class="step-info">
-          <div class="step-name">Bring it in</div>
-          <div class="step-desc">Share your project context — rough notes, imports, anything you have</div>
-        </div>
-      </div>
-      <div class="sidebar-step" id="ss-2">
-        <div class="step-num">3</div>
-        <div class="step-info">
-          <div class="step-name">Confirm understanding</div>
-          <div class="step-desc">Check what Resolve understood and fill any gaps</div>
-        </div>
-      </div>
-      <div class="sidebar-step" id="ss-3">
-        <div class="step-num">4</div>
-        <div class="step-info">
-          <div class="step-name">Your next move</div>
-          <div class="step-desc">One clear recommended action and a roadmap built from your project</div>
-        </div>
+      <div class="sidebar-badge">
+        <div class="sidebar-badge-label">After this session</div>
+        <div class="sidebar-badge-text">Unlock the ability to save your path, track progress, and return to your project any time.</div>
       </div>
     </div>
 
-    <div class="sidebar-divider"></div>
+    <div class="content">
 
-    <div class="sidebar-badge">
-      <div class="sidebar-badge-label">After this session</div>
-      <div class="sidebar-badge-text">Unlock the ability to save your path, track progress, and return to your project any time.</div>
-    </div>
-  </div>
+      <!-- S0: name entry + fused welcome->problem reveal -->
+      <div class="screen active" id="screen-0">
+        <div class="stage-pad" style="width:100%;">
+          <!-- Beat 1: name entry -->
+          <div id="name-step" class="screen0-step screen0-pure">
+            <div class="eyebrow" id="s0-eyebrow">Let's get started</div>
+            <h1 class="serif" id="s0-h1">What's your name?</h1>
+            <input type="text" id="name-input" class="name-field" placeholder="Your first name" autocomplete="off" oninput="onNameInput()" onkeydown="if(event.key==='Enter'){event.preventDefault(); revealGreetingStep();}" />
+            <button class="btn" id="name-continue-btn" onclick="revealGreetingStep()" disabled>Continue<svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <div class="name-hint">Press Enter to continue</div>
+          </div>
 
-  <div class="content">
-
-    <!-- S0 -->
-    <div class="screen active" id="screen-0">
-      <!-- Beat 1: name entry -->
-      <div id="name-step" class="screen0-step screen0-pure">
-        <div class="eyebrow" id="s0-eyebrow">Let's get started</div>
-        <h1 id="s0-h1">What's your name?</h1>
-        <div class="field" style="margin-top:26px; max-width:380px;">
-          <input type="text" id="name-input" class="name-field" placeholder="Your first name" autocomplete="off" oninput="onNameInput()" onkeydown="if(event.key==='Enter'){event.preventDefault(); revealGreetingStep();}" />
-        </div>
-        <button class="inline-affirm-btn" id="name-continue-btn" onclick="revealGreetingStep()" disabled>Continue →</button>
-        <div class="name-hint">Press Enter to continue</div>
-      </div>
-
-      <!-- Beat 2: fused welcome -> problem -->
-      <div id="greeting-step" class="screen0-step screen0-pure screen0-step-hidden">
-        <h1 id="greeting-h1" class="beat-hidden">Hi.</h1>
-        <p id="greeting-sub" class="beat-hidden">Welcome to <span class="product-name">Resolve</span>.</p>
-        <div class="reveal-prompt beat-hidden" id="journey-block">
-          <div class="eyebrow" id="journey-greeting">So,</div>
-          <div class="reveal-question" id="journey-h1">What do you need help with?</div>
-          <div class="opts">
-            <div class="journey-option active beat-hidden" id="opt-1" onclick="selectJourneyAndGo(this)">
-              <div class="journey-icon">📁</div>
-              <div>
-                <div class="journey-title">I have a messy project</div>
-                <div class="journey-desc">Notes everywhere, old AI chats, no clear next step. Help me make sense of it.</div>
-              </div>
-            </div>
-            <div class="journey-option disabled beat-hidden" id="opt-2">
-              <div class="journey-icon">💡</div>
-              <div>
-                <div class="journey-title">I have a new idea</div>
-                <div class="journey-desc">I want to shape it into something real.</div>
-                <div class="journey-soon">Coming soon</div>
-              </div>
-            </div>
-            <div class="journey-option disabled beat-hidden" id="opt-3">
-              <div class="journey-icon">🧭</div>
-              <div>
-                <div class="journey-title">I'm stuck, not sure where to start</div>
-                <div class="journey-desc">Help me figure out what the actual problem is.</div>
-                <div class="journey-soon">Coming soon</div>
+          <!-- Beat 2: fused welcome -> problem -->
+          <div id="greeting-step" class="screen0-step screen0-pure screen0-step-hidden">
+            <h1 id="greeting-h1" class="beat-hidden">Hi.</h1>
+            <p id="greeting-sub" class="beat-hidden">Welcome to <span class="product-name">Resolve</span>.</p>
+            <div class="reveal-prompt beat-hidden" id="journey-block">
+              <div class="eyebrow" id="journey-greeting">So,</div>
+              <div class="reveal-question" id="journey-h1">What do you need help with?</div>
+              <div class="opts">
+                <div class="journey-option active beat-hidden" id="opt-1" onclick="selectJourneyAndGo(this)">
+                  <div class="journey-icon">📁</div>
+                  <div>
+                    <div class="journey-title">I have a messy project</div>
+                    <div class="journey-desc">Notes everywhere, old AI chats, no clear next step. Help me make sense of it.</div>
+                  </div>
+                </div>
+                <div class="journey-option disabled beat-hidden" id="opt-2">
+                  <div class="journey-icon">💡</div>
+                  <div>
+                    <div class="journey-title">I have a new idea</div>
+                    <div class="journey-desc">I want to shape it into something real.</div>
+                    <div class="journey-soon">Coming soon</div>
+                  </div>
+                </div>
+                <div class="journey-option disabled beat-hidden" id="opt-3">
+                  <div class="journey-icon">🧭</div>
+                  <div>
+                    <div class="journey-title">I'm stuck, not sure where to start</div>
+                    <div class="journey-desc">Help me figure out what the actual problem is.</div>
+                    <div class="journey-soon">Coming soon</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- S1: Bring it in -->
+      <div class="screen" id="screen-1">
+        <div class="pad-main">
+          <div class="eyebrow">In your own words</div>
+          <h1 class="hero">Tell Resolve what's going on.</h1>
+
+          <div class="textarea-wrap">
+            <textarea id="project-input" placeholder="Describe the project however you like. What exists, what's confusing, what you're trying to decide, what's blocking you. Don't tidy it up." oninput="onProjectInput()"></textarea>
+            <button class="mic-btn" id="mic-btn" onclick="toggleVoiceInput()" title="Voice note">
+              <svg viewBox="0 0 15 15" fill="none"><rect x="5" y="1.5" width="5" height="8" rx="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M3 7a4.5 4.5 0 009 0M7.5 11.5v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button>
+          </div>
+          <span class="input-hint" id="mic-status"></span>
+
+          <div class="starters">
+            <div class="lead">Not sure where to start? Pick one and Resolve drops in a scaffold:</div>
+            <div class="chips">
+              <button class="starter-chip" type="button" onclick="loadStarter('rebrand')"><span class="pl">+</span>A rebrand that's stalled</button>
+              <button class="starter-chip" type="button" onclick="loadStarter('notes')"><span class="pl">+</span>Too many notes, no plan</button>
+              <button class="starter-chip" type="button" onclick="loadStarter('options')"><span class="pl">+</span>Deciding between options</button>
+            </div>
+          </div>
+
+          <div class="helprow">
+            <button class="hbtn primary" type="button" onclick="loadExample()" title="Load an example project"><span class="sp">✦</span>Try an example</button>
+            <button class="hbtn soon" type="button" disabled title="Supporting material is coming soon">Add material<span class="soonlab">· Coming soon</span></button>
+            <button class="pastelink" type="button" id="handoff-toggle" onclick="toggleHandoffPrompt()">Coming from another AI chat? Get a prompt to pull it in<svg viewBox="0 0 13 13" fill="none"><path d="M2 6.5h8M6.5 3l3.5 3.5L6.5 10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          </div>
+
+          <div class="handoff-panel collapsed" id="handoff-panel" tabindex="-1" onfocusout="collapseHandoffOnBlur(event)">
+            <p id="handoff-prompt">I am moving this project into Resolve. Summarise everything important from this conversation: project goal, current state, key decisions, open questions, and anything that should not be lost.</p>
+            <button class="utility-icon-btn" type="button" onclick="copyHandoffPrompt()">Copy prompt</button>
+          </div>
+
+          <div id="optional-section" class="collapsed">
+            <div class="field" style="margin-top:8px; max-width:760px;">
+              <textarea id="supporting-material" placeholder="Links, copied notes, screenshots described in text, old AI chat summaries, anything else worth including." style="height:100px;"></textarea>
+            </div>
+          </div>
+
+          <div class="scfoot">
+            <button class="back" type="button" onclick="goBack()">Back</button>
+            <button class="btn" id="build-btn" type="button" onclick="submitBringItIn()" disabled>Build my path<svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <span class="buildhint" id="build-hint">Add a little context to continue</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROCESSING (narrated loader, shared by both calls) -->
+      <div class="screen" id="screen-processing">
+        <div class="loader">
+          <div class="loader-ring"></div>
+          <p class="processing-label" id="processing-label">Reading your project…</p>
+          <p class="processing-sub" id="processing-sub">Resolve is making sense of what you shared</p>
+          <div class="checklist" id="checklist">
+            <div class="ci" id="ci-0"><span class="mk"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3L9.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lb">Reading what you shared</span></div>
+            <div class="ci" id="ci-1"><span class="mk"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3L9.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lb">Separating what's decided from what's open</span></div>
+            <div class="ci" id="ci-2"><span class="mk"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3L9.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lb">Spotting the gaps</span></div>
+            <div class="ci" id="ci-3"><span class="mk"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3L9.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lb">Shaping your path</span></div>
+          </div>
+          <div class="processing-retry-row" id="processing-retry-row" style="display:none;">
+            <button class="back" type="button" onclick="goBack()">Back</button>
+            <button class="btn" type="button" onclick="retryProcessing()">Try again</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- S2: Confirm understanding -->
+      <div class="screen" id="screen-2">
+        <div class="chead">
+          <h1 class="chead-title" id="s2-h">Here's what Resolve got from that.</h1>
+          <p class="csub">Correct anything wrong — it shapes everything that follows.</p>
+        </div>
+        <div class="cscroll">
+          <div class="grid">
+            <div class="ucard">
+              <button class="pencil" type="button" onclick="editUnderstandingCard('project')" aria-label="Edit project"><svg viewBox="0 0 13 13" fill="none"><path d="M9 1.5l2.5 2.5L4 11.5H1.5V9L9 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button>
+              <div class="ceb">📁 Project</div>
+              <div class="cval" id="s2-project">—</div>
+            </div>
+            <div class="ucard">
+              <button class="pencil" type="button" onclick="editUnderstandingCard('goal')" aria-label="Edit what you want"><svg viewBox="0 0 13 13" fill="none"><path d="M9 1.5l2.5 2.5L4 11.5H1.5V9L9 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button>
+              <div class="ceb">🎯 What you want</div>
+              <div class="cval" id="s2-goal">—</div>
+            </div>
+            <div class="ucard">
+              <button class="pencil" type="button" onclick="editUnderstandingCard('state')" aria-label="Edit where it is"><svg viewBox="0 0 13 13" fill="none"><path d="M9 1.5l2.5 2.5L4 11.5H1.5V9L9 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button>
+              <div class="ceb">📍 Where it is</div>
+              <div class="cval" id="s2-state">—</div>
+            </div>
+            <div class="ucard">
+              <button class="pencil" type="button" onclick="editUnderstandingCard('uncertainty')" aria-label="Edit biggest uncertainty"><svg viewBox="0 0 13 13" fill="none"><path d="M9 1.5l2.5 2.5L4 11.5H1.5V9L9 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button>
+              <div class="ceb">❓ Biggest uncertainty</div>
+              <div class="cval" id="s2-uncertainty">—</div>
+            </div>
+          </div>
+
+          <div class="tool-confirm-section collapsed" id="tool-confirm-section">
+            <div class="section-title">Tools we noticed you mentioned</div>
+            <div class="tool-chip-row" id="tool-chip-row"></div>
+          </div>
+
+          <div class="gap-confirmation collapsed" id="s2-gap-confirmation">Resolve has everything it needs to build your path.</div>
+
+          <div id="s2-gap-section">
+            <div class="divlbl" id="s2-gap-title">A couple of things Resolve still needs</div>
+            <div class="needs">
+              <div class="qcard" id="gap-item-1">
+                <div class="q"><span id="s2-gap1-q">What would make this session a success for you?</span><span class="opt-tag" id="s2-gap1-tag">Optional</span></div>
+                <input class="qin" type="text" id="gap1" placeholder="Type your answer here" oninput="onGapInput()" />
+              </div>
+              <div class="qcard" id="gap-item-2">
+                <div class="q"><span id="s2-gap2-q">What else should Resolve know before recommending a next move?</span><span class="opt-tag" id="s2-gap2-tag">Optional</span></div>
+                <input class="qin" type="text" id="gap2" placeholder="Type your answer here" oninput="onGapInput()" />
+              </div>
+            </div>
+          </div>
+          <div id="s2-gap-divider" style="height:0;"></div>
+
+          <div class="divlbl">What Resolve is assuming</div>
+          <div id="s2-assumptions"></div>
+        </div>
+        <div class="scfoot cfoot">
+          <button class="back" type="button" onclick="goBack()">Back</button>
+          <button class="btn" id="confirm-continue-btn" type="button" onclick="submitConfirm()">This looks right — build my path<svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <span class="buildhint" id="confirm-hint" style="display:none;">Answer the outcome question to continue</span>
+        </div>
+      </div>
+
+      <!-- S3: Your next move -->
+      <div class="screen" id="screen-3">
+        <div class="chead">
+          <div class="pageeb">Your next move</div>
+          <h1 class="pagetitle" id="s3-h">Here's what to do next.</h1>
+        </div>
+        <div class="cscroll">
+          <div class="dofirst">
+            <div class="glow"></div>
+            <div class="df-eb">🎯 Do this first</div>
+            <h2 id="s3-action">—</h2>
+            <p id="s3-why">—</p>
+          </div>
+          <div class="milestone">
+            <div class="m-eb">🏁 First milestone</div>
+            <div class="m-txt" id="s3-milestone">—</div>
+          </div>
+          <div class="afterlbl">What happens after this</div>
+          <div class="timeline" id="s3-phase-strip">
+            <div class="tcard nowc">
+              <div class="t-eb" id="p1-label">This week</div>
+              <div class="t-title" id="p1-action">—</div>
+              <div class="t-out" id="p1-output">—</div>
+            </div>
+            <div class="tcard">
+              <div class="t-eb" id="p2-label">Next</div>
+              <div class="t-title" id="p2-action">—</div>
+              <div class="t-out" id="p2-output">—</div>
+            </div>
+            <div class="tcard">
+              <div class="t-eb" id="p3-label">Later</div>
+              <div class="t-title" id="p3-action">—</div>
+              <div class="t-out" id="p3-output">—</div>
+            </div>
+          </div>
+        </div>
+        <div class="scfoot cfoot">
+          <button class="back" type="button" onclick="goBack()">Back</button>
+          <button class="btn" id="nextmove-continue-btn" type="button" onclick="goToScreen(5)">Continue<svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </div>
+
+      <!-- S4: Intake Transition / handoff (Ticket I2 — preserved, out of I1 scope) -->
+      <div class="screen" id="screen-4">
+        <div class="pad-main">
+          <div class="win-banner">
+            <div class="win-icon">🏆</div>
+            <div class="win-title" id="s4-win-title">You just cleared the fog.</div>
+            <div class="win-desc" id="s4-win-desc">A messy project with no clear direction — turned into a focused path forward. That's the hard part done.</div>
+          </div>
+          <div class="eyebrow" style="margin-top:20px;">Next steps</div>
+          <div class="handoff" id="handoff-card">
+            <div class="glow"></div>
+            <div class="ho-eb">
+              <div class="rd"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5L10 3" stroke="#C8A040" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <span id="handoff-eyebrow">Decide this first</span>
+            </div>
+            <h2 id="handoff-action">Your recommended next move</h2>
+            <p class="ho-sub">This becomes your first move inside Resolve — pinned and waiting, with everything you just untangled carried across. Pick up exactly where you left off, no re-explaining.</p>
+            <button class="secbtn" id="plan-card" type="button" onclick="handleProjectPlanClick()"><span id="plan-icon"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5v9M4 7l3.5 3.5L11 7M2.5 13h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span id="plan-text">Download report</span></button>
+            <div class="ho-actions">
+              <button class="cta" id="continue-cta" type="button" onclick="startBridgeToResolve(event)">Continue in Resolve<svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            </div>
+            <div class="ho-error" id="handoff-error"></div>
+          </div>
+          <div class="scfoot">
+            <button class="back" type="button" onclick="goBack()">Back</button>
+            <button class="back" type="button" onclick="resetFlow()">Start over</button>
+          </div>
+        </div>
+      </div>
+
     </div>
-
-    <!-- S1 -->
-    <div class="screen" id="screen-1">
-      <div class="eyebrow">In your own words</div>
-      <h1>Tell Resolve what's going on.</h1>
-
-      <div class="field" style="max-width:760px;">
-        <div class="textarea-wrap">
-          <textarea id="project-input" placeholder="Describe the project however you like. What exists, what's confusing, what you're trying to decide, what's blocking you. Don't tidy it up." oninput="onProjectInput()"></textarea>
-          <button class="mic-btn" id="mic-btn" onclick="toggleVoiceInput()" title="Voice note">🎙️</button>
-        </div>
-        <span class="input-hint" id="mic-status"></span>
-      </div>
-
-      <div class="starters">
-        <div class="lead">Not sure where to start? Pick one and Resolve drops in a scaffold:</div>
-        <div class="chips">
-          <button class="starter-chip" type="button" onclick="loadStarter('rebrand')"><span class="pl">+</span>A rebrand that's stalled</button>
-          <button class="starter-chip" type="button" onclick="loadStarter('notes')"><span class="pl">+</span>Too many notes, no plan</button>
-          <button class="starter-chip" type="button" onclick="loadStarter('options')"><span class="pl">+</span>Deciding between options</button>
-        </div>
-      </div>
-
-      <div class="helprow">
-        <button class="hbtn primary" type="button" onclick="loadExample()" title="Load an example project"><span class="sp">✦</span>Try an example</button>
-        <button class="hbtn soon" type="button" disabled title="Supporting material is coming soon">Add material<span class="soonlab"> · Coming soon</span></button>
-        <button class="pastelink" type="button" id="handoff-toggle" onclick="toggleHandoffPrompt()">Coming from another AI chat? Get a prompt to pull it in<svg viewBox="0 0 13 13" fill="none"><path d="M2 6.5h8M6.5 3l3.5 3.5L6.5 10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      </div>
-
-      <div class="handoff-panel collapsed" id="handoff-panel" tabindex="-1" onfocusout="collapseHandoffOnBlur(event)" style="max-width:760px;">
-        <p id="handoff-prompt">I am moving this project into Resolve. Summarise everything important from this conversation: project goal, current state, key decisions, open questions, and anything that should not be lost.</p>
-        <button class="utility-icon-btn" type="button" onclick="copyHandoffPrompt()">Copy prompt</button>
-      </div>
-
-      <div id="optional-section" class="collapsed">
-        <div class="field" style="margin-top:8px; max-width:760px;">
-          <textarea id="supporting-material" placeholder="Links, copied notes, screenshots described in text, old AI chat summaries, anything else worth including." style="height:100px;"></textarea>
-        </div>
-      </div>
-    </div>
-
-    <!-- PROCESSING (narrated loader, shared by both calls) -->
-    <div class="screen" id="screen-processing">
-      <div class="loader-wrap">
-        <div class="loader-ring"></div>
-        <p class="processing-label" id="processing-label">Reading your project…</p>
-        <p class="processing-sub" id="processing-sub">Resolve is making sense of what you shared</p>
-        <div class="checklist" id="checklist">
-          <div class="ci" id="ci-0"><span class="mk"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3L9.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lb">Reading what you shared</span></div>
-          <div class="ci" id="ci-1"><span class="mk"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3L9.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lb">Separating what's decided from what's open</span></div>
-          <div class="ci" id="ci-2"><span class="mk"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3L9.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lb">Spotting the gaps</span></div>
-          <div class="ci" id="ci-3"><span class="mk"><svg viewBox="0 0 12 12" fill="none"><path d="M2.5 6.2l2.3 2.3L9.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="lb">Shaping your path</span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- S2 -->
-    <div class="screen" id="screen-2">
-      <h2 id="s2-h">Here's what Resolve got from that.</h2>
-      <p class="subtitle">Correct anything wrong — it shapes everything that follows.</p>
-      <div class="card-grid">
-        <div class="card">
-          <button class="pencil" type="button" onclick="editUnderstandingCard('project')" aria-label="Edit project"><svg viewBox="0 0 13 13" fill="none"><path d="M9 1.5l2.5 2.5L4 11.5H1.5V9L9 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button>
-          <div class="card-label">📁 Project</div>
-          <div class="card-value" id="s2-project">—</div>
-        </div>
-        <div class="card">
-          <button class="pencil" type="button" onclick="editUnderstandingCard('goal')" aria-label="Edit what you want"><svg viewBox="0 0 13 13" fill="none"><path d="M9 1.5l2.5 2.5L4 11.5H1.5V9L9 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button>
-          <div class="card-label">🎯 What you want</div>
-          <div class="card-value" id="s2-goal">—</div>
-        </div>
-        <div class="card">
-          <button class="pencil" type="button" onclick="editUnderstandingCard('state')" aria-label="Edit where it is"><svg viewBox="0 0 13 13" fill="none"><path d="M9 1.5l2.5 2.5L4 11.5H1.5V9L9 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button>
-          <div class="card-label">📍 Where it is</div>
-          <div class="card-value" id="s2-state">—</div>
-        </div>
-        <div class="card">
-          <button class="pencil" type="button" onclick="editUnderstandingCard('uncertainty')" aria-label="Edit biggest uncertainty"><svg viewBox="0 0 13 13" fill="none"><path d="M9 1.5l2.5 2.5L4 11.5H1.5V9L9 1.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></button>
-          <div class="card-label">❓ Biggest uncertainty</div>
-          <div class="card-value" id="s2-uncertainty">—</div>
-        </div>
-      </div>
-      <div class="tool-confirm-section collapsed" id="tool-confirm-section">
-        <div class="section-title">Tools we noticed you mentioned</div>
-        <div class="tool-chip-row" id="tool-chip-row"></div>
-      </div>
-      <div class="gap-confirmation collapsed" id="s2-gap-confirmation">Resolve has everything it needs to build your path.</div>
-      <div class="divider" id="s2-gap-divider"></div>
-      <div id="s2-gap-section">
-        <div class="section-title" id="s2-gap-title">A couple of things Resolve still needs</div>
-      <div class="gap-item" id="gap-item-1">
-        <div class="gap-question" id="s2-gap1-q">What would make this session a success for you?</div>
-        <input class="gap-input" type="text" id="gap1" placeholder="Type your answer here" />
-      </div>
-      <div class="gap-item" id="gap-item-2">
-        <div class="gap-question" id="s2-gap2-q">What else should Resolve know before recommending a next move?</div>
-        <input class="gap-input" type="text" id="gap2" placeholder="Type your answer here" />
-      </div>
-      </div>
-      <div class="divider"></div>
-      <div class="section-title">What Resolve is assuming</div>
-      <div id="s2-assumptions"></div>
-    </div>
-
-    <!-- S3 -->
-    <div class="screen" id="screen-3">
-      <div class="eyebrow">Your next move</div>
-      <h1 id="s3-h">Here's what to do next.</h1>
-      <div class="focus-card" style="margin-top:20px;">
-        <div class="glow"></div>
-        <div class="focus-label">🎯 Do this first</div>
-        <div class="focus-action" id="s3-action">—</div>
-        <div class="focus-why" id="s3-why">—</div>
-      </div>
-      <div class="card" style="margin-bottom:10px;">
-        <div class="card-label">🏁 First milestone</div>
-        <div class="card-value" id="s3-milestone">—</div>
-      </div>
-      <div class="divider"></div>
-      <div class="section-title">What happens after this</div>
-      <div class="phase-strip" id="s3-phase-strip">
-        <div class="phase-card now">
-          <div class="phase-label" id="p1-label">This week</div>
-          <div class="phase-action" id="p1-action">—</div>
-          <div class="phase-output" id="p1-output">—</div>
-        </div>
-        <div class="phase-card">
-          <div class="phase-label" id="p2-label">Next</div>
-          <div class="phase-action" id="p2-action">—</div>
-          <div class="phase-output" id="p2-output">—</div>
-        </div>
-        <div class="phase-card">
-          <div class="phase-label" id="p3-label">Later</div>
-          <div class="phase-action" id="p3-action">—</div>
-          <div class="phase-output" id="p3-output">—</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- S4 -->
-    <div class="screen" id="screen-4">
-      <div class="win-banner">
-        <div class="win-icon">🏆</div>
-        <div class="win-title" id="s4-win-title">You just cleared the fog.</div>
-        <div class="win-desc" id="s4-win-desc">A messy project with no clear direction — turned into a focused path forward. That's the hard part done.</div>
-      </div>
-      <div class="eyebrow" style="margin-top:20px;">Next steps</div>
-      <div class="handoff" id="handoff-card">
-        <div class="glow"></div>
-        <div class="ho-eb">
-          <div class="rd"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l2.5 2.5L10 3" stroke="#C8A040" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <span id="handoff-eyebrow">Decide this first</span>
-        </div>
-        <h2 id="handoff-action">Your recommended next move</h2>
-        <p class="ho-sub">This becomes your first move inside Resolve — pinned and waiting, with everything you just untangled carried across. Pick up exactly where you left off, no re-explaining.</p>
-        <button class="secbtn" id="plan-card" type="button" onclick="handleProjectPlanClick()"><span id="plan-icon"><svg viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5v9M4 7l3.5 3.5L11 7M2.5 13h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span id="plan-text">Download report</span></button>
-        <div class="ho-actions">
-          <button class="cta" id="continue-cta" type="button" onclick="startBridgeToResolve(event)">Continue in Resolve<svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        </div>
-        <div class="ho-error" id="handoff-error"></div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="bottom-bar" id="bottom-bar">
-    <button class="btn-back" onclick="goBack()" id="back-btn" style="display:none;">Back</button>
-    <button class="btn-primary" onclick="goNext()" id="next-btn">Get started →</button>
-    <span class="build-hint" id="build-hint" style="display:none;">Add a little context to continue</span>
   </div>
 </div>
 
@@ -1268,8 +1014,8 @@ function setPlanIcon(html) {
 
 const total = 6;
 const screenIds = ['screen-0','screen-1','screen-processing','screen-2','screen-3','screen-4'];
-const nextLabels = ['Get started \u2192','Build my path \u2192','','This looks right \u2014 build my path \u2192','Continue \u2192','Start over'];
-const progressPct = [0, 20, 20, 50, 75, 100];
+// Progress-bar fill per screen, matching the mockups (25/50/75/88/100).
+const progressPct = [25, 50, 50, 75, 100, 100];
 const stepLabels = ['Step 1 of 4','Step 2 of 4','Step 2 of 4','Step 3 of 4','Step 4 of 4','Complete'];
 const SCREEN_FADE_MS = 240;
 
@@ -1317,9 +1063,9 @@ function loadExample() {
 }
 
 function onProjectInput() {
-  if (current !== 1) return;
   const hasText = document.getElementById('project-input').value.trim().length > 0;
-  document.getElementById('next-btn').disabled = !hasText;
+  const buildBtn = document.getElementById('build-btn');
+  if (buildBtn) buildBtn.disabled = !hasText;
   const buildHint = document.getElementById('build-hint');
   if (buildHint) buildHint.style.display = hasText ? 'none' : 'inline';
 }
@@ -1443,40 +1189,29 @@ ${projectPlanData.howToUseThis || ''}
 }
 
 function updateNav() {
-  document.getElementById('bottom-bar').style.display = (current === 0) ? 'none' : 'flex';
-  document.getElementById('next-btn').textContent = nextLabels[current];
-  document.getElementById('next-btn').style.display = (current === 2) ? 'none' : 'flex';
-  document.getElementById('back-btn').style.display = current > 0 && current !== 2 ? 'block' : 'none';
-
-  // "Build my path" stays disabled until there's context on the Bring-it-in screen.
-  const nextBtn = document.getElementById('next-btn');
-  const buildHint = document.getElementById('build-hint');
+  // Bring-it-in gating: "Build my path" disabled until there's context.
   if (current === 1) {
     const hasText = document.getElementById('project-input').value.trim().length > 0;
-    nextBtn.disabled = !hasText;
+    const buildBtn = document.getElementById('build-btn');
+    if (buildBtn) buildBtn.disabled = !hasText;
+    const buildHint = document.getElementById('build-hint');
     if (buildHint) buildHint.style.display = hasText ? 'none' : 'inline';
-  } else {
-    nextBtn.disabled = false;
-    if (buildHint) buildHint.style.display = 'none';
   }
+  // Confirm gating: Continue gates on the required outcome question.
+  if (current === 3) updateConfirmGate();
 
-  // Processing screen (index 2) is shared by two different transitions.
-  // Show the correct climbing progress depending on which call is pending,
-  // rather than always resetting to the Call-1 value.
-  let pct, label;
+  // Progress bar. The processing screen (index 2) is shared by two calls —
+  // show the fill of the destination it is heading toward (mockups: 50 -> 88).
+  let pct;
   if (current === 2) {
-    if (pendingCall === 'recommend') {
-      pct = 62; label = 'Step 3 of 4';
-    } else {
-      pct = 35; label = 'Step 2 of 4';
-    }
+    pct = (pendingCall === 'recommend') ? 88 : 50;
   } else {
     pct = progressPct[current];
-    label = stepLabels[current];
   }
   document.getElementById('progress-bar').style.width = pct + '%';
-  document.getElementById('progress-label').textContent = label;
+  document.getElementById('progress-label').textContent = stepLabels[current] || '';
 
+  // Sidebar stepper.
   const sidebarMap = [0, 1, 1, 2, 3, 3];
   const activeSidebar = (current === 2 && pendingCall === 'recommend') ? 2 : sidebarMap[current];
   for (let i = 0; i < 4; i++) {
@@ -1488,9 +1223,10 @@ function updateNav() {
     if (numEl) numEl.textContent = isDone ? '✓' : String(i + 1);
   }
 
-  // Restore the numeric step counter on any real navigation (it is only
-  // hidden mid-way through the fused welcome reveal on screen 0).
-  if (current !== 0) setStepCounterVisible(true);
+  // The numeric "Step X of 4" counter only shows on the very first name-entry
+  // screen (mockups). From the fused reveal onward, the sidebar stepper carries
+  // progress and the top counter is hidden.
+  setStepCounterVisible(current === 0 && screen0Stage === 'name');
 }
 
 function setProcessingText(label, sub) {
@@ -1524,6 +1260,8 @@ function startLoader(kind) {
   clearLoaderTimers();
   const cfg = LOADER_CONFIG[kind] || LOADER_CONFIG.understand;
   setProcessingText(cfg.headline, cfg.sub);
+  const retryRow = document.getElementById('processing-retry-row');
+  if (retryRow) retryRow.style.display = 'none';
   const checklist = document.getElementById('checklist');
   if (checklist) checklist.style.display = 'flex';
   for (let i = 0; i < 4; i++) {
@@ -1563,9 +1301,17 @@ function showProcessingError(message) {
   const checklist = document.getElementById('checklist');
   if (checklist) checklist.style.display = 'none';
   setProcessingText('Something went wrong', message);
-  document.getElementById('next-btn').style.display = 'flex';
-  document.getElementById('next-btn').textContent = 'Try again';
-  document.getElementById('back-btn').style.display = 'block';
+  const retryRow = document.getElementById('processing-retry-row');
+  if (retryRow) retryRow.style.display = 'flex';
+}
+
+// Retry whichever call was pending when the processing screen errored.
+function retryProcessing() {
+  if (pendingCall === 'recommend') {
+    runRecommendationCall();
+  } else {
+    runUnderstandingCall();
+  }
 }
 
 function goToScreen(idx) {
@@ -1647,37 +1393,75 @@ function populateScreen2(d) {
   renderAssumptions(d.assumptions);
 }
 
+// When the founder did not already state a clear outcome, Call 1 prepends the
+// outcome question as gapQuestions[0] (see api/resolve.js). That first question
+// is REQUIRED — the downstream pipeline gates on the outcome. Any other gap
+// questions stay optional. We key off understandingData.outcomeStated (the real
+// signal), not position alone.
+let outcomeGateActive = false;
+
 function renderGapQuestions(gapQuestions) {
   const questions = (Array.isArray(gapQuestions) ? gapQuestions : [])
     .filter(Boolean)
     .slice(0, 2);
   const section = document.getElementById('s2-gap-section');
   const confirmation = document.getElementById('s2-gap-confirmation');
-  const divider = document.getElementById('s2-gap-divider');
   const title = document.getElementById('s2-gap-title');
   const gapItems = [document.getElementById('gap-item-1'), document.getElementById('gap-item-2')];
+  const tags = [document.getElementById('s2-gap1-tag'), document.getElementById('s2-gap2-tag')];
 
   document.getElementById('gap1').value = '';
   document.getElementById('gap2').value = '';
 
+  // The outcome question is required only when Call 1 asked one (outcomeStated
+  // === false); when the outcome was extracted, no gap question is required.
+  const outcomeRequired = !!(understandingData && understandingData.outcomeStated === false && questions.length > 0);
+  outcomeGateActive = outcomeRequired;
+
   if (!questions.length) {
     section.classList.add('collapsed');
-    divider.classList.add('collapsed');
     confirmation.classList.remove('collapsed');
     gapItems.forEach(item => item.classList.add('collapsed'));
+    updateConfirmGate();
     return;
   }
 
   confirmation.classList.add('collapsed');
   section.classList.remove('collapsed');
-  divider.classList.remove('collapsed');
   title.textContent = questions.length === 1 ? 'One thing Resolve still needs' : 'A couple of things Resolve still needs';
 
   questions.forEach((question, index) => {
     document.getElementById(`s2-gap${index + 1}-q`).textContent = question;
     gapItems[index].classList.remove('collapsed');
+    const isRequired = outcomeRequired && index === 0;
+    gapItems[index].classList.toggle('is-required', isRequired);
+    if (tags[index]) {
+      tags[index].textContent = isRequired ? 'Required' : 'Optional';
+      tags[index].className = isRequired ? 'req-tag' : 'opt-tag';
+    }
   });
   gapItems.slice(questions.length).forEach(item => item.classList.add('collapsed'));
+  updateConfirmGate();
+}
+
+// Screen-4 gate: the Continue button is disabled until the required outcome
+// question is answered. All other gap questions remain skippable.
+function isConfirmReady() {
+  if (!outcomeGateActive) return true;
+  const outEl = document.getElementById('gap1');
+  return !!(outEl && outEl.value.trim().length > 0);
+}
+
+function updateConfirmGate() {
+  const btn = document.getElementById('confirm-continue-btn');
+  const hint = document.getElementById('confirm-hint');
+  const ready = isConfirmReady();
+  if (btn) btn.disabled = !ready;
+  if (hint) hint.style.display = ready ? 'none' : 'inline';
+}
+
+function onGapInput() {
+  updateConfirmGate();
 }
 
 function renderToolConfirmation({ adding = false } = {}) {
@@ -1764,7 +1548,7 @@ function setPencilState(pencil, editing) {
 
 function pencilFor(valId) {
   const el = document.getElementById(valId);
-  const card = el && el.closest('.card');
+  const card = el && el.closest('.ucard');
   return card && card.querySelector('.pencil');
 }
 
@@ -2518,44 +2302,25 @@ function downloadProjectPlan() {
 // ---------------------------------------------------------------------------
 // Navigation
 // ---------------------------------------------------------------------------
-function goNext() {
-  if (current === 0) {
-    if (screen0Stage === 'name') {
-      revealGreetingStep();
-    }
-    // reveal stage: a journey card advances via selectJourneyAndGo()
+// Bring-it-in footer "Build my path" -> Call 1 (understand) via the loader.
+function submitBringItIn() {
+  if (document.getElementById('project-input').value.trim().length === 0) return;
+  goToScreen(2);
+  runUnderstandingCall();
+}
+
+// Confirm footer "This looks right — build my path" -> Call 2+3 via the loader.
+// Gated: the required outcome question (when asked) must be answered first.
+function submitConfirm() {
+  if (!isConfirmReady()) {
+    const gate = document.getElementById('confirm-hint');
+    const outEl = document.getElementById('gap1');
+    if (gate) gate.style.display = 'inline';
+    if (outEl) outEl.focus();
     return;
   }
-
-  if (current === 1) {
-    goToScreen(2);
-    runUnderstandingCall();
-    return;
-  }
-
-  if (current === 2) {
-    // processing screen retry path - retry whichever call was pending
-    if (pendingCall === 'recommend') {
-      runRecommendationCall();
-    } else {
-      runUnderstandingCall();
-    }
-    return;
-  }
-
-  if (current === 3) {
-    // Leaving Screen 2 -> trigger call 2+3, route through processing again
-    goToScreen(2);
-    runRecommendationCall();
-    return;
-  }
-
-  if (current < total - 1) {
-    goToScreen(current + 1);
-    return;
-  }
-
-  resetFlow();
+  goToScreen(2);
+  runRecommendationCall();
 }
 
 function goBack() {
@@ -2643,6 +2408,8 @@ function resetFlow() {
 
   const sidebar = document.getElementById('desktop-sidebar');
   sidebar.classList.remove('sidebar-visible');
+  const phone = document.getElementById('phone');
+  if (phone) phone.classList.add('pre-side');
   document.querySelectorAll('.sidebar-step').forEach(step => step.classList.remove('done', 'active'));
   document.getElementById('ss-0').classList.add('active');
 
@@ -2684,6 +2451,8 @@ function onNameInput() {
 function revealSidebar() {
   const sidebar = document.getElementById('desktop-sidebar');
   if (sidebar) sidebar.classList.add('sidebar-visible');
+  const phone = document.getElementById('phone');
+  if (phone) phone.classList.remove('pre-side');
 }
 
 // The numeric step counter is hidden during the fused welcome moment;
