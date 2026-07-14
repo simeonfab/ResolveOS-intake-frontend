@@ -342,6 +342,12 @@ h1.chead-title { font-family: 'DM Serif Display', serif; color: var(--ink); marg
 .qcard .qin:focus { border-color: var(--amber); }
 .qcard.is-required .qin:focus { border-color: var(--terracotta); }
 .qcard .qin::placeholder { color: #A8A296; }
+.qreask {
+  margin-top: 10px; background: var(--amber-light); border: 1px solid #E8D5A0;
+  border-radius: var(--radius-sm); padding: 10px 12px;
+  color: var(--terracotta); font-size: 13px; line-height: 1.45;
+}
+.qreask[hidden] { display: none; }
 .gap-confirmation {
   background: var(--amber-light); border: 1px solid #E8D5A0; border-radius: var(--radius);
   padding: 12px 14px; color: var(--terracotta); font-size: 13px; line-height: 1.45; margin-top: 12px;
@@ -870,6 +876,7 @@ h1.chead-title { font-family: 'DM Serif Display', serif; color: var(--ink); marg
               <div class="qcard" id="gap-item-1">
                 <div class="q"><span id="s2-gap1-q">What would make this session a success for you?</span><span class="opt-tag" id="s2-gap1-tag">Optional</span></div>
                 <input class="qin" type="text" id="gap1" placeholder="Type your answer here" oninput="onGapInput()" />
+                <div class="qreask" id="gap1-reask" hidden></div>
               </div>
               <div class="qcard" id="gap-item-2">
                 <div class="q"><span id="s2-gap2-q">What else should Resolve know before recommending a next move?</span><span class="opt-tag" id="s2-gap2-tag">Optional</span></div>
@@ -1400,6 +1407,126 @@ function populateScreen2(d) {
 // signal), not position alone.
 let outcomeGateActive = false;
 
+// T1.3 — the CONTENT of the outcome answer is validated, not just its presence.
+// A usable outcome names a beneficiary AND an observable change; the judgement
+// runs as a separate, isolated model call (stage 'validate-outcome'). On a
+// half-answer we re-ask ONCE, naming what's missing; still partial after that,
+// the answer is accepted and written with outcome_confirmed = false.
+let outcomeValidation = null; // { answer, hasBeneficiary, hasObservableChange, passed, unverified }
+let outcomeReasked = false;
+let confirmBtnHtml = null;
+
+function outcomeReaskMessage(verdict) {
+  const missingBeneficiary = !verdict.hasBeneficiary;
+  const missingChange = !verdict.hasObservableChange;
+  if (missingBeneficiary && missingChange) {
+    return 'One more pass on this one: name who is better off if this works, and a change you could actually see or measure.';
+  }
+  if (missingBeneficiary) {
+    return 'Almost — one thing missing: who specifically is better off if this works? Name the person or group.';
+  }
+  return 'Almost — one thing missing: how would you know it’s working? Add a change you could actually see or measure.';
+}
+
+function showOutcomeReask(verdict) {
+  const note = document.getElementById('gap1-reask');
+  if (note) {
+    note.textContent = outcomeReaskMessage(verdict);
+    note.hidden = false;
+  }
+  const input = document.getElementById('gap1');
+  if (input) input.focus();
+}
+
+function hideOutcomeReask() {
+  const note = document.getElementById('gap1-reask');
+  if (note) {
+    note.textContent = '';
+    note.hidden = true;
+  }
+}
+
+function setConfirmBusy(busy) {
+  const btn = document.getElementById('confirm-continue-btn');
+  if (!btn) return;
+  if (busy) {
+    if (confirmBtnHtml === null) confirmBtnHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.textContent = 'Checking your answer…';
+  } else {
+    if (confirmBtnHtml !== null) {
+      btn.innerHTML = confirmBtnHtml;
+      confirmBtnHtml = null;
+    }
+    btn.disabled = !isConfirmReady();
+  }
+}
+
+async function validateOutcomeAnswer(answer) {
+  const res = await fetch('/api/resolve', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      stage: 'validate-outcome',
+      outcomeQuestion: understandingData?.outcomeQuestion || '',
+      outcomeAnswer: answer
+    })
+  });
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody.error || 'Outcome validation request failed');
+  }
+  const verdict = await res.json();
+  return {
+    answer,
+    hasBeneficiary: !!verdict.hasBeneficiary,
+    hasObservableChange: !!verdict.hasObservableChange,
+    passed: !!(verdict.hasBeneficiary && verdict.hasObservableChange),
+    unverified: false
+  };
+}
+
+// Returns true when the flow may proceed to the recommendation; false when the
+// one re-ask was just shown and the founder is being held on the confirm screen.
+async function ensureOutcomeValidated() {
+  const answer = document.getElementById('gap1').value.trim();
+
+  // This exact answer was already judged: a pass proceeds confirmed; a partial
+  // that survived the single re-ask proceeds unconfirmed. Never loop, never
+  // re-judge the same text.
+  if (outcomeValidation && outcomeValidation.answer === answer) {
+    return true;
+  }
+
+  setConfirmBusy(true);
+  let verdict;
+  try {
+    verdict = await validateOutcomeAnswer(answer);
+  } catch (err) {
+    console.error(err);
+    // The check itself failed — never block intake on our own infrastructure.
+    // Proceed, but an unverified outcome must not masquerade as confirmed.
+    outcomeValidation = { answer, hasBeneficiary: false, hasObservableChange: false, passed: false, unverified: true };
+    setConfirmBusy(false);
+    return true;
+  }
+  setConfirmBusy(false);
+
+  outcomeValidation = verdict;
+  if (verdict.passed) {
+    hideOutcomeReask();
+    return true;
+  }
+  if (!outcomeReasked) {
+    outcomeReasked = true;
+    showOutcomeReask(verdict);
+    return false;
+  }
+  // Still partial after the one re-ask: accept it and write it, but it will be
+  // handed off with outcome_confirmed = false (see resolveOutcome).
+  return true;
+}
+
 function renderGapQuestions(gapQuestions) {
   const questions = (Array.isArray(gapQuestions) ? gapQuestions : [])
     .filter(Boolean)
@@ -1412,6 +1539,12 @@ function renderGapQuestions(gapQuestions) {
 
   document.getElementById('gap1').value = '';
   document.getElementById('gap2').value = '';
+
+  // Fresh questions mean a fresh validation state: the content check and its
+  // single re-ask belong to this session's outcome answer only.
+  outcomeValidation = null;
+  outcomeReasked = false;
+  hideOutcomeReask();
 
   // The outcome question is required only when Call 1 asked one (outcomeStated
   // === false); when the outcome was extracted, no gap question is required.
@@ -1456,7 +1589,9 @@ function updateConfirmGate() {
   const btn = document.getElementById('confirm-continue-btn');
   const hint = document.getElementById('confirm-hint');
   const ready = isConfirmReady();
-  if (btn) btn.disabled = !ready;
+  // While the outcome content check is in flight the button stays locked
+  // (confirmBtnHtml doubles as the busy flag — see setConfirmBusy).
+  if (btn && confirmBtnHtml === null) btn.disabled = !ready;
   if (hint) hint.style.display = ready ? 'none' : 'inline';
 }
 
@@ -1763,8 +1898,10 @@ function getOutputTemplatesUsed() {
 
 // Resolve the intake outcome for handoff. The outcome question (when asked) is always the
 // first gap question and its text matches understandingData.outcomeQuestion exactly, so if the
-// founder answered it, that typed answer IS the outcome and it counts as confirmed. Otherwise we
-// fall back to what Call 1 extracted/inferred, which is not founder-confirmed.
+// founder answered it, that typed answer IS the outcome. It counts as confirmed ONLY when the
+// isolated content check (T1.3) found both a beneficiary and an observable change — a partial
+// or unverified answer is still written, but never masquerades as a confirmed outcome.
+// Otherwise we fall back to what Call 1 extracted/inferred, which is not founder-confirmed.
 function resolveOutcome() {
   const extracted = (understandingData?.outcome || '').trim();
   const outcomeQuestion = (understandingData?.outcomeQuestion || '').trim();
@@ -1773,19 +1910,50 @@ function resolveOutcome() {
       item => item.question === outcomeQuestion && item.answer
     );
     if (match) {
-      return { outcome: match.answer, outcome_confirmed: true };
+      const validated = !!(outcomeValidation
+        && outcomeValidation.answer === match.answer
+        && outcomeValidation.passed);
+      return { outcome: match.answer, outcome_confirmed: validated };
     }
   }
   return { outcome: extracted, outcome_confirmed: false };
 }
 
+// T1.4 — the handoff payload is built from validated session data or not at all.
+// The old `|| []` / `|| ''` fallbacks only ever fired when the underlying object
+// was missing entirely (validateRecommendationShape guarantees the fields when
+// the object exists), which silently converted a TOTAL failure into an
+// empty-but-valid-looking payload. A missing piece is now an explicit, thrown,
+// user-visible failure (surfaced via startBridgeToResolve's error card).
 function buildResolvePmHandoffPayload() {
+  if (!understandingData) {
+    throw new Error('Handoff blocked: no confirmed understanding exists for this session. Run your project through Resolve again.');
+  }
+  if (!recommendationData) {
+    throw new Error('Handoff blocked: no recommendation exists for this session. Go back and build your path again.');
+  }
+  const recommendedAction = (recommendationData.recommendedAction || '').trim();
+  const topPriorities = Array.isArray(recommendationData.topPriorities)
+    ? recommendationData.topPriorities.filter(Boolean)
+    : [];
+  const whatNotToDo = Array.isArray(recommendationData.doNotYet)
+    ? recommendationData.doNotYet.filter(Boolean)
+    : [];
+  if (!recommendedAction || !topPriorities.length || !whatNotToDo.length) {
+    throw new Error('Handoff blocked: the recommendation is incomplete. Go back and build your path again.');
+  }
+  if (!projectPlanData) {
+    throw new Error('Handoff blocked: the project report has not been built yet. Try again.');
+  }
   const { outcome, outcome_confirmed } = resolveOutcome();
+  if (!outcome) {
+    throw new Error('Handoff blocked: no project outcome was captured. Go back to the confirm step and answer the outcome question.');
+  }
   return {
     project_understanding: understandingData,
-    recommended_action: recommendationData?.recommendedAction || '',
-    top_priorities: recommendationData?.topPriorities || [],
-    what_not_to_do: recommendationData?.doNotYet || [],
+    recommended_action: recommendedAction,
+    top_priorities: topPriorities,
+    what_not_to_do: whatNotToDo,
     confirmed_tools: getConfirmedTools(),
     project_plan_report: buildFullReportMarkdown(),
     gap_answers: collectGapAnswers(),
@@ -2310,14 +2478,21 @@ function submitBringItIn() {
 }
 
 // Confirm footer "This looks right — build my path" -> Call 2+3 via the loader.
-// Gated: the required outcome question (when asked) must be answered first.
-function submitConfirm() {
+// Gated twice: the required outcome question (when asked) must be answered, and
+// the ANSWER'S CONTENT must pass the isolated validation call (T1.3) — a
+// non-empty string is not an outcome. A half-answer gets one re-ask; after
+// that it proceeds and is written unconfirmed.
+async function submitConfirm() {
   if (!isConfirmReady()) {
     const gate = document.getElementById('confirm-hint');
     const outEl = document.getElementById('gap1');
     if (gate) gate.style.display = 'inline';
     if (outEl) outEl.focus();
     return;
+  }
+  if (outcomeGateActive) {
+    const proceed = await ensureOutcomeValidated();
+    if (!proceed) return;
   }
   goToScreen(2);
   runRecommendationCall();
@@ -2347,6 +2522,10 @@ function resetFlow() {
   outputContentCache = {};
   outputCardState = {};
   screen0Stage = 'name';
+  outcomeValidation = null;
+  outcomeReasked = false;
+  hideOutcomeReask();
+  setConfirmBusy(false);
 
   ['name-input', 'project-input', 'supporting-material', 'gap1', 'gap2'].forEach(id => {
     const el = document.getElementById(id);
