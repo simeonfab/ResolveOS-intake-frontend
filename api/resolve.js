@@ -43,7 +43,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { stage, projectInput, confirmedUnderstanding, gapAnswers, recommendationData, confirmedTools } = req.body;
+  const { stage, projectInput, confirmedUnderstanding, gapAnswers, recommendationData, confirmedTools, outcomeQuestion, outcomeAnswer } = req.body;
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -53,6 +53,14 @@ export default async function handler(req, res) {
   try {
     if (stage === 'understand') {
       const result = await runUnderstandingCall(projectInput, apiKey);
+      return res.status(200).json(result);
+    }
+
+    if (stage === 'validate-outcome') {
+      if (!isNonEmptyString(outcomeAnswer)) {
+        return res.status(400).json({ error: 'validate-outcome requires a non-empty outcomeAnswer' });
+      }
+      const result = await runOutcomeValidationCall(outcomeQuestion, outcomeAnswer, apiKey);
       return res.status(200).json(result);
     }
 
@@ -311,6 +319,16 @@ function validateProjectPlanShape(data) {
   return data;
 }
 
+function validateOutcomeVerdictShape(data) {
+  for (const key of ['hasBeneficiary', 'hasObservableChange']) {
+    if (typeof data[key] !== 'boolean') {
+      throw new ResolveShapeError(`Outcome verdict field "${key}" must be a boolean`);
+    }
+  }
+  // Return only the judged booleans - the verdict call must never carry generated content.
+  return { hasBeneficiary: data.hasBeneficiary, hasObservableChange: data.hasObservableChange };
+}
+
 function formatGapAnswers(gapAnswers) {
   const answers = Array.isArray(gapAnswers) ? gapAnswers : [];
   if (!answers.length) {
@@ -364,9 +382,9 @@ function formatConfirmedTools(confirmedTools) {
   return tools.length ? tools.join(', ') : 'No tools confirmed.';
 }
 
-async function callWithValidation(buildPrompt, apiKey, validateFn, attempt = 1) {
+async function callWithValidation(buildPrompt, apiKey, validateFn, options = {}, attempt = 1) {
   const systemPrompt = buildPrompt(attempt > 1);
-  const raw = await callOpenAI(systemPrompt, apiKey, { jsonMode: true });
+  const raw = await callOpenAI(systemPrompt, apiKey, { jsonMode: true, temperature: options.temperature });
 
   let parsed;
   try {
@@ -375,7 +393,7 @@ async function callWithValidation(buildPrompt, apiKey, validateFn, attempt = 1) 
     if (attempt >= 2) {
       throw new ResolveShapeError(`Response was not valid JSON after retry: ${e.message}`);
     }
-    return callWithValidation(buildPrompt, apiKey, validateFn, attempt + 1);
+    return callWithValidation(buildPrompt, apiKey, validateFn, options, attempt + 1);
   }
 
   try {
@@ -384,7 +402,7 @@ async function callWithValidation(buildPrompt, apiKey, validateFn, attempt = 1) 
     if (attempt >= 2) {
       throw e;
     }
-    return callWithValidation(buildPrompt, apiKey, validateFn, attempt + 1);
+    return callWithValidation(buildPrompt, apiKey, validateFn, options, attempt + 1);
   }
 }
 
@@ -461,6 +479,48 @@ REQUIRED: "project", "goal", "state", "uncertainty", and "outcome" must each be 
       .slice(0, 2);
   }
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// OUTCOME VALIDATION - isolated judge call (Ticket T1.3)
+// Judges the CONTENT of the founder's outcome answer: it must name a beneficiary
+// AND an observable or verifiable change. This call is a judgement and nothing
+// else - it shares no call with extraction or generation (non-negotiable N1),
+// and it returns only booleans so no generated content can ride along. The
+// re-ask wording is composed deterministically in the frontend from these
+// booleans; the question itself is never reworded.
+// ---------------------------------------------------------------------------
+async function runOutcomeValidationCall(outcomeQuestion, outcomeAnswer, apiKey) {
+  const questionText = isNonEmptyString(outcomeQuestion)
+    ? outcomeQuestion
+    : 'If this works, who is better off, and how would you know?';
+  const buildPrompt = (isRetry) => `You are a strict validation check inside ResolveOS intake. You judge ONE founder answer. You do not rewrite it, do not extract from it, do not answer on the founder's behalf, and do not generate any content. You only judge.
+
+A usable project outcome has TWO parts, and the answer must contain BOTH:
+1. BENEFICIARY - a specific person or group who is better off if the project works. The beneficiary may be inherited from the question itself (for example, answering "they" to a question that already names the group counts).
+2. OBSERVABLE CHANGE - something you could observe, count, or verify to know it is working: a behaviour that starts or stops, a number that moves, an event you could point at. Vague betterment with no way to know it happened ("better", "easier", "keep track of things") is NOT an observable change.
+
+CALIBRATION EXAMPLE (a real failure this check exists to catch):
+Question: "If it works, how will players be better off, and how would you know?"
+Answer: "they would be able to make better decks easier and keep track of the meta"
+Correct verdict: hasBeneficiary = true (the players, via "they" inherited from the question); hasObservableChange = false ("better decks easier" and "keep track of the meta" name no change anyone could observe or verify).
+
+THE QUESTION THAT WAS ASKED:
+"""
+${questionText}
+"""
+
+THE FOUNDER'S ANSWER:
+"""
+${outcomeAnswer}
+"""
+
+Judge only what the answer actually contains. Do not give credit for what the founder probably meant. A non-empty answer is not automatically a usable outcome.
+
+Return ONLY valid JSON in this EXACT shape:
+{"hasBeneficiary": true or false, "hasObservableChange": true or false}${isRetry ? '\n\nIMPORTANT: Your previous response did not match this exact shape. Return exactly the two boolean fields and nothing else.' : ''}`;
+
+  return callWithValidation(buildPrompt, apiKey, validateOutcomeVerdictShape, { temperature: 0 });
 }
 
 // ---------------------------------------------------------------------------
@@ -696,7 +756,7 @@ REQUIRED: longTermRoadmap must contain 1-4 rows. readiness must contain at least
 // ---------------------------------------------------------------------------
 // Shared OpenAI call helper
 // ---------------------------------------------------------------------------
-async function callOpenAI(systemPrompt, apiKey, { jsonMode = false } = {}) {
+async function callOpenAI(systemPrompt, apiKey, { jsonMode = false, temperature = 0.4 } = {}) {
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -706,7 +766,7 @@ async function callOpenAI(systemPrompt, apiKey, { jsonMode = false } = {}) {
     body: JSON.stringify({
       model: 'gpt-4o',
       messages: [{ role: 'system', content: systemPrompt }],
-      temperature: 0.4,
+      temperature,
       ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
     }),
   });
