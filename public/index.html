@@ -1919,13 +1919,41 @@ function resolveOutcome() {
   return { outcome: extracted, outcome_confirmed: false };
 }
 
+// T1.4 — the handoff payload is built from validated session data or not at all.
+// The old `|| []` / `|| ''` fallbacks only ever fired when the underlying object
+// was missing entirely (validateRecommendationShape guarantees the fields when
+// the object exists), which silently converted a TOTAL failure into an
+// empty-but-valid-looking payload. A missing piece is now an explicit, thrown,
+// user-visible failure (surfaced via startBridgeToResolve's error card).
 function buildResolvePmHandoffPayload() {
+  if (!understandingData) {
+    throw new Error('Handoff blocked: no confirmed understanding exists for this session. Run your project through Resolve again.');
+  }
+  if (!recommendationData) {
+    throw new Error('Handoff blocked: no recommendation exists for this session. Go back and build your path again.');
+  }
+  const recommendedAction = (recommendationData.recommendedAction || '').trim();
+  const topPriorities = Array.isArray(recommendationData.topPriorities)
+    ? recommendationData.topPriorities.filter(Boolean)
+    : [];
+  const whatNotToDo = Array.isArray(recommendationData.doNotYet)
+    ? recommendationData.doNotYet.filter(Boolean)
+    : [];
+  if (!recommendedAction || !topPriorities.length || !whatNotToDo.length) {
+    throw new Error('Handoff blocked: the recommendation is incomplete. Go back and build your path again.');
+  }
+  if (!projectPlanData) {
+    throw new Error('Handoff blocked: the project report has not been built yet. Try again.');
+  }
   const { outcome, outcome_confirmed } = resolveOutcome();
+  if (!outcome) {
+    throw new Error('Handoff blocked: no project outcome was captured. Go back to the confirm step and answer the outcome question.');
+  }
   return {
     project_understanding: understandingData,
-    recommended_action: recommendationData?.recommendedAction || '',
-    top_priorities: recommendationData?.topPriorities || [],
-    what_not_to_do: recommendationData?.doNotYet || [],
+    recommended_action: recommendedAction,
+    top_priorities: topPriorities,
+    what_not_to_do: whatNotToDo,
     confirmed_tools: getConfirmedTools(),
     project_plan_report: buildFullReportMarkdown(),
     gap_answers: collectGapAnswers(),
