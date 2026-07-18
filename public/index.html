@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Resolve</title>
+<!-- Warm the cockpit origin before the bridge redirect (DNS+TLS only, no behaviour
+     change). The arrival route is /signup?handoff_id=<uuid> — unique per handoff and
+     cross-origin, so a prefetch of a fixed path can never be reused; deliberately
+     preconnect/dns-prefetch only. -->
+<link rel="preconnect" href="https://cap-pm-cockpit-alaria.vercel.app" crossorigin>
+<link rel="dns-prefetch" href="https://cap-pm-cockpit-alaria.vercel.app">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
