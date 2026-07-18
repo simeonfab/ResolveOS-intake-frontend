@@ -552,10 +552,13 @@ h1.chead-title { font-family: 'DM Serif Display', serif; color: var(--ink); marg
 }
 .ho-error.show { display: block; }
 
-/* ---- Bridge transition overlay (auto-plays ~6.8s, then redirects) ---- */
+/* ---- Bridge transition overlay (auto-plays ~7.2s, holds ~1s on the parked
+     logo seam frame, then redirects) ---- */
 .bridge-overlay {
   display: none; position: fixed; inset: 0; z-index: 1000;
-  background: var(--ink); overflow: hidden;
+  /* Seam surface: cockpit's first frame is #141311 (its page bg), NOT --ink
+     (#1A1A18). Match it exactly so the parked frame is byte-for-byte identical. */
+  background: #141311; overflow: hidden;
 }
 .bridge-overlay.playing { display: block; }
 .bridge-glow {
@@ -575,7 +578,13 @@ h1.chead-title { font-family: 'DM Serif Display', serif; color: var(--ink); marg
 .bridge-overlay.playing .b-fog   { animation: bfog 2300ms cubic-bezier(.4,0,.2,1) forwards; }
 .bridge-overlay.playing .b-pin   { animation: bpin 2200ms cubic-bezier(.4,0,.2,1) 2300ms forwards; }
 .bridge-overlay.playing .b-brand { animation: bbrand 2100ms cubic-bezier(.4,0,.2,1) 4500ms forwards; }
-.bridge-overlay.playing .b-settle{ animation: bsettle 600ms cubic-bezier(.4,0,.2,1) 6600ms forwards; }
+/* Beat 4 (Option B — logo parks): as beat 3 (b-brand) fades out at 6600ms, the
+   centre glow crossfades out and the parked frame (top-left mark + top-centre
+   420px glow) fades in. It then holds static ~1s before the JS fires the
+   redirect — no motion crosses the navigation boundary. */
+.bridge-overlay.playing .bridge-glow { animation: bridge-glowpulse 4400ms ease-in-out infinite, bridge-centerout 600ms ease 6600ms forwards; }
+.bridge-overlay.playing .b-parkmark { animation: bparkin 600ms cubic-bezier(.4,0,.2,1) 6600ms forwards; }
+.bridge-overlay.playing .b-parkglow { animation: bparkin 600ms ease 6600ms forwards; }
 
 .b-fog .growcard {
   background: var(--ink); border: 1px solid rgba(200,160,64,0.28);
@@ -608,17 +617,27 @@ h1.chead-title { font-family: 'DM Serif Display', serif; color: var(--ink); marg
   background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
   border-radius: 9px; padding: 9px 14px; font-size: 13px; color: #D8D3C7; font-weight: 500;
 }
-.b-settle .eb { font-size: 12px; font-weight: 600; color: var(--terracotta); margin-bottom: 10px; }
-.b-settle h1 { font-family: 'DM Serif Display', serif; color: #FBF8F2; font-size: 30px; margin: 0 0 22px; }
-.bfield {
-  width: 320px; max-width: 80vw; height: 46px; border-radius: 10px;
-  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
-  display: flex; align-items: center; padding: 0 14px; color: #8A8578; font-size: 14px;
+/* Beat 4 — the parked frame. A plain full-bleed container (not the centred
+   flex the other beats use); its two children are absolutely positioned to the
+   cockpit's exact resting coordinates and fade in on top of the dark surface. */
+.b-park { display: block; padding: 0; opacity: 1; }
+/* Parked brandmark — cockpit resting position: top-left gutter 36/40, dot
+   22×22 r6 amber with DM Serif "R" 14px in ink, gap 8px, name Inter 15px/700. */
+.b-parkmark {
+  position: absolute; top: 36px; left: 40px; opacity: 0;
+  display: flex; align-items: center; gap: 8px;
 }
-.bbtn {
-  width: 320px; max-width: 80vw; height: 46px; border-radius: 10px;
-  background: var(--amber); color: var(--ink); font-weight: 700; font-size: 14px;
-  display: flex; align-items: center; justify-content: center; margin-top: 10px;
+.b-parkmark .dot {
+  width: 22px; height: 22px; border-radius: 6px; background: var(--amber);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink); font-family: 'DM Serif Display', serif; font-size: 14px; line-height: 1;
+}
+.b-parkmark .nm { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; color: #F5F1E8; }
+/* Parked glow — cockpit's exact top-centre 420px glow (fixed, never scales). */
+.b-parkglow {
+  position: absolute; top: -70px; left: 50%; transform: translateX(-50%);
+  width: 420px; height: 420px; border-radius: 50%; opacity: 0; pointer-events: none;
+  background: radial-gradient(circle, rgba(200,160,64,0.20) 0%, rgba(200,160,64,0.07) 38%, transparent 70%);
 }
 
 /* Beat 1: one continuous zoom — the trophy box grows to take over the screen. */
@@ -641,9 +660,15 @@ h1.chead-title { font-family: 'DM Serif Display', serif; color: var(--ink); marg
   80% { opacity: 1; transform: translateY(0); }
   100% { opacity: 0; transform: translateY(-14px); }
 }
-@keyframes bsettle {
-  0% { opacity: 0; transform: translateY(18px); }
-  100% { opacity: 1; transform: translateY(0); }
+/* Parked frame fades in cleanly (opacity only) so the last frame is static —
+   no residual transform when the redirect fires. */
+@keyframes bparkin {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+/* Centre glow crossfades out as the parked top-centre glow settles in. */
+@keyframes bridge-centerout {
+  to { opacity: 0; }
 }
 @keyframes bridge-glowpulse {
   0%, 100% { opacity: 0.4; }
@@ -654,8 +679,11 @@ h1.chead-title { font-family: 'DM Serif Display', serif; color: var(--ink); marg
 .bridge-overlay.reduced .b-fog,
 .bridge-overlay.reduced .b-pin,
 .bridge-overlay.reduced .b-brand { display: none; }
-.bridge-overlay.reduced .bridge-glow { animation: none; opacity: 0.6; }
-.bridge-overlay.reduced.playing .b-settle { animation: none; opacity: 1; }
+/* Reduced motion: skip the beats and hold the parked seam frame from the start
+   (centre glow off, top-centre parked glow + top-left mark shown, no animation). */
+.bridge-overlay.reduced .bridge-glow { display: none; }
+.bridge-overlay.reduced.playing .b-parkmark,
+.bridge-overlay.reduced.playing .b-parkglow { animation: none; opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
   .bridge-glow { animation: none; opacity: 0.6; }
 }
@@ -972,8 +1000,10 @@ h1.chead-title { font-family: 'DM Serif Display', serif; color: var(--ink); marg
   </div>
 </div>
 
-<!-- Bridge transition (Ticket I2): auto-plays ~6.8s (four held beats) on "Continue in
-     Resolve", runs entirely on the Intake side, then redirects to the real dark sign-in. -->
+<!-- Bridge transition (Ticket I2 · seam Option B): auto-plays on "Continue in
+     Resolve" — beats 1–3 unchanged (~6.6s), beat 4 parks the Resolve mark in the
+     cockpit's resting frame and holds ~1s, then redirects to the real dark sign-in.
+     Runs entirely on the Intake side; the last frame is static when the redirect fires. -->
 <div class="bridge-overlay" id="bridge-overlay" aria-hidden="true">
   <div class="bridge-glow"></div>
   <div class="bridge-layer b-fog" id="b-fog">
@@ -992,10 +1022,12 @@ h1.chead-title { font-family: 'DM Serif Display', serif; color: var(--ink); marg
     <div class="bfan"><div class="p">First move</div><div class="p">Roadmap</div><div class="p">Context</div></div>
     <div class="bcap">Setting up your workspace</div>
   </div>
-  <div class="bridge-layer b-settle" id="b-settle">
-    <h1>Create your Resolve workspace</h1>
-    <div class="bfield">Your email</div>
-    <div class="bbtn">Send code</div>
+  <!-- Beat 4 (Option B — logo parks): NO fake form. Just the Resolve mark in its
+       cockpit resting position (top-left) and the cockpit's top-centre 420px glow.
+       This frame is byte-for-byte identical to the cockpit's first painted frame. -->
+  <div class="bridge-layer b-park" id="b-park">
+    <div class="b-parkglow"></div>
+    <div class="b-parkmark"><div class="dot">R</div><div class="nm">Resolve</div></div>
   </div>
 </div>
 
@@ -2020,9 +2052,9 @@ function populateBridge() {
     (recommendationData && recommendationData.recommendedAction) || 'Your first move';
 }
 
-// "Continue in Resolve": play the ~6.8s four-beat bridge on the Intake side while the
+// "Continue in Resolve": play the four-beat bridge on the Intake side while the
 // handoff backend prepares in parallel, then redirect to the real dark sign-in. The
-// overlay holds on its final "forming sign-in" beat until the real URL is ready — so
+// overlay holds on its final parked-logo seam frame until the real URL is ready — so
 // the animation never hard-cuts and the redirect only fires once everything is set up.
 async function startBridgeToResolve(event) {
   if (event) event.preventDefault();
@@ -2048,9 +2080,11 @@ async function startBridgeToResolve(event) {
   overlay.classList.add('playing');
   overlay.setAttribute('aria-hidden', 'false');
 
-  // The four beats settle onto the "forming dark sign-in" at ~6.8s; keep the full
-  // sequence visible even if the backend resolves sooner, so nothing gets skipped.
-  const animMs = reduce ? 200 : 6800;
+  // Beats 1–3 run to 6600ms; beat 4 (logo parks) forms by ~7200ms, then the frame
+  // holds static ~1s on the parked seam frame before the redirect fires — the whole
+  // animation runs on the Intake side, nothing crosses the navigation boundary.
+  // Reduced motion shows the parked frame immediately and holds ~1s.
+  const animMs = reduce ? 1000 : 8200;
   const animationSettled = new Promise(resolve => setTimeout(resolve, animMs));
 
   try {
